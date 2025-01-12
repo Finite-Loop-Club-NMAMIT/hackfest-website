@@ -13,7 +13,7 @@ const GlowingHackfest = () => {
           `,
       }}
     >
-      <span className="relative z-10 text-blue-900">HACKFEST</span>
+      <span className="relative z-10 text-slate-900">HACKFEST</span>
 
       <span
         className="absolute inset-0 z-0 animate-pulse"
@@ -27,6 +27,11 @@ const GlowingHackfest = () => {
         HACKFEST
       </span>
     </div>
+    // <span
+    //   className={`{anton.className} bg-[url('/HFTexture.png')] bg-cover bg-clip-text bg-center text-center text-[5rem] font-black uppercase leading-none tracking-wider text-transparent sm:text-[6rem] md:text-[8rem] lg:text-[10rem] xl:text-[12rem]`}
+    // >
+    //   HACKFEST
+    // </span>
   );
 };
 

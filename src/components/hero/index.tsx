@@ -5,8 +5,9 @@ import { useLoader } from "@react-three/fiber";
 import React, { Suspense, useEffect, useState } from "react";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { caesarDressing } from "~/pages/_app";
-import GlowingHackfest from "./glowingHackfest";
 import DustOverlay from "./dustOverlay";
+import { Float } from "@react-three/drei";
+import GlowingHackfest from "./glowingHackfest";
 
 const Hero: React.FC = () => {
   return (
@@ -19,16 +20,18 @@ const Hero: React.FC = () => {
           <ambientLight intensity={0.5} />
           <directionalLight
             position={[0, 1, 5]}
-            intensity={1}
+            intensity={2}
             color={"#E0E0E0"}
           />
           <Suspense fallback={null}>
-            <Model />
+            <Float rotationIntensity={2}>
+              <Model />
+            </Float>
           </Suspense>
         </Canvas>
       </div>
 
-      <div className="absolute bottom-9 z-50 flex flex-col">
+      <div className="absolute bottom-9 z-50 flex flex-col ">
         <GlowingHackfest />
         <div className="relative flex w-full justify-center">
           <span
@@ -48,25 +51,22 @@ const Hero: React.FC = () => {
 };
 
 const Model = () => {
-  const gltf = useLoader(GLTFLoader, "/drcZeus.glb", (loader) => {
+  const gltf = useLoader(GLTFLoader, "/zeusHF.glb", (loader) => {
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath(
       "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
     ); // Set the path to the Draco decoder
     loader.setDRACOLoader(dracoLoader);
   });
-  const [scale, setScale] = useState([3.5, 3.5, 3.5]);
-  const [modelPos, setModelPos] = useState([0, -4, 0]);
+  const [scale, setScale] = useState([2.5, 2.5, 2.5]);
   const [rotation, setRotation] = useState([0, 0, 0]);
 
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 768) {
-        setScale([2.5, 2.5, 2.5]);
-        setModelPos([-0.2, -3, 0]);
+        setScale([1.5, 1.5, 1.5]);
       } else {
-        setScale([3.5, 3.5, 3.5]);
-        setModelPos([0, -4, 0]);
+        setScale([2.5, 2.5, 2.5]);
       }
     };
 
@@ -74,8 +74,7 @@ const Model = () => {
       const { clientX, clientY } = event;
       const xRotation = (clientY / window.innerHeight - 0.5) * 0.2;
       const yRotation = (clientX / window.innerWidth - 0.5) * 0.2;
-      setRotation([xRotation, 0 + yRotation, 0]);
-      setModelPos([yRotation, -4 + xRotation, 0]);
+      setRotation([xRotation, 0 + yRotation * 10, 0]);
     };
 
     window.addEventListener("resize", handleResize);
@@ -92,7 +91,7 @@ const Model = () => {
     <primitive
       object={gltf.scene}
       scale={scale}
-      position={modelPos}
+      position={[0, 0, 0]}
       rotation={rotation}
     />
   );
