@@ -11,7 +11,7 @@ import { Card, CardContent } from "../ui/card";
 import { api } from "~/utils/api";
 export default function DashboardButton({ role }: { role: Role }) {
   const [dashboards, setDashboards] = useState<string[]>([]);
- 
+
   useEffect(() => {
     if (role) {
       if (role === "ADMIN") {
@@ -58,11 +58,11 @@ export default function DashboardButton({ role }: { role: Role }) {
           </PopoverContent>
         </Popover>
       )}
-      {dashboards.length === 0 && (
+      {/* {dashboards.length === 0 && (
         <Link href={`/results`}>
           <Button>Results</Button>
         </Link>
-      )}
+      )} */}
       {dashboards.length === 1 && (
         <Link href={`/dashboard/${role?.toLowerCase()}`}>
           <Button>Dashboard</Button>
