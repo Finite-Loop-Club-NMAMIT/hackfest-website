@@ -144,3 +144,10 @@ input[type="number"] {
   background-size: 150% 150%;
   animation: none; /* Disable the initial rotation animation */
 }
+
+.animate-marquee {
+  animation: marquee 10s linear infinite;
+  /* Adjust duration and timing function as needed */
+  white-space: nowrap;
+  /* Prevent text from wrapping */
+}
