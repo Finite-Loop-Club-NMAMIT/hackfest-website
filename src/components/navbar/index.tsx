@@ -40,8 +40,10 @@ const NavBar = () => {
                 </a>
               ))}
             </div>
-            <DashboardButton role={user.data?.user.role ?? "PARTICIPANT"} />
-            <AuthButtons />
+            <div className="hidden md:flex">
+              <DashboardButton role={user.data?.user.role ?? "PARTICIPANT"} />
+              <AuthButtons />
+            </div>
 
             {/* Mobile Nav toggle */}
             <div className="md:hidden">
@@ -71,6 +73,9 @@ const NavBar = () => {
                     {item.label}
                   </a>
                 ))}
+
+                <DashboardButton role={user.data?.user.role ?? "PARTICIPANT"} />
+                <AuthButtons />
               </div>
             </div>
           )}
