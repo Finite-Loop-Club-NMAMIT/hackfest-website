@@ -12,7 +12,7 @@ export const MobileNavbar = () => {
   const user = useSession();
   return (
     <>
-      <div className="fixed right-5 top-[3.75rem] z-[60] flex items-center space-x-4 lg:hidden">
+      <div className="fixed right-5 top-[1.5rem] z-[60] flex items-center space-x-4 lg:hidden">
         <button
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle Menu"
@@ -28,11 +28,13 @@ export const MobileNavbar = () => {
 
       <div
         className={`fixed top-28 flex w-full justify-center transition-transform duration-200 ${
-          isOpen ? "z-[60] translate-y-0 mt-3" : "z-0 -translate-y-[30rem] -mt-1"
+          isOpen
+            ? "z-[60] mt-3 translate-y-0"
+            : "z-0 -mt-1 -translate-y-[30rem]"
         } px-2 lg:hidden`}
       >
         <div
-          className={`justify-center" z-[60] w-full flex flex-col space-y-3 rounded-xl border border-white/30 bg-white/5 bg-clip-padding py-5 backdrop-blur-lg 
+          className={`justify-center" z-[60] flex w-full flex-col space-y-3 rounded-xl border border-white/30 bg-white/5 bg-clip-padding py-5 backdrop-blur-lg 
                backdrop-filter hover:border-white/40 lg:hidden 
             `}
         >
