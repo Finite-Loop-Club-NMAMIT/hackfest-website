@@ -4,6 +4,7 @@ import { ZeusBackground } from "./zeusBackground";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { useLoader } from "@react-three/fiber";
 import React, { Suspense, useEffect, useState } from "react";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
 const HeroParallax = dynamic(() => import("./HeroParallax"), { ssr: false });
 
@@ -28,7 +29,13 @@ const Hero: React.FC = () => {
 };
 
 const Model = () => {
-  const gltf = useLoader(GLTFLoader, "/scaledZeus.glb");
+  const gltf = useLoader(GLTFLoader, "/drcZeus.glb", (loader) => {
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(
+      "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
+    ); // Set the path to the Draco decoder
+    loader.setDRACOLoader(dracoLoader);
+  });
   const [scale, setScale] = useState([3.5, 3.5, 3.5]);
   const [modelPos, setModelPos] = useState([0, -4, 0]);
   const [rotation, setRotation] = useState([0, 0, 0]);
