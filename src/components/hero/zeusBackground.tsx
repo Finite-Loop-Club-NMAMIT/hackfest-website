@@ -2,12 +2,12 @@ import * as THREE from "three";
 import React, { useEffect, useRef } from "react";
 
 export const ZeusBackground: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const cloudsRef = useRef<THREE.Mesh[]>([]);
-  const flashesRef = useRef<THREE.PointLight[]>([]);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const sceneRef = useRef<THREE.Scene | null>(null);
+    const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+    const cloudsRef = useRef<THREE.Mesh[]>([]);
+    const flashRef = useRef<THREE.PointLight | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined" || !containerRef.current) return;
@@ -25,90 +25,117 @@ export const ZeusBackground: React.FC = () => {
     cameraRef.current = camera;
     rendererRef.current = renderer;
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(new THREE.Color(0x11111f), 1);
-    containerRef.current.appendChild(renderer.domElement);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(new THREE.Color(0x0c306d), 0.6);
+        containerRef.current.appendChild(renderer.domElement);
+        
+        camera.position.z = 5;
 
-    camera.position.z = 5;
+        const ambientLight = new THREE.AmbientLight(0x444444, 0.8);
+        scene.add(ambientLight);
 
-    // Basic lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 2, 1);
+        scene.add(directionalLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    directionalLight.position.set(0, 1, 0);
-    scene.add(directionalLight);
+        const flash = new THREE.PointLight(0xb5eef9, 0, 30, 1);
+        scene.add(flash);
+        flashRef.current = flash;
 
-    scene.fog = new THREE.FogExp2(0x11111f, 0.002);
+        scene.fog = new THREE.FogExp2(0x777777, 0.001);
 
-    const handleResize = () => {
-      if (!camera || !renderer) return;
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Create clouds
-    const loader = new THREE.TextureLoader();
-    loader.load(
-      "/cloudTexture.jpg",
-      (texture) => {
-        const cloudGeo = new THREE.SphereGeometry(370, 400);
-        const cloudMaterial = new THREE.MeshLambertMaterial({
-          map: texture,
-          transparent: true,
-          depthWrite: false,
+        window.addEventListener('resize', () => {
+            if (!camera || !renderer) return;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        for (let p = 0; p < 20; p++) {
-          const cloud = new THREE.Mesh(cloudGeo, cloudMaterial);
-          cloud.position.set(
-            Math.random() * 800 - 400,
-            500,
-            Math.random() * 500 - 500,
-          );
-          cloud.rotation.x = 1.2;
-          cloud.rotation.y = -1;
-          cloud.rotation.z = -70;
-          cloud.material.opacity = 0.6;
-          cloudsRef.current.push(cloud);
-          scene.add(cloud);
-        }
-      },
-      undefined,
-      (error) => {
-        console.error("Error loading cloud texture:", error);
-      },
-    );
+        const loader = new THREE.TextureLoader();
+        loader.load(
+            '/cloudTexture.png',
+            (texture) => {
+                const cloudGeo = new THREE.PlaneGeometry(600, 800);
+                const cloudMaterial = new THREE.MeshPhongMaterial({
+                    map: texture,
+                    transparent: true,
+                    alphaTest: 0.2,
+                    depthWrite: false,
+                    side: THREE.DoubleSide,
+                    shininess: 2,
+                    emissive: new THREE.Color(0x222222),
+                    emissiveIntensity: 0.1
+                });
 
-    // Animation loop
-    const animate = () => {
-      if (!scene || !camera || !renderer) return;
+                for (let p = 0; p < 60; p++) {
+                    const cloud = new THREE.Mesh(cloudGeo, cloudMaterial);
+                    
+                    cloud.position.set(
+                        Math.random() * 70 - 35,
+                        Math.random() * 15 + 11,
+                        Math.random() * -2 - 8
+                    );
+                    
+                    const scale = 0.025 + Math.random() * 0.015;
+                    cloud.scale.set(scale, scale, 1);
+                    
+                    cloud.rotation.x = 0.8;
+                    cloud.rotation.y = -0.12;
+                    cloud.rotation.z = Math.random() * 2 * Math.PI;
+                    cloud.material.opacity = 0.6;
+                    
+                    cloudsRef.current.push(cloud);
+                    scene.add(cloud);
+                }
+            },
+            undefined,
+            (error) => console.error('Error loading cloud texture:', error)
+        );
 
-      // Animate clouds
-      cloudsRef.current.forEach((cloud) => {
-        cloud.rotation.z += 0.001;
-      });
+        const triggerFlash = () => {
+            if (!flashRef.current) return;
+            
+            flashRef.current.position.set(
+                Math.random() * 30 - 15,
+                Math.random() * 1.5 + 1.5,  
+                -9                     
+            );
+            
+            flashRef.current.intensity = 200;
+            
+            const fadeOut = () => {
+                if (!flashRef.current) return;
+                flashRef.current.intensity *= 0.85;
+                if (flashRef.current.intensity > 1) requestAnimationFrame(fadeOut);
+                else flashRef.current.intensity = 0;
+            };
+            
+            requestAnimationFrame(fadeOut);
+        };
 
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-    };
+        const createFlash = () => {
+            triggerFlash();
+            setTimeout(createFlash, Math.random() * 6000 + 2000);
+        };
+        createFlash();
 
-    animate();
+        const animate = () => {
+            if (!scene || !camera || !renderer) return;
+            cloudsRef.current.forEach(cloud => cloud.rotation.z -= 0.001);
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        };
+        animate();
 
-    // Cleanup
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      if (renderer && containerRef.current) {
-        containerRef.current.removeChild(renderer.domElement);
-        renderer.dispose();
-      }
-      cloudsRef.current = [];
-      flashesRef.current = [];
-    };
-  }, []);
+        return () => {
+            if (renderer && containerRef.current) {
+                containerRef.current.removeChild(renderer.domElement);
+                renderer.dispose();
+            }
+            cloudsRef.current = [];
+            flashRef.current = null;
+        };
+    }, []);
 
   return <div ref={containerRef} className="z-0 h-screen w-screen" />;
 };
