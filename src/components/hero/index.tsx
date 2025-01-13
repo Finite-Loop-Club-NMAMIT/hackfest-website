@@ -3,9 +3,6 @@ import { caesarDressing } from "~/pages/_app";
 import DustOverlay from "./dustOverlay";
 import GlowingHackfest from "./glowingHackfest";
 import dynamic from "next/dynamic";
-import { Canvas } from "@react-three/fiber";
-import { Suspense } from "react";
-import { Float } from "@react-three/drei";
 // import ZeusBust from "./zeusBust";
 
 const ZeusBust = dynamic(() => import("./zeusBust"), { ssr: false });
