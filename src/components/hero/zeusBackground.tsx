@@ -59,7 +59,7 @@ export const ZeusBackground: React.FC = () => {
 
     const loader = new THREE.TextureLoader();
     loader.load(
-      "/cloudTexture.png",
+      "/textures/cloudTexture.png",
       (texture) => {
         const cloudGeo = new THREE.PlaneGeometry(600, 800);
         const cloudMaterial = new THREE.MeshPhongMaterial({

@@ -23,7 +23,7 @@ export default function ZeusBust() {
 }
 
 const Model = () => {
-  const gltf = useLoader(GLTFLoader, "/zeusHF.glb", (loader) => {
+  const gltf = useLoader(GLTFLoader, "/3D/zeusHF.glb", (loader) => {
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath(
       "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
