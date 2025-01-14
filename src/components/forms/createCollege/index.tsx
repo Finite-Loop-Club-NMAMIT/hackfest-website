@@ -94,7 +94,7 @@ export default function CreateCollegeForm({ closeDialog, refetch }: { closeDialo
                       <Button className="w-full border-[1px] bg-background text-left text-white hover:bg-background">
                         <p className="mr-auto">
                           {selectedState === ""
-                            ? "Select College"
+                            ? "Select State"
                             : selectedState}
                         </p>
                         <LuChevronsUpDown />
