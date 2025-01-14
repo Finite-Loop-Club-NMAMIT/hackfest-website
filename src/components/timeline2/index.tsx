@@ -1,7 +1,17 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import React, { Suspense, useEffect, useRef } from "react";
 import { ScrollControls } from "@react-three/drei";
 import Three from "./three";
+import * as THREE from "three";
+
+function Scene() {
+  const { scene } = useThree();
+
+  // You can add fog right in your component
+  scene.fog = new THREE.Fog("#1565C0", 20, 23);
+
+  return null;
+}
 
 const Timeline2: React.FC = () => {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -42,6 +52,7 @@ const Timeline2: React.FC = () => {
               zIndex: 50,
             }}
           >
+            <Scene />
             <Suspense fallback={null}>
               <ScrollControls pages={4} damping={0.3}>
                 <Three />

@@ -1,5 +1,7 @@
 import {
   Box,
+  Cloud,
+  Clouds,
   Environment,
   Line,
   OrbitControls,
@@ -22,7 +24,7 @@ import SevenBoxes from "./boxes";
 export default function Three() {
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const [points, setPoints] = useState<THREE.Vector3[]>([]);
-  cameraRef.current?.lookAt(0, 0, 16);
+  cameraRef.current?.lookAt(0, 0, 18);
 
   const helixCurveRef = useRef<HelixCurve>(new HelixCurve(6.5, 30, 4));
   // const cameraGroupRef = useRef<THREE.Group>(null);
@@ -56,7 +58,7 @@ export default function Three() {
   }, [points]);
 
   const linePoints = useMemo(() => {
-    return points.length > 0 ? curve.getPoints(12000) : [];
+    return points.length > 0 ? curve.getPoints(30000) : [];
   }, [curve, points]);
 
   const shape = useMemo(() => {
@@ -80,7 +82,7 @@ export default function Three() {
     const curPoint = linePoints[curPointIndex];
     if (!curPoint || !cameraRef.current) return;
     const angle = Math.atan2(curPoint.x, curPoint.z);
-    const radius = 6.5;
+    const radius = 10.5;
 
     // Directly set camera position without interpolation
     if (cameraRef.current) {
@@ -100,12 +102,14 @@ export default function Three() {
       {/* <OrbitControls enabled /> */}
       {/* <Background /> */}
       {/* <SceneLighting /> */}
+      <fog attach="fog" args={["#87CEEB", 20, 100]} />
       <PerspectiveCamera
         makeDefault
         position={[0, 0, 20]}
         ref={cameraRef}
         fov={30}
       />
+
       <Stars
         radius={100}
         depth={50}
@@ -115,6 +119,37 @@ export default function Three() {
         fade
         speed={1}
       />
+      {/* <Clouds material={THREE.MeshBasicMaterial}>
+        {[...Array(50)].map((_, i) => {
+          const angle = (i / 50) * Math.PI * 2;
+          const radius = 500 + Math.random() * 1000;
+          const x = Math.cos(angle) * radius;
+          const z = Math.sin(angle) * radius;
+          const y = -50 + Math.random() * 200;
+          const distance = Math.sqrt(x * x + z * z);
+          const scale = 8 + distance / 300;
+
+          return (
+            <Cloud
+              frustumCulled={false}
+              key={i}
+              seed={Math.random() * 100}
+              scale={scale}
+              volume={12 + Math.random() * 8}
+              color="b"
+              fade={10}
+              bounds={[
+                20 + Math.random() * 40,
+                8 + Math.random() * 12,
+                2 + Math.random() * 10,
+              ]}
+              position={[x, y, z]}
+              segments={2}
+              opacity={0.2}
+            />
+          );
+        })}
+      </Clouds> */}
 
       <Model scale={[0.19, 0.3, 0.2]} position={[0, -12.5, 0]} />
       {/* {linePoints.length > 1 && (
@@ -137,6 +172,7 @@ export default function Three() {
       {/* <axesHelper args={[5]} /> */}
       <ambientLight intensity={0.5} />
       <directionalLight position={[0, 1, 5]} intensity={1} color={"#E0E0E0"} />
+
       {/* <spotLight position={[-5, -4, 10]} intensity={300} castShadow /> */}
       {/* <pointLight position={[-17, -10, 10]} intensity={300} castShadow />
       <pointLight position={[17, -10, 10]} intensity={300} castShadow /> */}
