@@ -5,6 +5,7 @@ import Hero from "~/components/hero";
 import Audio from "~/components/hero/audio";
 import RootLayout from "~/components/layout";
 import PrizePool from "~/components/prizePool";
+import PrizePool2 from "~/components/prizePool2";
 import Sponsors from "~/components/sponsors";
 import Timeline from "~/components/timeline";
 import Timeline2 from "~/components/timeline2";
@@ -24,7 +25,8 @@ export default function Home() {
         <div className="absolute top-[100vh] z-50 h-40 w-full -translate-y-1/2"></div>
         <Audio />
         <Hero />
-        <Timeline2 />
+        <PrizePool2 />
+        {/* <Timeline2 /> */}
         <AboutHackfest />
         <PrizePool />
         <Domains domainList={domains} />

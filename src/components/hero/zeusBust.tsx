@@ -27,7 +27,7 @@ const Model = () => {
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath(
       "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
-    ); // Set the path to the Draco decoder
+    );
     loader.setDRACOLoader(dracoLoader);
   });
   const [scale, setScale] = useState([2.5, 2.5, 2.5]);
