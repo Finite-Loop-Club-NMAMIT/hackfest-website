@@ -16,26 +16,31 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Model } from "./model";
 import { HelixCurve } from "./helix";
-import { useFrame } from "@react-three/fiber";
-import SevenBoxes from "./boxes";
-// import { SceneLighting } from "./Lighting";
-// import Background from "./Background";
+import { useFrame, useThree } from "@react-three/fiber";
+import EventObjects from "./eventObjects";
 
-export default function Three() {
+function Fog() {
+  const { scene } = useThree();
+  useEffect(() => {
+    scene.fog = new THREE.Fog(
+      "#0D47A1", // sky blue color
+      22, // near
+      25,
+      // far
+    );
+  }, [scene]);
+
+  return null;
+}
+
+export default function Scene() {
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const [points, setPoints] = useState<THREE.Vector3[]>([]);
   cameraRef.current?.lookAt(0, 0, 18);
 
   const helixCurveRef = useRef<HelixCurve>(new HelixCurve(6.5, 30, 4));
-  // const cameraGroupRef = useRef<THREE.Group>(null);
-  const scroll = useScroll();
 
-  // useEffect(() => {
-  //   if (cameraRef.current) {
-  //     cameraRef.current.position.set(0, 0, 16);
-  //     cameraRef.current.rotation.set(0, 0, 0);
-  //   }
-  // }, []);
+  const scroll = useScroll();
 
   useEffect(() => {
     const pointsArray: THREE.Vector3[] = [];
@@ -88,10 +93,10 @@ export default function Three() {
     if (cameraRef.current) {
       cameraRef.current.position.set(
         curPoint.x + (radius + 3) * Math.sin(angle),
-        curPoint.y,
+        curPoint.y + 1,
         curPoint.z + (radius + 3) * Math.cos(angle),
       );
-      cameraRef.current.lookAt(0, curPoint.y, 0);
+      cameraRef.current.lookAt(0, curPoint.y + 1, 0);
       cameraRef.current.updateMatrix();
       cameraRef.current.updateMatrixWorld();
     }
@@ -99,9 +104,6 @@ export default function Three() {
 
   return (
     <>
-      {/* <OrbitControls enabled /> */}
-      {/* <Background /> */}
-      {/* <SceneLighting /> */}
       <fog attach="fog" args={["#87CEEB", 20, 100]} />
       <PerspectiveCamera
         makeDefault
@@ -119,69 +121,15 @@ export default function Three() {
         fade
         speed={1}
       />
-      {/* <Clouds material={THREE.MeshBasicMaterial}>
-        {[...Array(50)].map((_, i) => {
-          const angle = (i / 50) * Math.PI * 2;
-          const radius = 500 + Math.random() * 1000;
-          const x = Math.cos(angle) * radius;
-          const z = Math.sin(angle) * radius;
-          const y = -50 + Math.random() * 200;
-          const distance = Math.sqrt(x * x + z * z);
-          const scale = 8 + distance / 300;
-
-          return (
-            <Cloud
-              frustumCulled={false}
-              key={i}
-              seed={Math.random() * 100}
-              scale={scale}
-              volume={12 + Math.random() * 8}
-              color="b"
-              fade={10}
-              bounds={[
-                20 + Math.random() * 40,
-                8 + Math.random() * 12,
-                2 + Math.random() * 10,
-              ]}
-              position={[x, y, z]}
-              segments={2}
-              opacity={0.2}
-            />
-          );
-        })}
-      </Clouds> */}
 
       <Model scale={[0.19, 0.3, 0.2]} position={[0, -12.5, 0]} />
-      {/* {linePoints.length > 1 && (
-        // <Line points={linePoints} color="white" lineWidth={16} opacity={0.8} />
-        <mesh>
-          <extrudeGeometry
-            args={[
-              shape,
 
-              { steps: 200, bevelEnabled: false, extrudePath: curve },
-            ]}
-          />
-          <meshBasicMaterial color="white" />
-        </mesh>
-      )} */}
+      {linePoints.length > 1 && <EventObjects linePoints={linePoints} />}
 
-      {linePoints.length > 1 && <SevenBoxes linePoints={linePoints} />}
-
-      {/* <OrbitControls /> */}
-      {/* <axesHelper args={[5]} /> */}
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={1.5} />
       <directionalLight position={[0, 1, 5]} intensity={1} color={"#E0E0E0"} />
 
-      {/* <spotLight position={[-5, -4, 10]} intensity={300} castShadow /> */}
-      {/* <pointLight position={[-17, -10, 10]} intensity={300} castShadow />
-      <pointLight position={[17, -10, 10]} intensity={300} castShadow /> */}
-      {/* <Environment background>
-        <mesh>
-          <sphereGeometry args={[50, 100, 100]} />
-          <meshBasicMaterial color="#0a1011" side={THREE.BackSide} />
-        </mesh>
-      </Environment> */}
+      <pointLight position={[0, 0, 0]} intensity={200} castShadow />
     </>
   );
 }
