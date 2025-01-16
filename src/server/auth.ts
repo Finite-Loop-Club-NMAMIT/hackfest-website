@@ -30,7 +30,7 @@ declare module "next-auth" {
             teamProgress : TeamProgress
           }
         | null
-        | undefined;
+        | undefined
       college: string;
       isLeader: boolean;
       isGameLeader: boolean;
@@ -69,7 +69,7 @@ export const authOptions: NextAuthOptions = {
       });
       if (!dbUser) {
         throw new Error("User not found");
-      }
+      }      
       session.user.id = dbUser.id;
       session.user.role = dbUser.role;
       if (dbUser.team) {

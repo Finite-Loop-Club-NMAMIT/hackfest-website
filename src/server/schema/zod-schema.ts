@@ -1,5 +1,4 @@
 import { Category, Courses, JudgeType, Tracks, TshirtSize } from "@prisma/client";
-import { X } from "lucide-react";
 import { z } from "zod";
 
 const updateUserZ = z.object({
@@ -27,6 +26,7 @@ const updateProfileZ = z.object({
   course: z.custom<Courses>((val) => {
     return Object.values(Courses).includes(val as Courses);
   }),
+  github: z.string().min(1, { message: "Github usename cannot be empty" }).refine((val) => !val.includes("github.com/"), { message: "Enter only username" }),
   aadhaarUrl: z.string(),
   collegeIdUrl: z.string(),
 });
@@ -184,5 +184,5 @@ export {
   addReferralCodeZ,
   addJudgeZ,
   finalSubmissionZ,
-  resumeSubmissionZ
+  resumeSubmissionZ,
 };

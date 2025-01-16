@@ -78,7 +78,8 @@ export const userRouter = createTRPCRouter({
         input.collegeIdUrl === user?.college_id &&
         user?.college?.id === input.college &&
         user?.tShirtSize === input.tshirtSize &&
-        user?.course === input.course;
+        user?.course === input.course &&
+        user?.github === input.github;
 
       const isComplete =
         input.name &&
@@ -89,7 +90,8 @@ export const userRouter = createTRPCRouter({
         !input.collegeIdUrl?.startsWith("undefined") &&
         input.college &&
         input.tshirtSize &&
-        input.course
+        input.course &&
+        input.github
           ? true
           : false;
 
@@ -118,6 +120,7 @@ export const userRouter = createTRPCRouter({
           college: { connect: { id: input.college } },
           course: input.course,
           tShirtSize: input.tshirtSize,
+          github: input.github,
         },
       });
 
@@ -226,6 +229,40 @@ export const userRouter = createTRPCRouter({
         message: "Something went wrong",
       });
     }
+  }),
+
+  getUserDetails: protectedProcedure.query(async({ctx}) => {
+    return await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        image: true,
+        isLeader: true,
+        profileProgress: true,
+        aadhaar: true,
+        college_id: true,
+        github: true,
+        college: {
+          select: {
+            name: true,
+            state: true,
+          }
+        },
+        team: {
+          select: {
+            name: true,
+            members: {
+              select: {
+                name: true,
+                image: true,
+              }
+            }
+          }
+        }
+      }
+    })
   }),
 
   getUserWithCollege: protectedProcedure.query(async ({ ctx }) => {
