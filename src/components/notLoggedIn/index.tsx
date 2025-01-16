@@ -23,7 +23,7 @@ const NotLoggedIn = () => {
                     width={180}
                     height={180}
                   />
-                  <div className="absolute left-1/2 top-1/2 -z-10 h-full w-full -translate-x-1/2 -translate-y-1/2 transform bg-gradient-radial from-yellow-300/50 via-transparent to-transparent blur-xl transition-all duration-300 group-hover:brightness-125" />
+                  <div className="absolute left-1/2 top-1/2 -z-10 h-full w-full -translate-x-1/2 -translate-y-1/2 transform bg-gradient-radial from-blue-500/50 via-transparent to-transparent blur-xl transition-all duration-300 group-hover:brightness-125" />
                 </div>
                 <div className="text-4xl lg:text-7xl flex items-center justify-center flex-nowrap">
                   <h1 className="bg-opacity-50 bg-gradient-to-b from-neutral-50 to-neutral-400 bg-clip-text text-center text-4xl font-black text-transparent lg:text-7xl">

@@ -253,10 +253,19 @@ export const userRouter = createTRPCRouter({
         team: {
           select: {
             name: true,
+            teamNo: true,
+            isComplete: true,
+            github: {
+              select: {
+                githubTeamId: true,
+                githubTeamSlug: true,
+              }
+            },
             members: {
               select: {
                 name: true,
                 image: true,
+                isLeader: true,
               }
             }
           }
