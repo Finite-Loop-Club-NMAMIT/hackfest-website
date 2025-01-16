@@ -13,6 +13,7 @@ import { env } from "~/env";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -65,7 +66,7 @@ export default function RegisterProfileForm() {
       gsap.set("#form-title", { innerText: "Profile Registered" });
       toast.success("You have successfully registerd");
       setTimeout(() => {
-        void router.push("/profile");
+        window.location.href = "/profile";
       }, 5000);
     },
     onError: () => {
@@ -99,6 +100,7 @@ export default function RegisterProfileForm() {
       tshirtSize: undefined,
       aadhaarUrl: "",
       collegeIdUrl: "",
+      github: "",
     },
   });
 
@@ -169,21 +171,33 @@ export default function RegisterProfileForm() {
             team or create a new one
           </p>
           <div className="mt-6 flex w-full flex-row flex-nowrap justify-evenly">
-            <Button variant="outline" className="bg-transparent/30" onClick={async() => {
-              await router.push("/register", { query: { t: "join" } });
-              router.reload();
-            }}>
+            <Button
+              variant="outline"
+              className="bg-transparent/30"
+              onClick={async () => {
+                await router.push("/register", { query: { t: "join" } });
+                router.reload();
+              }}
+            >
               Join Team
             </Button>
-            <Button variant="outline" className="bg-transparent/30" onClick={async() => {
-              await router.push("/register", { query: { t: "create" } });
-              router.reload();
-            }}>
+            <Button
+              variant="outline"
+              className="bg-transparent/30"
+              onClick={async () => {
+                await router.push("/register", { query: { t: "create" } });
+                router.reload();
+              }}
+            >
               Create Team
             </Button>
           </div>
           <p className="mx-auto mt-4 text-sm opacity-50">
-            Redirecting to <Link href={"/profile"} className="underline text-blue-500">profile</Link> in {redirectingIn}
+            Redirecting to{" "}
+            <Link href={"/profile"} className="text-blue-500 underline">
+              profile
+            </Link>{" "}
+            in {redirectingIn}
           </p>
         </div>
       </>
@@ -245,6 +259,21 @@ export default function RegisterProfileForm() {
                       <Input className="pl-12" type="number" {...field} />
                     </div>
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="github"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="github">Github</FormLabel>
+                  <FormControl>
+                    <Input placeholder="username" {...field} />
+                  </FormControl>
+                  <FormDescription>Enter user username only</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -439,6 +468,7 @@ export default function RegisterProfileForm() {
                     college: "",
                     course: undefined,
                     tshirtSize: undefined,
+                    github: "",
                   });
                 }}
               >
@@ -450,16 +480,26 @@ export default function RegisterProfileForm() {
                 onClick={async (e) => {
                   e.preventDefault();
 
-                  const [name, phone, college, course, tshirtSize] =
+                  const [name, phone, college, course, tshirtSize, github] =
                     await Promise.all([
                       form.trigger("name"),
                       form.trigger("phone"),
                       form.trigger("college"),
                       form.trigger("course"),
                       form.trigger("tshirtSize"),
+                      form.trigger("github"),
                     ]);
 
-                  if (!(name && phone && college && course && tshirtSize)) {
+                  if (
+                    !(
+                      name &&
+                      phone &&
+                      college &&
+                      course &&
+                      tshirtSize &&
+                      github
+                    )
+                  ) {
                     return;
                   }
 
