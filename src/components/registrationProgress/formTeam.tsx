@@ -5,7 +5,6 @@ import RegisterTeamForm from '../forms/createTeam';
 export default function FormTeam() {
   return (
     <div className="flex justify-center">
-      {/* <div className="mx-auto mt-[10rem] w-full max-w-6xl bg-black/50 md:mt-[12rem]"> */}
         <Card className="mx-4 w-full max-w-7xl bg-black/50 py-2 md:py-4">
           <CardHeader>
             <CardTitle
@@ -21,7 +20,6 @@ export default function FormTeam() {
             </div>
           </CardContent>
         </Card>
-      {/* </div> */}
     </div>
   );
 }

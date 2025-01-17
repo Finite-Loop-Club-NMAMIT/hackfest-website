@@ -49,7 +49,7 @@ export default function ProfilePage() {
             {data?.user && (
               <Card className="bg-black/50">
                 <CardHeader>
-                  <CardTitle className="my-4 text-center text-3xl font-bold md:text-4xl">
+                  <CardTitle className="my-4 text-center text-3xl font-bold md:text-4xl gradient-text">
                     Your Profile
                   </CardTitle>
                 </CardHeader>

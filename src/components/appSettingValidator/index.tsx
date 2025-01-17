@@ -1,15 +1,18 @@
 import { useSession } from "next-auth/react";
 import React from "react";
+import { Button } from "../ui/button";
+import { useRouter } from "next/router";
 
 const AppSettingValidator = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { open: boolean; text: string }
 >(({ open, text, ...props }, ref) => {
   const { data } = useSession();
+  const router = useRouter();
 
   if (!open) {
     return (
-      <div className="min-w-screen flex min-h-screen items-center justify-center">
+      <div className="w-screen flex h-screen items-center justify-center">
         <div className="h-fit w-full max-w-[70rem] rounded-xl bg-black/50 p-10 text-center text-white mx-4">
           <h1 className="bg-gradient-to-b from-red-300 via-red-800 to-red-500 bg-clip-text md:text-8xl text-5xl font-bold text-transparent">
             Too Late!
@@ -17,6 +20,7 @@ const AppSettingValidator = React.forwardRef<
           <p className="mt-8 md:text-xl">
             Sorry <span className="font-semibold">{data?.user.name ?? "Tech Enthusiast"}</span>. {text}
           </p>
+          <Button className="mt-8" variant="outline" onClick={() => {void router.push("/")}}>Home</Button>
         </div>
       </div>
     );

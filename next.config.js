@@ -34,6 +34,10 @@ const config = {
       },
       {
         protocol:"https",
+        hostname:"api.github.com",
+      },
+      {
+        protocol:"https",
         hostname:"github.com",
       }
     ],
