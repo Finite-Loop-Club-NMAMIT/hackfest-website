@@ -90,7 +90,7 @@ export default function ProfileCard({
 
   return (
     <>
-    <TeamDetails user={user} />
+    <TeamDetails user={user}/>
     <PersonalDeatils user={user}/>
     <IdentityDetails user={user} />
     </>

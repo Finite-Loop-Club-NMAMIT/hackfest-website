@@ -252,6 +252,7 @@ export const userRouter = createTRPCRouter({
         },
         team: {
           select: {
+            id: true,
             name: true,
             teamNo: true,
             isComplete: true,

@@ -58,15 +58,16 @@ export const teamRouter = createTRPCRouter({
             team: team,
           };
         } else {
-          return {
-            status: "failure",
-            message: "Team does not exists",
-            team: null,
-          };
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Team does not exist",
+          });
         }
       } catch (error) {
-        console.log(error);
-        return { status: "error", message: "Something went wrong", team: null };
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+        });
       }
     }),
 
@@ -412,8 +413,10 @@ export const teamRouter = createTRPCRouter({
   getTeamDetailsById: protectedProcedure
     .input(getTeamDetailsByIdZ)
     .query(async ({ input, ctx }) => {
+      if (!input.teamId || input.teamId.length === 0) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Team not found" });
+      }
       try {
-        if (!input.teamId) return null;
         const team = await ctx.db.team.findUnique({
           where: {
             id: input.teamId,
@@ -429,8 +432,10 @@ export const teamRouter = createTRPCRouter({
         });
         return team;
       } catch (error) {
-        console.log(error);
-        return null;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+        });
       }
     }),
 

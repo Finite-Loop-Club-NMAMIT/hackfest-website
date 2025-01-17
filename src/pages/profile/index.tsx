@@ -44,16 +44,16 @@ export default function ProfilePage() {
   } else {
     return (
       <RootLayout>
-        <div className="min-h-screen bg-gradient-to-b flex justify-center items-center from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328]">
-          <div className="mx-auto py-40 flex w-full max-w-7xl flex-col justify-center">
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328]">
+          <div className="mx-auto flex w-full max-w-7xl flex-col justify-center py-40">
             {data?.user && (
               <Card className="bg-black/50">
                 <CardHeader>
-                  <CardTitle className="my-4 text-center text-3xl font-bold md:text-4xl gradient-text">
+                  <CardTitle className="gradient-text my-4 text-center text-3xl font-bold md:text-4xl">
                     Your Profile
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid md:grid-cols-2 grid-cols-1 gap-2">
+                <CardContent className="grid grid-cols-1 gap-2 md:grid-cols-2">
                   <ProfilePhoto
                     progress={data.user.profileProgress}
                     isLeader={data.user.isLeader}
@@ -69,9 +69,6 @@ export default function ProfilePage() {
     );
   }
 }
-
-
-
 
 function Content({
   user,
@@ -111,6 +108,9 @@ function Content({
       );
 
     case "FORM_TEAM":
+    case "SUBMIT_IDEA":
+    case "PAYMENT":
+    case "COMPLETE":
       return <ProfileCard user={user} />;
   }
 }

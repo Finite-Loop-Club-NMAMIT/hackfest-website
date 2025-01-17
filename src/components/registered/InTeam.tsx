@@ -75,7 +75,9 @@ export default function InTeam({ isLeader }: { isLeader: boolean }) {
           Team size requirements not met!
         </div>
       )}
-      {session.data?.user.team?.id && <TeamList teamId={session.data.user.team.id} />}
+      {session.data?.user.team?.id && (
+        <TeamList teamId={session.data.user.team.id} />
+      )}
       {!isLeader && (
         <p className="mt-4 opacity-50">
           Ask your <span className="font-bold">leader</span> to delete or
@@ -115,7 +117,15 @@ export default function InTeam({ isLeader }: { isLeader: boolean }) {
         {/* Register */}
         <Dialog>
           <DialogTrigger asChild>
-            <Button>Register</Button>
+            <Button
+              disabled={
+                teamSize.data &&
+                (teamSize.data?.teamsize < MIN_SIZE ||
+                  teamSize.data?.teamsize > MAX_SIZE)
+              }
+            >
+              Register
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -131,7 +141,15 @@ export default function InTeam({ isLeader }: { isLeader: boolean }) {
               </DialogClose>
               <Button
                 onClick={() => {
-                  updateProfileMutation.mutate();
+                  if (
+                    teamSize.data &&
+                    (teamSize.data?.teamsize < MIN_SIZE ||
+                      teamSize.data?.teamsize > MAX_SIZE)
+                  ) {
+                    toast.warning("Team requirements not met");
+                  } else {
+                    updateProfileMutation.mutate();
+                  }
                 }}
               >
                 Yes
