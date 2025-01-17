@@ -11,21 +11,22 @@ type GLTFResult = GLTF & {
 };
 
 export function Model(props: JSX.IntrinsicElements["group"]) {
-  const { nodes, materials } = useGLTF("/3D/trident.glb") as GLTFResult;
+  const { nodes, materials } = useGLTF("/3D/tridentq.glb") as GLTFResult;
 
   return (
     <group {...props} dispose={null}>
-      <ambientLight intensity={1} color="#ffffff" />
       <mesh
-        castShadow
-        receiveShadow
-        geometry={nodes.mesh_0.geometry}
-        material={nodes.mesh_0.material}
-        scale={[50, 50, 50]}
-        rotation={[0, -Math.PI / 2, 0]}
+        // castShadow
+        // receiveShadow
+        //@ts-ignore
+        geometry={nodes.Object_4.geometry}
+        material={materials["Material.001"]}
+        rotation={[0, Math.PI / 2, -Math.PI / 2]}
+        scale={[4, 6, 6]}
+        position={[0, 28, 0]}
       />
     </group>
   );
 }
 
-useGLTF.preload("/3D/trident.glb");
+useGLTF.preload("/3D/tridentq.glb");

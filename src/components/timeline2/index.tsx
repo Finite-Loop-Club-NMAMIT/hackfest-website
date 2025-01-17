@@ -2,10 +2,28 @@ import { Canvas, useThree } from "@react-three/fiber";
 import React, { Suspense, useEffect, useRef } from "react";
 import { ScrollControls } from "@react-three/drei";
 import Scene from "./scene";
-import * as THREE from "three";
+// import * as THREE from "three";
 
 const Timeline2: React.FC = () => {
   const ref = useRef<HTMLDivElement | null>(null);
+
+  const scrollToPreviousElement = () => {
+    if (ref.current) {
+      const previousElement = ref.current.previousElementSibling;
+
+      if (previousElement)
+        previousElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const scrollToNextElement = () => {
+    if (ref.current) {
+      const nextElement = ref.current.nextElementSibling;
+
+      if (nextElement)
+        nextElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -27,7 +45,21 @@ const Timeline2: React.FC = () => {
   return (
     <div className="relative" ref={ref}>
       {/* Wrapper for the entire section */}
-      <div className="sticky top-0 h-screen bg-gradient-to-b from-[#392f5f] to-blue-700 pt-5">
+      <div className="sticky top-0 h-screen bg-gradient-to-b from-[#392f5f] to-blue-700 pt-5 ">
+        {/* Higher than Canvas z-index */}
+        <button
+          onClick={scrollToPreviousElement}
+          className="absolute bottom-1/2 right-4 z-[51] mb-1 cursor-pointer rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm transition-colors hover:bg-gray-500/40"
+        >
+          ↑
+        </button>
+        <button
+          onClick={scrollToNextElement}
+          className="absolute right-4 top-1/2 z-[51]  cursor-pointer rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm transition-colors hover:bg-gray-500/40"
+        >
+          ↓
+        </button>
+
         {/* Container for the Canvas */}
         <div className="relative h-full w-full">
           <Canvas
@@ -51,9 +83,6 @@ const Timeline2: React.FC = () => {
           </Canvas>
         </div>
       </div>
-
-      {/* Scroll space for animation */}
-      <div className="h-[300vh]" />
     </div>
   );
 };

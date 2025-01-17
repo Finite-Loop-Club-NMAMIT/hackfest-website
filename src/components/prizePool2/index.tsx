@@ -14,10 +14,12 @@ type Props = {
 };
 
 const clouds = 4;
+
 export default function PrizePool2() {
   return (
     <div className="flex h-[150vh] min-h-screen w-full items-center justify-center">
       <Canvas camera={{ position: [0, 2, 10] }}>
+        {/* <spotLight position={[0, 10, 0]} intensity={2000} color={"green"} /> */}
         <ambientLight intensity={2} position={[0, 1, 5]} />
         <Suspense fallback={null}>
           <Model
@@ -42,7 +44,7 @@ export default function PrizePool2() {
             amount={"₹30k"}
           />
           <Clouds material={THREE.MeshBasicMaterial} frustumCulled={false}>
-            <Float speed={2} floatIntensity={3} rotationIntensity={0}>
+            <Float speed={3} floatIntensity={3} rotationIntensity={0}>
               {[...Array(4)].map((_, ring) => {
                 const ringRadius = (ring + 0.5) * 2;
                 const cloudsInRing = ring === 0 ? 1 : clouds * (ring + 1);
@@ -50,8 +52,8 @@ export default function PrizePool2() {
                 return [...Array(cloudsInRing)].map((_, index) => {
                   const angle = (index / cloudsInRing) * Math.PI * 2;
                   const x = Math.cos(angle) * ringRadius;
-                  const y = -4;
-                  const z = Math.sin(angle) * ringRadius - 6;
+                  const y = -3;
+                  const z = Math.sin(angle) * ringRadius - 4;
 
                   return (
                     <Cloud
@@ -61,13 +63,53 @@ export default function PrizePool2() {
                       segments={1}
                       volume={3}
                       opacity={0.6}
-                      color="white"
+                      color={"white"}
                       fade={10}
                       rotation={[0, -angle, 0]}
                     />
                   );
                 });
               })}
+              <Cloud
+                position={[0, -4, 1]}
+                bounds={[4, 2, 2]}
+                segments={1}
+                volume={3}
+                opacity={0.4}
+                color="white"
+                fade={10}
+                rotation={[0, 0, 0]}
+              />
+              <Cloud
+                position={[0, -3, 2]}
+                bounds={[4, 2, 2]}
+                segments={1}
+                volume={3}
+                opacity={0.4}
+                color="white"
+                fade={10}
+                rotation={[0, 0, 0]}
+              />
+              <Cloud
+                position={[0, -3, 2]}
+                bounds={[4, 2, 2]}
+                segments={1}
+                volume={3}
+                opacity={0.4}
+                color="white"
+                fade={10}
+                rotation={[0, 0, 0]}
+              />
+              <Cloud
+                position={[-1, -3, 2]}
+                bounds={[4, 2, 2]}
+                segments={1}
+                volume={3}
+                opacity={0.4}
+                color="white"
+                fade={10}
+                rotation={[0, 0, 0]}
+              />
             </Float>
           </Clouds>
         </Suspense>
