@@ -1,8 +1,28 @@
 import { Canvas, useLoader } from "@react-three/fiber"
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { DRACOLoader, GLTFLoader } from "three-stdlib";
+import * as THREE from "three";
 
 export default function City() {
+  const [spotLights, setSpotLights] = useState([
+    { position: new THREE.Vector3(22, 0, -1), intensity: 220 },
+    { position: new THREE.Vector3(-22, 0, -1), intensity: 220 }
+  ])
+
+  useEffect(() => {
+    if (window.innerWidth <= 768) {
+      setSpotLights([
+        { position: new THREE.Vector3(10, 0, -1), intensity: 80 },
+        { position: new THREE.Vector3(-10, 0, -1), intensity: 80 }
+      ])
+    } else {
+      setSpotLights([
+        { position: new THREE.Vector3(22, 0, -1), intensity: 220 },
+        { position: new THREE.Vector3(-22, 0, -1), intensity: 220 }
+      ])
+    }
+  })
+
   return (
     <div className="absolute z-20 h-full w-full">
       <Canvas
@@ -12,16 +32,15 @@ export default function City() {
         }}
       >
         <ambientLight intensity={10} position={[0, -3, 5]} />
-        {/* <fog attach="fog" near={4} far={10} color={'#aaaaaa'} /> */}
         <spotLight
-          intensity={220}
-          position={[22, 0, -1]}
+          intensity={spotLights[0]?.intensity}
+          position={spotLights[0]?.position}
           castShadow={true}
           penumbra={0.6}
         />
         <spotLight
-          intensity={220}
-          position={[-22, 0, -1]}
+          intensity={spotLights[1]?.intensity}
+          position={spotLights[1]?.position}
           castShadow={true}
           penumbra={0.6}
         />
@@ -44,13 +63,16 @@ const Model = () => {
     })
 
     const [scale, setScale] = useState([2.5, 2.5, 2.5]);
+    const [tiles, setTiles] = useState(10);
 
     useEffect(() => {
 
         const handleResize = () => {
           if (window.innerWidth <= 768) {
+            setTiles(4);
             setScale([1.5, 1.5, 1.5]);
           } else {
+            setTiles(10);
             setScale([2.5, 2.5, 2.5]);
           }
         };
@@ -66,13 +88,13 @@ const Model = () => {
 
     const scenes = useMemo(() => {
       const scenes = [];
-      const gridSize = 10;
+      const gridSize = tiles;
   
       for (let z = -gridSize; z <= 0; z++) {
         const clonedScene = gltf.scene.clone(true);
         scenes.push({
           scene: clonedScene,
-          position: [0, -2, z*4.5]
+          position: [0, (window.innerWidth <= 768 ? -3 : -2), z*(window.innerWidth <= 768 ? 2.5 : 4.5)],
         });
       }
 

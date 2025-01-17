@@ -12,6 +12,7 @@ export const ZeusBackground: React.FC = () => {
 
   useEffect(() => {
     if (typeof window === "undefined" || !containerRef.current) return;
+    const width = window.innerWidth <= 768;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
@@ -73,7 +74,7 @@ export const ZeusBackground: React.FC = () => {
           emissiveIntensity: 0.1,
         });
 
-        for (let p = 0; p < 60; p++) {
+        for (let p = 0; p < (width ? 20 : 60); p++) {
           const cloud = new THREE.Mesh(cloudGeo, cloudMaterial);
 
           cloud.position.set(
@@ -98,14 +99,14 @@ export const ZeusBackground: React.FC = () => {
       (error) => console.error("Error loading cloud texture:", error),
     );
 
-    const createLightningBolt = (length?: number, opacity?: number) => {
+    const createLightningBolt = () => {
       const points = [];
-      let x = Math.random() * 50 - 25;
+      let x = Math.random() * (width ? 125 : 50) - (width ? 12.5 : 25);
       let y = Math.random() * 5 + 5;
       let z = Math.random() * -2 - 8;
       points.push(new THREE.Vector3(x, y, z));
 
-      for (let i = 0; i < (length ?? 30); i++) {
+      for (let i = 0; i < (width ? 20 : 30); i++) {
         x += Math.random() * 0.4 - 0.2;
         y -= Math.random() * 0.6;
         z += Math.random() * 0.4 - 0.2;
@@ -115,7 +116,7 @@ export const ZeusBackground: React.FC = () => {
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const material = new THREE.LineBasicMaterial({
         color: 0xb5eef9,
-        opacity: opacity ?? 0.7,
+        opacity: 0.7,
         transparent: true,
       });
 
@@ -142,7 +143,7 @@ export const ZeusBackground: React.FC = () => {
 
       requestAnimationFrame(fadeOut);
 
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < (width ? 1 : 2); i++) {
         const bolt = createLightningBolt().line;
         if (bolt) {
           boltsRef.current.push(bolt);
