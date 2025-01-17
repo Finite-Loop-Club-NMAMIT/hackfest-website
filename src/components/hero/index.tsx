@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 // import ZeusBust from "./zeusBust";
 
 const ZeusBust = dynamic(() => import("./zeusBust"), { ssr: false });
+const City = dynamic(() => import("./city"), { ssr: false });
 
 const Hero: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const Hero: React.FC = () => {
       <ZeusBackground />
       <DustOverlay />
       <ZeusBust />
+      <City />
 
       <div className="absolute bottom-9 z-50 flex flex-col ">
         <GlowingHackfest />
