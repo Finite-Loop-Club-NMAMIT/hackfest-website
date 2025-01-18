@@ -24,9 +24,9 @@ export default function TridentSpinner({ className, message = "is fetching your 
   return (
     <RootLayout>
       <div className="h-full min-h-screen w-full bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328] flex justify-center items-center">
-        <div className={cn("bg-black/50 max-w-7xl m-4 flex-col rounded-lg flex justify-center items-center min-h-96 w-full", className)}>
+        <div className={cn("bg-black/50 max-w-7xl m-4 flex-col sm:text-xl text-sm rounded-lg flex justify-center items-center min-h-96 w-full", className)}>
             <Image src="/images/thunderbolt.png" width={100} height={100} alt="loading" ref={image} />
-            <p className="mt-6"><span className="font-bold text-xl">Iris</span> {message}</p>
+            <p className="mt-6"><span className="font-bold">Iris</span>{" "}{message}</p>
         </div>
       </div>
     </RootLayout>

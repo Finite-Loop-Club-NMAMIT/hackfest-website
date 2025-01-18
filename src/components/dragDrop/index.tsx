@@ -13,6 +13,7 @@ export default function DragAndDropFile({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   return (
     <>
@@ -28,9 +29,8 @@ export default function DragAndDropFile({
             const file = e.dataTransfer.files[0];
             if (file && onChange) {
               onChange(file);
-              if (file.type.startsWith("image/")) {
-                setFileUrl(URL.createObjectURL(file));
-              }
+              setFile(file);
+              setFileUrl(URL.createObjectURL(file));
             }
           }
         }}
@@ -41,24 +41,37 @@ export default function DragAndDropFile({
         }}
       >
         {fileUrl ? (
-          <Image height={100} width={100} src={fileUrl} alt="Preview" className="m-4 max-h-xl" />
+          <div className="my-auto flex h-full w-full flex-col">
+            <div className="flex basis-[90%] items-center justify-center">
+              <Image
+                height={100}
+                width={100}
+                src={fileUrl}
+                alt="Preview"
+                className="max-h-xl mx-auto"
+              />
+            </div>
+            {file !== null ? (
+              <p className="mx-auto text-center">
+                <span className="font-semibold">{text}</span>: {file.name}
+              </p>
+            ) : (
+              <p className="mx-auto">
+                <span className="font-semibold">{text}</span>: file
+              </p>
+            )}
+          </div>
         ) : (
           <>
             {accept === "image/*" && <RiImageAddLine className="m-4 size-12" />}
-            {/* <p
+            <p
               className="text-center"
               dangerouslySetInnerHTML={{
-                __html: text ?? "Drag and drop your files here",
+                __html: `Drag and drop your ${text ?? "files"} here`,
               }}
-            /> */}
+            />
           </>
         )}
-        <p
-          className="text-center"
-          dangerouslySetInnerHTML={{
-            __html: text ?? "Drag and drop your files here",
-          }}
-        />
       </div>
       <input
         type="file"
@@ -69,9 +82,8 @@ export default function DragAndDropFile({
           const file = e.target.files?.[0];
           if (file && onChange) {
             onChange(file);
-            if (file.type.startsWith("image/")) {
-              setFileUrl(URL.createObjectURL(file));
-            }
+            setFile(file);
+            setFileUrl(URL.createObjectURL(file));
           }
         }}
       />

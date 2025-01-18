@@ -14,6 +14,7 @@ import { GamefestRouter } from "./routers/gamefest";
 import { JudgeRouter } from "./routers/judges";
 import { criteraRouter } from "./routers/criteria";
 import { videoRouter } from "./routers/videoSubmission";
+import { appSettingsRouter } from "./routers/app";
 
 /**
  * This is the primary router for your server.
@@ -36,6 +37,7 @@ export const appRouter = createTRPCRouter({
   gamefest: GamefestRouter,
   judges: JudgeRouter,
   video: videoRouter,
+  appSettings: appSettingsRouter,
 });
 
 // export type definition of API

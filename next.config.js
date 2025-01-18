@@ -32,6 +32,14 @@ const config = {
         hostname:"img.freepik.com",
         // pathname:"/"
       },
+      {
+        protocol:"https",
+        hostname:"api.github.com",
+      },
+      {
+        protocol:"https",
+        hostname:"github.com",
+      }
     ],
   },
 

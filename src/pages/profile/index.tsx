@@ -4,7 +4,7 @@ import CreateTeam from "~/components/forms/createTeam";
 import ProfileCard from "~/components/profile";
 import NotLoggedIn from "~/components/notLoggedIn";
 import RootLayout from "~/components/layout";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon, LogOut } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "~/components/ui/button";
 import {
@@ -23,9 +23,7 @@ import { Session } from "next-auth";
 import { z } from "zod";
 import { inferRouterOutputs } from "@trpc/server";
 import { userRouter } from "~/server/api/routers/user";
-
-const defaultProfileImage =
-  "https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=900&t=st=1709875148~exp=1709875748~hmac=2f5b619c6bda073396a93cd48021b7013f5231bdfa745dcf976c260cca8c1b38";
+import ProfilePhoto from "~/components/profile/profilePhoto";
 
 export default function ProfilePage() {
   const { data, status } = useSession();
@@ -46,38 +44,22 @@ export default function ProfilePage() {
   } else {
     return (
       <RootLayout>
-        <div className="min-h-screen bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328]">
-          <div className="mx-auto flex w-full max-w-7xl flex-col justify-center">
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328]">
+          <div className="mx-auto flex w-full max-w-7xl flex-col justify-center py-40">
             {data?.user && (
-              <Card className="mx-4 bg-black/50 mt-44">
+              <Card className="bg-black/50">
                 <CardHeader>
-                  <CardTitle className="text-center my-4 text-3xl font-bold md:text-4xl">
+                  <CardTitle className="gradient-text my-4 text-center text-3xl font-bold md:text-4xl">
                     Your Profile
                   </CardTitle>
-                  <div
-                    className={`mx-auto w-fit ${data.user.isLeader ? "pt-10 p-7" : "p-6 pt-1"}`}
-                    style={{
-                      background: `url('/images/${data.user.isLeader ? "crown-gold" : "crown-green" }.svg')`,
-                      backgroundSize: "cover", 
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                    }}
-                  >
-                    <Image
-                      src={data.user.image ?? defaultProfileImage}
-                      className="rounded-full z-0"
-                      alt={`Profile image`}
-                      width={100}
-                      height={100}
-                    />
-                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                  <ProfilePhoto
+                    progress={data.user.profileProgress}
+                    isLeader={data.user.isLeader}
+                    image={data.user.image ?? "https://github.com/shadcn.png"}
+                  />
                   {user.data && <Content user={user.data} />}
-                  {/* {data.user.profileProgress === "FILL_DETAILS" && (
-                    <NotRegisterd name={data.user.name ?? "User"} />
-                  )}
-                  {data.user.profileProgress === "FORM_TEAM" && <ProfileCard />} */}
                 </CardContent>
               </Card>
             )}
@@ -88,7 +70,11 @@ export default function ProfilePage() {
   }
 }
 
-function Content({ user }: { user: inferRouterOutputs<typeof userRouter>["getUserDetails"] }) {
+function Content({
+  user,
+}: {
+  user: inferRouterOutputs<typeof userRouter>["getUserDetails"];
+}) {
   const router = useRouter();
 
   switch (user?.profileProgress) {
@@ -122,6 +108,9 @@ function Content({ user }: { user: inferRouterOutputs<typeof userRouter>["getUse
       );
 
     case "FORM_TEAM":
-      return <ProfileCard user={user}/>;
+    case "SUBMIT_IDEA":
+    case "PAYMENT":
+    case "COMPLETE":
+      return <ProfileCard user={user} />;
   }
 }

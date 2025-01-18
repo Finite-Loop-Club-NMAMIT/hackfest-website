@@ -49,6 +49,7 @@ import CreateCollegeForm from "../createCollege";
 import DragAndDropFile from "~/components/dragDrop";
 import { LuChevronsUpDown } from "react-icons/lu";
 import { FaCheck, FaInfoCircle } from "react-icons/fa";
+import { FaCircleCheck } from "react-icons/fa6";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
@@ -89,6 +90,7 @@ export default function RegisterProfileForm() {
   const [submitting, setSubmitting] = useState(false);
   const [registerd, setRegisterd] = useState(false);
   const [redirectingIn, setRedirectingIn] = useState(5);
+  const [isGithubVerified, setGithubVerified] = useState(false);
 
   const form = useForm<z.infer<typeof updateProfileZ>>({
     resolver: zodResolver(updateProfileZ),
@@ -205,7 +207,10 @@ export default function RegisterProfileForm() {
   } else
     return (
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="relative mt-4 min-h-[32rem] sm:min-h-[28rem]"
+        >
           <div className="flex w-full flex-row justify-center">
             <div
               className={cn(
@@ -230,7 +235,10 @@ export default function RegisterProfileForm() {
             ></div>
           </div>
 
-          <div id="tab-1" className="flex h-full w-full flex-col gap-2">
+          <div
+            id="tab-1"
+            className="flex h-full min-h-72 w-full flex-col gap-4"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -271,9 +279,48 @@ export default function RegisterProfileForm() {
                 <FormItem>
                   <FormLabel htmlFor="github">Github</FormLabel>
                   <FormControl>
-                    <Input placeholder="username" {...field} />
+                    <div className="flex flex-row gap-2">
+                      <Input placeholder="Username only" {...field} />
+                      {isGithubVerified ? (
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toast.info("Github username already verified");
+                            e.stopPropagation();
+                          }}
+                          variant={"outline"}
+                          className="border-green-500 bg-green-500/40"
+                        >
+                          <FaCircleCheck className="size-5" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="secondary"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            toast.loading("Verifying Github identity", {
+                              id: "github",
+                            });
+
+                            const response = await fetch(
+                              `https://api.github.com/users/${form.getValues("github")}`,
+                            );
+                            if (response.status === 404) {
+                              toast.error("Github usename not found");
+                            } else if (response.status === 200) {
+                              toast.success("Github username verified");
+                              setGithubVerified(true);
+                            }
+
+                            toast.dismiss("github");
+                          }}
+                        >
+                          Verify
+                        </Button>
+                      )}
+                    </div>
                   </FormControl>
-                  <FormDescription>Enter user username only</FormDescription>
+                  {/* <FormDescription>Enter user username only</FormDescription> */}
                   <FormMessage />
                 </FormItem>
               )}
@@ -331,7 +378,7 @@ export default function RegisterProfileForm() {
                           </CommandEmpty>
                           <CommandList>
                             <CommandGroup className="max-h-56 overflow-auto">
-                              {colleges.data?.map((college) => {
+                              {colleges.data?.map((college, idx) => {
                                 return (
                                   <>
                                     <CommandItem
@@ -430,7 +477,7 @@ export default function RegisterProfileForm() {
                 control={form.control}
                 name="tshirtSize"
                 render={({}) => (
-                  <FormItem>
+                  <FormItem className="mt-2 flex flex-col md:mt-0">
                     <FormLabel htmlFor="name">T-Shirt size</FormLabel>
                     <ToggleGroup
                       type="single"
@@ -468,7 +515,7 @@ export default function RegisterProfileForm() {
                     college: "",
                     course: undefined,
                     tshirtSize: undefined,
-                    github: "",
+                    github: isGithubVerified ? form.getValues().github : "",
                   });
                 }}
               >
@@ -476,7 +523,8 @@ export default function RegisterProfileForm() {
               </Button>
 
               <Button
-                variant="secondary"
+                disabled={!isGithubVerified}
+                variant="default"
                 onClick={async (e) => {
                   e.preventDefault();
 
@@ -505,18 +553,24 @@ export default function RegisterProfileForm() {
 
                   setTab(1);
                   gsap.to("#tab-1", {
-                    x: "-100%",
+                    x: "-2rem",
                     opacity: 0,
                     classList: "hidden",
                     duration: 0.5,
                   });
                   gsap.fromTo(
                     "#tab-2",
-                    { x: "100%", opacity: 0 },
                     {
-                      x: "0%",
+                      x: "2rem",
+                      opacity: 0,
+                      height: "18rem",
+                      classList: "hidden opacity-0",
+                    },
+                    {
+                      x: "0rem",
                       opacity: 1,
-                      classList: "block",
+                      height: "18rem",
+                      classList: "absolute w-full",
                       duration: 0.5,
                     },
                   );
@@ -528,37 +582,38 @@ export default function RegisterProfileForm() {
             </div>
           </div>
 
-          <div id="tab-2" className="hidden">
-            <div className="mt-6 grid h-full min-h-36 grid-cols-1 gap-4 md:grid-cols-2">
+          <div id="tab-2" className="absolute opacity-0">
+            <div className="mt-6 flex h-[22rem] w-full flex-col gap-4 sm:h-[18rem] md:flex-row">
               <DragAndDropFile
                 accept="image/*"
                 onChange={setAadhaar}
-                text="Drop your Aadhaar here"
+                text="Aadhaar"
               />
               <DragAndDropFile
                 accept="image/*"
                 onChange={setCollegeId}
-                text="Drop your College id photo here"
+                text="College ID"
               />
             </div>
             <div className="mt-6 flex w-full flex-nowrap items-center justify-center gap-2 text-white/50">
-              <FaInfoCircle /> Drop image of size less than 2MB.
+              <FaInfoCircle /> Drop image(jpg, png, jpeg) of size less than 2MB.
             </div>
 
             <div className="flex flex-row flex-nowrap justify-evenly pt-6">
               <Button
+                disabled={submitting}
                 variant="secondary"
                 onClick={(e) => {
                   e.preventDefault();
                   setTab(0);
                   gsap.to("#tab-1", {
-                    x: "0%",
+                    x: "0rem",
                     opacity: 1,
                     classList: "block",
                     duration: 0.5,
                   });
                   gsap.to("#tab-2", {
-                    x: "100%",
+                    x: "2rem",
                     opacity: 0,
                     classList: "hidden",
                     duration: 0.5,

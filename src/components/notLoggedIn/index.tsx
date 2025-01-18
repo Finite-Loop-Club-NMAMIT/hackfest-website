@@ -23,7 +23,7 @@ const NotLoggedIn = () => {
                     width={180}
                     height={180}
                   />
-                  <div className="absolute left-1/2 top-1/2 -z-10 h-full w-full -translate-x-1/2 -translate-y-1/2 transform bg-gradient-radial from-yellow-300/50 via-transparent to-transparent blur-xl transition-all duration-300 group-hover:brightness-125" />
+                  <div className="absolute left-1/2 top-1/2 -z-10 h-full w-full -translate-x-1/2 -translate-y-1/2 transform bg-gradient-radial from-blue-500/50 via-transparent to-transparent blur-xl transition-all duration-300 group-hover:brightness-125" />
                 </div>
                 <div className="text-4xl lg:text-7xl flex items-center justify-center flex-nowrap">
                   <h1 className="bg-opacity-50 bg-gradient-to-b from-neutral-50 to-neutral-400 bg-clip-text text-center text-4xl font-black text-transparent lg:text-7xl">
@@ -32,7 +32,7 @@ const NotLoggedIn = () => {
                   👋🏻
                 </div>
                 <p className="text-md mb-5 mt-4 text-gray-300">
-                  Please sign in to regiter for{" "}
+                  Please sign in to register for{" "}
                   <span className="font-bold">Hackfest</span>. Happy Coding.
                 </p>
                 <SignInButton />
@@ -42,16 +42,6 @@ const NotLoggedIn = () => {
         ) : (
           <div className="z-10 flex w-full flex-col items-center justify-center rounded-xl border border-white/20 bg-black/50 px-5 py-10">
             <div className="flex flex-col justify-center text-center">
-              {/* <div className="relative">
-                <Image
-                  src="/images/zeus-svg.svg"
-                  height={200}
-                  width={200}
-                  className="left-[8rem] z-10 mx-auto mb-4 h-auto w-32 opacity-50 md:w-52"
-                  alt="zues backdrop"
-                />
-                <div className="absolute left-1/2 top-1/3 -z-10 h-full w-full -translate-x-1/2 -translate-y-1/2 transform bg-gradient-radial from-sky-800/70 via-transparent to-transparent blur-xl transition-all duration-1000 group-hover:brightness-125 animate-pulse" />
-              </div> */}
               <h1 className="bg-gradient-to-b from-neutral-50 to-neutral-400 bg-clip-text text-5xl font-black text-transparent md:text-7xl">
                 Oops!
               </h1>
