@@ -1,32 +1,20 @@
-import type * as THREE from "three";
-import React from "react";
-import { useGLTF } from "@react-three/drei";
-import { type GLTF } from "three-stdlib";
-
-type GLTFResult = GLTF & {
-  nodes: {
-    mesh_0: THREE.Mesh;
-  };
-  materials: Record<string, never>;
-};
+import { useMemo } from "react";
+import { useLoader } from "@react-three/fiber";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export function Model(props: JSX.IntrinsicElements["group"]) {
-  const { nodes, materials } = useGLTF("/3D/tridentq.glb") as GLTFResult;
+  const gltf = useLoader(GLTFLoader, "/3D/trident.glb", (loader) => {
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(
+      "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
+    );
+    loader.setDRACOLoader(dracoLoader);
+  });
 
-  return (
-    <group {...props} dispose={null}>
-      <mesh
-        // castShadow
-        // receiveShadow
-        //@ts-ignore
-        geometry={nodes.Object_4.geometry}
-        material={materials["Material.001"]}
-        rotation={[0, Math.PI / 2, -Math.PI / 2]}
-        scale={[4, 6, 6]}
-        position={[0, 28, 0]}
-      />
-    </group>
-  );
+  const scene = useMemo(() => {
+    return gltf.scene.clone();
+  }, [gltf]);
+
+  return <primitive {...props} dispose={null} object={scene} />;
 }
-
-useGLTF.preload("/3D/tridentq.glb");

@@ -1,17 +1,4 @@
-import {
-  Box,
-  Cloud,
-  Clouds,
-  Environment,
-  Line,
-  OrbitControls,
-  PerspectiveCamera,
-  Plane,
-  RoundedBox,
-  Stars,
-  useScroll,
-} from "@react-three/drei";
-
+import { PerspectiveCamera, Stars, useScroll } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Model } from "./model";
@@ -122,7 +109,11 @@ export default function Scene() {
         speed={1}
       />
 
-      <Model scale={[0.19, 0.3, 0.2]} position={[0, -12.5, 0]} />
+      <Model
+        scale={[11, 11, 11]}
+        position={[0, 0, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+      />
 
       {linePoints.length > 1 && <EventObjects linePoints={linePoints} />}
 
@@ -136,7 +127,7 @@ export default function Scene() {
 
       <directionalLight position={[-8, 0, 0]} intensity={0.5} color={"white"} />
       <ambientLight intensity={1} color="#ffffff" />
-      <pointLight position={[0, 0, 0]} intensity={1} castShadow />
+      <pointLight position={[0, 0, 0]} intensity={1} />
     </>
   );
 }
