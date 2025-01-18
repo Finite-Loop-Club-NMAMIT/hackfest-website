@@ -83,7 +83,7 @@ export const events = [
   },
   {
     day: 3,
-    title: "Top 15\nFinal\nPitch",
+    title: "Top 15\nFinal Pitch",
     time: "From 9:30AM",
   },
   {
