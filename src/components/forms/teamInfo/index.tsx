@@ -1,10 +1,10 @@
-import TeamInfo from "./teamInfo";
 import { type Progress } from "@prisma/client";
 import { Loader2Icon } from "lucide-react";
 import { useContext } from "react";
 import { ProgressContext } from "~/components/progressProvider";
 import { Card } from "~/components/ui/card";
 import { api } from "~/utils/api";
+import TeamInfo from "./teamInfo";
 
 export default function TeamDetails({
   teamid,

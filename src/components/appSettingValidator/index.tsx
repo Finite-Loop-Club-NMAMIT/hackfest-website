@@ -12,20 +12,32 @@ const AppSettingValidator = React.forwardRef<
 
   if (!open) {
     return (
-      <div className="w-screen flex h-screen items-center justify-center">
-        <div className="h-fit w-full max-w-[70rem] rounded-xl bg-black/50 p-10 text-center text-white mx-4">
-          <h1 className="bg-gradient-to-b from-red-300 via-red-800 to-red-500 bg-clip-text md:text-8xl text-5xl font-bold text-transparent">
+      <div className="flex h-screen w-screen items-center justify-center">
+        <div className="mx-4 h-fit w-full max-w-[70rem] rounded-xl bg-black/50 p-10 text-center text-white">
+          <h1 className="bg-gradient-to-b from-red-300 via-red-800 to-red-500 bg-clip-text text-5xl font-bold text-transparent md:text-8xl">
             Too Late!
           </h1>
           <p className="mt-8 md:text-xl">
-            Sorry <span className="font-semibold">{data?.user.name ?? "Tech Enthusiast"}</span>. {text}
+            Sorry{" "}
+            <span className="font-semibold">
+              {data?.user.name ?? "Tech Enthusiast"}
+            </span>
+            . {text}
           </p>
-          <Button className="mt-8" variant="outline" onClick={() => {void router.push("/")}}>Home</Button>
+          <Button
+            className="mt-8"
+            variant="outline"
+            onClick={() => {
+              void router.push("/");
+            }}
+          >
+            Home
+          </Button>
         </div>
       </div>
     );
   } else {
-    return <div className="w-full h-full" ref={ref} {...props} />;
+    return <div className="h-full w-full" ref={ref} {...props} />;
   }
 });
 

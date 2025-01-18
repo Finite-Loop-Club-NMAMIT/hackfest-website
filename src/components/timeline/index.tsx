@@ -1,139 +1,89 @@
-import { useRef, useState, useEffect } from "react";
-import { gsap } from "gsap";
-import Image from "next/image";
-import Link from "next/link";
+import { Canvas } from "@react-three/fiber";
+import React, { Suspense, useEffect, useRef } from "react";
+import { ScrollControls } from "@react-three/drei";
+import Scene from "./scene";
 
-type Event = {
-  day: number;
-  title: string;
-  time: string;
-};
+const Timeline: React.FC = () => {
+  const ref = useRef<HTMLDivElement | null>(null);
 
-const Timeline = ({ events }: { events: Event[] }) => {
-  const [selectedDay, setSelectedDay] = useState(1);
+  const scrollToPreviousElement = () => {
+    if (ref.current) {
+      const previousElement = ref.current.previousElementSibling;
+
+      if (previousElement)
+        previousElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const scrollToNextElement = () => {
+    if (ref.current) {
+      const nextElement = ref.current.nextElementSibling;
+
+      if (nextElement)
+        nextElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   useEffect(() => {
-    gsap
-      .timeline({
-        scrollTrigger: {
-          trigger: "#timeline",
-          scrub: 0.2,
-          start: "top top",
-          end: "+=10000",
-        },
-      })
-      .to("#disc", {
-        rotation: -360 * 7,
-        duration: 2,
-        ease: "none",
-      });
-  }, [selectedDay]);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && ref.current) {
+          ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      },
+      { threshold: 0.0001 },
+    );
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
 
-  const ref = useRef(null);
-
-  const divisions = selectedDay === 1 ? 16 : 14;
-  ``;
-
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
   return (
-    <>
-      {/* Main div which spans entire scroll area for the animation */}
-      <div
-        className="pointer-events-none h-[200vh]"
-        id="timeline"
-        ref={ref}
-        style={{ zIndex: 2, scrollBehavior: "smooth" }}
-      >
-        {/* Div which is sticky and spans the height of the viewport */}
-        <div className="sticky top-0 flex h-screen overflow-x-clip">
-          {/* Wheel container */}
-          <div className="absolute right-full top-1/2 flex h-[150vw] max-h-[80rem] min-h-[36rem] w-[150vw] min-w-[36rem] max-w-7xl -translate-y-1/2 translate-x-1/2 items-center justify-center overflow-hidden">
-            {/* Wheel */}
-            <div
-              className="relative h-full  w-full origin-center rounded-full"
-              id="disc"
-            >
-              <Image
-                src={"/images/realVinyl.png"}
-                fill
-                alt="CD"
-                className="object-cover object-center"
-              />
-              {/* Event */}
-              {events.map((event, index) => {
-                if (event.day === selectedDay)
-                  return (
-                    <Event
-                      key={index}
-                      event={event}
-                      position={{ angle: (4 * Math.PI) / divisions, index }}
-                    />
-                  );
-              })}
-            </div>
-          </div>
+    <div className="relative" ref={ref}>
+      {/* Wrapper for the entire section */}
+      <div className="sticky top-0 h-screen bg-gradient-to-b from-[#392f5f] to-blue-700 pt-5 ">
+        {/* Higher than Canvas z-index */}
+        <button
+          onClick={scrollToPreviousElement}
+          className="absolute bottom-1/2 right-4 z-[51] mb-1 cursor-pointer rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm transition-colors hover:bg-gray-500/40"
+        >
+          ↑
+        </button>
+        <button
+          onClick={scrollToNextElement}
+          className="absolute right-4 top-1/2 z-[51]  cursor-pointer rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm transition-colors hover:bg-gray-500/40"
+        >
+          ↓
+        </button>
 
-          <div className="absolute left-full top-1/2 flex h-[150vw] max-h-[80rem] min-h-[36rem] w-[150vw] min-w-[36rem] max-w-7xl  -translate-x-[59%] -translate-y-1/2 items-center justify-center overflow-hidden md:-translate-x-[63%] lg:-translate-x-[75%] xl:-translate-x-[85%] 2xl:-translate-x-[90%]">
-            {/* Wheel */}
-            <div className="flex flex-col items-center justify-center gap-5">
-              <h1 className="hidden font-obscura text-7xl lg:block lg:text-8xl">
-                Day{" "}
-                <span className="font-sans font-extrabold">{selectedDay}</span>
-              </h1>
-              <span className="flex flex-col gap-5 lg:flex-row ">
-                {[1, 2, 3].map((day) => {
-                  return (
-                    <Link href="/#timeline" key={day}>
-                      <button
-                        className={`pointer-events-auto relative flex h-32 w-32 items-center justify-center ${day === selectedDay ? "scale-125" : "hover:scale-110 "} duration-300`}
-                        // className="bg-gradient-to-br from-[#008080] via-black to-[#008080] backdrop-blur-xl border-2 border-[#008080] pointer-events-auto text-2xl rounded-xl w-16 h-16"
-                        onClick={() => setSelectedDay(day)}
-                      >
-                        <Image
-                          src="/images/realVinyl.png"
-                          alt="disc"
-                          width={100}
-                          height={100}
-                        />
-                        <span className=" absolute text-3xl font-bold text-black brightness-200">
-                          {day}
-                        </span>
-                      </button>
-                    </Link>
-                  );
-                })}
-              </span>
-            </div>
-          </div>
+        {/* Container for the Canvas */}
+        <div className="relative h-full w-full">
+          <Canvas
+            id="three-canvas-container"
+            className="three"
+            shadows
+            style={{
+              height: "100% !important",
+              width: "100% !important",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 50,
+            }}
+          >
+            <Suspense fallback={null}>
+              <ScrollControls pages={4} damping={0.3}>
+                <Scene />
+              </ScrollControls>
+            </Suspense>
+          </Canvas>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
 export default Timeline;
-
-const Event = ({
-  event,
-  position,
-}: {
-  event: Event;
-  position: { angle: number; index: number };
-}) => {
-  return (
-    <>
-      {/* Event title - in the direction Normal to the boundary of wheel */}
-      <div
-        className="absolute flex max-w-[20%] origin-center flex-col text-lg font-bold text-white md:text-3xl"
-        style={{
-          top: `${50 + 25 * Math.sin(position.index * position.angle)}%`,
-          left: `${50 + 25 * Math.cos(position.index * position.angle)}%`,
-          transform: `translate(-50%, -50%) rotate(${
-            position.angle * position.index
-          }rad)`,
-        }}
-      >
-        <span>{event.title}</span>
-        <span>{event.time}</span>
-      </div>
-    </>
-  );
-};

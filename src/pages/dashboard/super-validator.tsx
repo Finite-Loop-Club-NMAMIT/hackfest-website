@@ -1,15 +1,6 @@
-import DownloadDataButtons from "~/components/downloadData";
-import FaqAdmin from "~/components/faq/faqAdmin";
-import DashboardLayout from "~/components/layout/dashboardLayout";
 import TopTeams from "~/components/participantsTable/topTeams";
 import { api } from "~/utils/api";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../components/ui/tabs";
-import ReferralsAdmin from "~/components/organiserDashboard/referralsAdmin";
+import { Tabs, TabsContent } from "../../components/ui/tabs";
 import { Input } from "~/components/ui/input";
 import { useEffect, useState } from "react";
 import Spinner from "~/components/spinner";
@@ -27,7 +18,6 @@ import { useSession } from "next-auth/react";
 import NotFound from "../404";
 import JudgePanel from "~/components/organiserDashboard/judgePanel";
 import VolunteerPanel from "~/components/organiserDashboard/volunteerPanel";
-import { TeamProgress } from "@prisma/client";
 import {
   Sheet,
   SheetContent,
@@ -37,13 +27,11 @@ import {
   SheetTrigger,
 } from "~/components/ui/sheet";
 import { Label } from "@radix-ui/react-label";
-import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import  topTeams  from "~/components/participantsTable/topTeams";
+import DashboardLayout from "~/components/layout/dashboardLayout";
+
 export default function Organiser() {
   const res = api.superValidator.getTop100.useQuery();
   const users = api.user.getAllUsers.useQuery().data;
-  
 
   const allTeams = res.data;
   const [selectedTeams, setSelectedTeams] = useState(res.data);
@@ -94,13 +82,13 @@ export default function Organiser() {
 
       if (submissionQuery !== "ALL") {
         partiallyFiltered = partiallyFiltered?.filter(
-          (team) => !!team.ideaSubmission === (submissionQuery === "SUBMITTED"),
+          (team) => !!team.IdeaSubmission === (submissionQuery === "SUBMITTED"),
         );
       }
 
       if (trackQuery !== "ALL" && submissionQuery !== "NOT SUBMITTED") {
         partiallyFiltered = partiallyFiltered?.filter(
-          (team) => team.ideaSubmission?.track === trackQuery,
+          (team) => team.IdeaSubmission?.track === trackQuery,
         );
       }
 
@@ -113,18 +101,8 @@ export default function Organiser() {
     top60Query,
     submissionQuery,
     trackQuery,
+    allTeams,
   ]);
-
-  // const revalidateScores = api.team.revalidateScore.useMutation({
-  //   onSuccess: async () => {
-  //     toast.success("Scores revalidated successfully");
-  //     await res.refetch();
-  //   },
-  //   onError: () => {
-  //     toast.error("Error revalidating scores");
-  //   },
-  // });
-
 
   if (status === "loading")
     return (
@@ -135,11 +113,7 @@ export default function Organiser() {
       </DashboardLayout>
     );
 
-  if (
-    !data ||
-    !data.user ||
-    (data.user.role !== "ORGANISER" && data.user.role !== "ADMIN")
-  ) {
+  if (!data || !data.user || data.user.role !== "ADMIN") {
     return <NotFound />;
   }
 
@@ -148,23 +122,15 @@ export default function Organiser() {
       <Tabs defaultValue="teams" className="w-full">
         <TabsContent value="teams">
           <div className="w-full border-b">
-            <h1 className="py-10 text-center text-4xl font-bold">Super - Validator</h1>
+            <h1 className="py-10 text-center text-4xl font-bold">
+              Super - Validator
+            </h1>
           </div>
           <div className="m-auto overflow-x-scroll md:max-w-screen-xl">
             <h1 className="my-8 text-center text-2xl font-bold">
               Teams in top 100
             </h1>
             <div className="my-4 flex h-full w-full flex-col items-center justify-around gap-3 md:flex-row">
-              
-              {/* {data.user.role === "ADMIN" && (
-                <Button
-                  onClick={async () => {
-                    await revalidateScores.mutateAsync();
-                  }}
-                >
-                  Revalidate Scores
-                </Button>
-              )} */}
               <Sheet>
                 <SheetTrigger>
                   <Button>
@@ -352,25 +318,12 @@ export default function Organiser() {
               </Sheet>
             </div>
             {!res ? (
-                <Spinner size="large" />
+              <Spinner size="large" />
             ) : (
-                <TopTeams
-                    data={selectedTeams}
-                    dataRefecth={res.refetch}
-                />
+              <TopTeams data={selectedTeams} dataRefecth={res.refetch} />
             )}
           </div>
-          <div>
-            {/* <TeamsList
-              teams={res?.map((team) => {
-                return { id: team.id, teamName: team.name };
-              })}
-            /> */}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="referrals">
-          <ReferralsAdmin />
+          <div></div>
         </TabsContent>
 
         <TabsContent value="roles">

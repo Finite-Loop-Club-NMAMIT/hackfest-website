@@ -1,10 +1,4 @@
-import {
-  Category,
-  Courses,
-  JudgeType,
-  Tracks,
-  TshirtSize,
-} from "@prisma/client";
+import { Courses, JudgeType, Tracks, TshirtSize } from "@prisma/client";
 import { z } from "zod";
 
 const updateUserZ = z.object({
@@ -106,51 +100,6 @@ const getTeamDetailsByIdZ = z.object({
   teamId: z.string().min(1, { message: "Team ID cannot be empty" }),
 });
 
-const addFaqZ = z.object({
-  question: z
-    .string()
-    .min(1, { message: "Question cannot be empty" })
-    .max(100, { message: "Question cannot exceed 100 characters" }),
-  category: z.nativeEnum(Category, {
-    required_error: "Category is required",
-  }),
-});
-
-const answerFaqZ = z.object({
-  id: z.number(),
-  answer: z
-    .string()
-    .min(1, { message: "Answer cannot be empty" })
-    .max(100, { message: "Answer cannot exceed 100 characters" }),
-});
-
-const deleteFaqZ = z.object({
-  id: z.number(),
-});
-
-const addReferralCodeZ = z.object({
-  code: z.string(),
-  referrer: z
-    .string()
-    .min(1, { message: "Referrer cannot be empty" })
-    .max(50, { message: "Referrer cannot exceed 50 characters" }),
-  collegeId: z
-    .string({
-      required_error: "College ID is required",
-      invalid_type_error: "Something went wrong",
-    })
-    .min(1, { message: "College ID cannot be empty" }),
-  name: z
-    .string()
-    .min(1, { message: "Name cannot be empty" })
-    .max(50, { message: "Name cannot exceed 50 characters" }),
-  contact: z
-    .string()
-    .min(10, { message: "Enter valid email or phone number" })
-    .max(10, { message: "Enter valid email or phone number" })
-    .or(z.string().email({ message: "Enter valid email or phone number" })),
-});
-
 const addJudgeZ = z.object({
   userId: z.string(),
   type: z.nativeEnum(JudgeType),
@@ -158,7 +107,6 @@ const addJudgeZ = z.object({
     "FINTECH",
     "SUSTAINABLE_DEVELOPMENT",
     "HEALTHCARE",
-    "METAVERSE",
     "LOGISTICS",
     "OPEN_INNOVATION",
     "ALL",
@@ -192,10 +140,6 @@ export {
   joinTeamZ,
   createCollegeZ,
   getTeamDetailsByIdZ,
-  addFaqZ,
-  answerFaqZ,
-  deleteFaqZ,
-  addReferralCodeZ,
   addJudgeZ,
   finalSubmissionZ,
   resumeSubmissionZ,

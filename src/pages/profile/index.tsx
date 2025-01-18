@@ -1,28 +1,15 @@
 import { api } from "~/utils/api";
-import TeamDetails from "~/components/forms/teamInfo";
-import CreateTeam from "~/components/forms/createTeam";
 import ProfileCard from "~/components/profile";
 import NotLoggedIn from "~/components/notLoggedIn";
 import RootLayout from "~/components/layout";
-import { Loader2Icon, LogOut } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import TridentSpinner from "~/components/spinner/thunderSpinner";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
-import { Session } from "next-auth";
-import { z } from "zod";
-import { inferRouterOutputs } from "@trpc/server";
-import { userRouter } from "~/server/api/routers/user";
+import type { inferRouterOutputs } from "@trpc/server";
+import type { userRouter } from "~/server/api/routers/user";
 import ProfilePhoto from "~/components/profile/profilePhoto";
 
 export default function ProfilePage() {
@@ -109,7 +96,6 @@ function Content({
 
     case "FORM_TEAM":
     case "SUBMIT_IDEA":
-    case "PAYMENT":
     case "COMPLETE":
       return <ProfileCard user={user} />;
   }

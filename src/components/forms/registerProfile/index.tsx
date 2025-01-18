@@ -13,7 +13,6 @@ import { env } from "~/env";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -46,7 +45,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { toast } from "sonner";
 import CreateCollegeForm from "../createCollege";
-import DragAndDropFile from "~/components/dragDrop";
+import DragAndDropFile from "~/components/ui/dragDrop";
 import { LuChevronsUpDown } from "react-icons/lu";
 import { FaCheck, FaInfoCircle } from "react-icons/fa";
 import { FaCircleCheck } from "react-icons/fa6";
@@ -139,7 +138,7 @@ export default function RegisterProfileForm() {
     if (collegeIdUrl !== "") {
       form.setValue("collegeIdUrl", collegeIdUrl);
     }
-  }, [aadhaarUrl, collegeIdUrl]);
+  }, [aadhaarUrl, collegeIdUrl, form]);
 
   useEffect(() => {
     if (horizontalBar.current ?? registerd) {
@@ -378,34 +377,32 @@ export default function RegisterProfileForm() {
                           </CommandEmpty>
                           <CommandList>
                             <CommandGroup className="max-h-56 overflow-auto">
-                              {colleges.data?.map((college, idx) => {
+                              {colleges.data?.map((college) => {
                                 return (
-                                  <>
-                                    <CommandItem
-                                      key={college.id}
-                                      value={college.name}
-                                      onSelect={() => {
-                                        form.setValue("college", college.id);
-                                        setSelectedCollege(college.name);
-                                        setCollegePopoverOpen(false);
-                                      }}
-                                      className={cn(
-                                        "mt-1 flex flex-row flex-nowrap justify-between",
-                                        form.getValues().college === college.id
-                                          ? ""
-                                          : "",
-                                      )}
-                                    >
-                                      <p className="w-full text-wrap">
-                                        {college.name}
-                                      </p>
-                                      {selectedCollege === college.name ? (
-                                        <FaCheck className="ml-4 size-4" />
-                                      ) : (
-                                        <div className="ml-4 size-4"></div>
-                                      )}
-                                    </CommandItem>
-                                  </>
+                                  <CommandItem
+                                    key={college.id}
+                                    value={college.name}
+                                    onSelect={() => {
+                                      form.setValue("college", college.id);
+                                      setSelectedCollege(college.name);
+                                      setCollegePopoverOpen(false);
+                                    }}
+                                    className={cn(
+                                      "mt-1 flex flex-row flex-nowrap justify-between",
+                                      form.getValues().college === college.id
+                                        ? ""
+                                        : "",
+                                    )}
+                                  >
+                                    <p className="w-full text-wrap">
+                                      {college.name}
+                                    </p>
+                                    {selectedCollege === college.name ? (
+                                      <FaCheck className="ml-4 size-4" />
+                                    ) : (
+                                      <div className="ml-4 size-4"></div>
+                                    )}
+                                  </CommandItem>
                                 );
                               })}
                             </CommandGroup>

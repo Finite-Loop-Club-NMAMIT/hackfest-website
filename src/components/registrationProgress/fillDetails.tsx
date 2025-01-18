@@ -2,11 +2,9 @@ import React from "react";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Button } from "../ui/button";
 import RegisterProfileForm from "../forms/registerProfile";
 
 export default function FillDetails() {

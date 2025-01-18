@@ -23,7 +23,7 @@ export default function TeamList({
   const [leader, setLeader] = useState<Member | null>(null);
 
   useEffect(() => {
-    const members = teamDetails.data?.members;
+    const members = teamDetails.data?.Members;
     let temp;
 
     if (members && members.length > 0) {
@@ -41,8 +41,10 @@ export default function TeamList({
     return <div className="text-white/50">Fetching Details...</div>;
   } else if (leader) {
     return (
-      <div className="w-full flex justify-center flex-col items-center">
-      {showTeamName && <div className="font-bold text-2xl">{teamDetails.data?.name}</div>}
+      <div className="flex w-full flex-col items-center justify-center">
+        {showTeamName && (
+          <div className="text-2xl font-bold">{teamDetails.data?.name}</div>
+        )}
         <div className="mt-4 flex w-full max-w-md flex-col gap-1 bg-blue-500/10">
           <div className="flex w-full flex-row flex-nowrap items-center gap-4 rounded-md border-2 p-1 px-2">
             <Image
@@ -63,10 +65,13 @@ export default function TeamList({
               <FaGithub className="size-6" />
             </Link>
           </div>
-          {teamDetails.data?.members.map((member) => {
+          {teamDetails.data?.Members.map((member, idx) => {
             if (!member.isLeader) {
               return (
-                <div className="flex w-full flex-row flex-nowrap items-center gap-4 rounded-md border-2 p-1 px-2">
+                <div
+                  className="flex w-full flex-row flex-nowrap items-center gap-4 rounded-md border-2 p-1 px-2"
+                  key={idx}
+                >
                   <Image
                     className="size-10 rounded-full border-4 border-white"
                     src={member.image ?? "https://github.com/shadcn.png"}

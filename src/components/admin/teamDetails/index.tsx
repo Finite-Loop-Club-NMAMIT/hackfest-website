@@ -45,11 +45,6 @@ export default function TeamsList({
               <div className="flex">
                 <div className="border-r p-3">
                   <h2>Track: {teamDetails?.ideaSubmission?.track}</h2>
-
-                  <h2>
-                    Problem Statement:{" "}
-                    {teamDetails?.ideaSubmission?.problemStatement}
-                  </h2>
                   <a
                     className="m-2 rounded border p-2"
                     href={teamDetails?.ideaSubmission?.pptUrl.split(";")[1]}

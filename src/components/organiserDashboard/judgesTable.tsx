@@ -14,16 +14,7 @@ import { Button } from "../ui/button";
 import { toast } from "sonner";
 
 interface TableProps {
-  data:
-    | ({
-        User: User;
-      } & {
-        id: number;
-        userId: string;
-        track: Tracks;
-        type: JudgeType;
-      })[]
-    | undefined;
+  data: (Judges & { User: User })[] | null;
   refetch: () => void;
 }
 
@@ -55,7 +46,6 @@ const JudgesTable: FunctionComponent<TableProps> = ({ data, refetch }) => {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Track</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Delete</TableHead>
               </TableRow>
@@ -66,7 +56,7 @@ const JudgesTable: FunctionComponent<TableProps> = ({ data, refetch }) => {
                   <TableRow key={judge.id}>
                     <TableCell>{judge.User.name}</TableCell>
                     <TableCell>{judge.type}</TableCell>
-                    <TableCell>{judge.track}</TableCell>
+
                     <TableCell>
                       {judge.User.phone ?? judge.User.email}
                     </TableCell>

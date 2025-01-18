@@ -1,4 +1,4 @@
-import { useContext, useState, useTransition } from "react";
+import { useContext, useState } from "react";
 import { ProgressContext } from "../../progressProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import {
@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../ui/dialog";
+import { BsWhatsapp } from "react-icons/bs";
 import { Button } from "../../ui/button";
 import {
   Crown,
@@ -20,17 +21,11 @@ import {
 import Image from "next/image";
 import { Badge } from "../../ui/badge";
 import { toast } from "sonner";
-import { AiOutlineCopy } from "react-icons/ai";
-import { BsWhatsapp } from "react-icons/bs";
 import { type Progress } from "@prisma/client";
-import { useRouter } from "next/navigation";
 import { type inferRouterOutputs } from "@trpc/server";
 import { type teamRouter } from "~/server/api/routers/team";
 import { api } from "~/utils/api";
-import { env } from "~/env";
-import FinalSubmission from "~/components/finalSubmission";
-import ResumeGithubModal from "~/components/finalSubmission/resumeGithubModal";
-import AddVideoSubmission from "~/components/addVideoSubmission";
+import { AiOutlineCopy } from "react-icons/ai";
 
 export default function TeamInfo({
   teamdata,
@@ -67,11 +62,11 @@ export default function TeamInfo({
   });
 
   if (currentState !== 1) return <></>;
-  const leader = teamdata?.members?.find(
+  const leader = teamdata?.Members?.find(
     (member) => member.id === userId && member?.isLeader,
   );
 
-  const teamMembers = teamdata?.members ?? [];
+  const teamMembers = teamdata?.Members ?? [];
 
   teamMembers.sort((a, b) =>
     a.isLeader === b.isLeader ? 0 : a.isLeader ? -1 : 1,
@@ -94,25 +89,6 @@ export default function TeamInfo({
       position: "bottom-center",
     });
   };
-
-  function getLabNo(teamNo: number) {
-    if (teamNo >= 1 && teamNo <= 10) {
-      return "NC-44";
-    } else if (teamNo >= 11 && teamNo <= 19) {
-      return "NC-45";
-    } else if (teamNo >= 20 && teamNo <= 29) {
-      return "SMVL-54";
-    } else if (teamNo >= 30 && teamNo <= 39) {
-      return "SMVL-55";
-    } else if (teamNo >= 40 && teamNo <= 43) {
-      return "SMVL-53";
-    } else if (teamNo >= 44 && teamNo <= 60) {
-      return "ADL-04";
-    } else {
-      return "N/A";
-    }
-  }
-
   return (
     <Card className="h-fit w-full">
       <CardHeader>
@@ -124,12 +100,14 @@ export default function TeamInfo({
             <div className="m-auto my-4 flex flex-col justify-evenly p-0 pt-4 sm:my-auto md:p-4">
               <div className="flex flex-col items-center justify-between gap-3 lg:flex-row lg:gap-0">
                 <h1 className="flex items-center justify-center gap-5 text-center text-2xl font-bold uppercase">
-                {teamdata?.teamProgress === "SELECTED" && (
-                    <span className="border border-white rounded-full w-10 h-10 text-lg font-semibold flex justify-center items-center">{teamdata.teamNo ?? 0}</span>
+                  {teamdata?.teamProgress === "SELECTED" && (
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white text-lg font-semibold">
+                      {teamdata.teamNo ?? 0}
+                    </span>
                   )}
-                  {teamdata?.name ?? "Not Available"}  
+                  {teamdata?.name ?? "Not Available"}
                 </h1>
-                {/* <div
+                <div
                   onClick={copyCode}
                   className="flex cursor-pointer items-center justify-evenly gap-2 rounded-full border px-2 py-1 text-sm transition-colors duration-300 hover:border-white"
                 >
@@ -139,8 +117,8 @@ export default function TeamInfo({
                     size={20}
                     className="cursor-pointer hover:text-gray-400"
                   />
-                </div> */}
-                {/* <Button
+                </div>
+                <Button
                   onClick={(e) => {
                     toast.promise(() => onSubmit(e), {
                       position: "bottom-center",
@@ -174,49 +152,7 @@ export default function TeamInfo({
                   ) : (
                     <LogOut size={16} />
                   )}
-                </Button> */}
-                <div className="flex flex-row items-center justify-center gap-3">
-                  {userIsLeader && <AddVideoSubmission />}
-                  {/* {teamdata?.transactionId &&
-                    teamdata?.paymentStatus === "PAID" && (
-                      <Badge className="border border-green-500 bg-green-500/20 text-white">
-                        Paid
-                      </Badge>
-                    )} */}
-                  {/* {teamdata?.transactionId &&
-                    teamdata?.paymentStatus !== "PAID" && (
-                      <Badge className="border border-amber-500 bg-amber-500/20 text-white">
-                        Processing
-                      </Badge>
-                    )} */}
-                  {teamdata?.teamProgress === "SELECTED" &&
-                    teamdata?.teamNo && (
-                      <h3 className="text-xl font-bold">
-                        {getLabNo(teamdata.teamNo)}
-                      </h3>
-                    )}
-                  {teamdata?.teamProgress === "SELECTED" &&
-                    !teamdata?.transactionId &&
-                    userId === teamMembers[0]?.id && (
-                      <FinalSubmission
-                        refetchTeam={refetchTeam}
-                        teamId={teamdata?.id ?? ""}
-                        teamlength={teamdata?.members?.length ?? 0}
-                      />
-                    )}
-                  {teamdata?.teamProgress === "SELECTED" &&
-                    teamMembers.filter(
-                      (member) => !member.resume && !member.github,
-                    ).length !== 0 && (
-                      <>
-                        <ResumeGithubModal
-                          refetchTeam={refetchTeam}
-                          teamdata={teamdata}
-                          userId={userId}
-                        />
-                      </>
-                    )}
-                </div>
+                </Button>
               </div>
               <div className="w-full">
                 {teamMembers.map((member) => {
@@ -258,17 +194,17 @@ export default function TeamInfo({
             </div>
           </CardContent>
         </Card>
-        {/* <Card className="mb-2 w-full">
+        <Card className="mb-2 w-full">
           {teamdata && (
             <CardContent className="text-md flex flex-col items-center justify-between gap-3 pt-5 text-center sm:text-sm md:flex-row md:gap-0">
               {userProgress === "COMPLETE" ? (
                 "You have completed Idea Submission"
-              ) : 4 - teamdata.members.length === 0 ? (
+              ) : 4 - teamdata.Members.length === 0 ? (
                 <>Your Team is full! Proceed to Idea submission.</>
               ) : (
                 <>
-                  There&apos;s still room for {4 - teamdata.members.length} more
-                  teammate{4 - teamdata.members.length > 1 ? "s" : ""}!
+                  There&apos;s still room for {4 - teamdata.Members.length} more
+                  teammate{4 - teamdata.Members.length > 1 ? "s" : ""}!
                 </>
               )}
               <Dialog>
@@ -276,7 +212,7 @@ export default function TeamInfo({
                   <Button
                     size={"sm"}
                     disabled={
-                      4 - teamdata.members.length <= 0 ||
+                      4 - teamdata.Members.length <= 0 ||
                       userProgress === "COMPLETE"
                     }
                   >
@@ -286,13 +222,13 @@ export default function TeamInfo({
                 <DialogContent className="w-[90%] max-w-sm md:w-full">
                   <DialogHeader>
                     <DialogTitle>
-                      {4 - teamdata.members.length <= 0 ? (
+                      {4 - teamdata.Members.length <= 0 ? (
                         "Your Team is full!"
                       ) : (
                         <>
                           There&apos;s still room for{" "}
-                          {4 - teamdata.members.length} more teammate
-                          {4 - teamdata.members.length > 1 ? "s" : ""}!
+                          {4 - teamdata.Members.length} more teammate
+                          {4 - teamdata.Members.length > 1 ? "s" : ""}!
                         </>
                       )}
                     </DialogTitle>
@@ -326,7 +262,7 @@ export default function TeamInfo({
                         <a
                           target="_blank"
                           href={`https://wa.me/?text=${encodeURIComponent(
-                            `Join my team at Hackfest 2024, 3 Day long Hackathon at NMAMIT, Nitte. Copy this Team ID: ${teamdata?.id}. Register here: ${env.NEXT_PUBLIC_BASE_URL}/register`,
+                            `Join my team at Hackfest 2024, 3 Day long Hackathon at NMAMIT, Nitte. Copy this Team ID: ${teamdata?.id}. Register here: blah/register`,
                           )}`}
                           className="bodyFont flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-green-500 p-2 text-sm text-white hover:bg-green-600"
                         >
@@ -339,7 +275,7 @@ export default function TeamInfo({
               </Dialog>
             </CardContent>
           )}
-        </Card> */}
+        </Card>
       </CardContent>
     </Card>
   );

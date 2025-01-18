@@ -127,7 +127,7 @@ export default function RegisterTeamForm() {
           .then((response) => {
             setIsTeamNameUnique(response.message ? "available" : "inuse");
           })
-          .catch((error) => {
+          .catch((error: { message: string }) => {
             console.log(error.message);
           });
       }, 500);

@@ -1,12 +1,6 @@
-import type {
-  College,
-  Team,
-  User,
-  IdeaSubmission,
-  Referral,
-} from "@prisma/client";
+import type { College, Team, User, IdeaSubmission } from "@prisma/client";
 
-export type members = User & { college: College | null };
+export type members = User & { College: College | null };
 export type TeamsData = Team & {
-  members: members[];
-} & { ideaSubmission: IdeaSubmission | null } & { referral: Referral | null };
+  Members: members[];
+} & { IdeaSubmission: IdeaSubmission | null };

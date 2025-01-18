@@ -1,132 +1,105 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, validatorProcedure } from "~/server/api/trpc";
 
 export const validatorRouter = createTRPCRouter({
-  setScore: protectedProcedure
+  getValidatorCriteria: validatorProcedure.query(async ({ ctx }) => {
+    return await ctx.db.criteria.findFirst({
+      where: {
+        JudgeType: "VALIDATOR",
+      },
+    });
+  }),
+  setScore: validatorProcedure
     .input(
       z.object({
-        score: z.enum(["5", "10", "15"]),
+        score: z.number().min(1).max(10), //todo: set limits
         teamId: z.string(),
+        criteriaId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      try {
-        //Check if user is validator
+      await ctx.db.$transaction(async (db) => {
         const user = ctx.session.user;
-        const judge = await ctx.db.judges.findFirst({
+        const judge = await db.judges.findFirst({
           where: {
             userId: user.id,
           },
         });
-        if (!judge || judge?.type !== "VALIDATOR")
+        const criteria = await db.criteria.findUnique({
+          where: {
+            id: input.criteriaId,
+          },
+        });
+        if (!judge || !criteria || criteria.JudgeType !== "VALIDATOR")
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Not a validator!",
+            code: "NOT_FOUND",
+            message:
+              "Judge or criteria not found or criteria is not for super validator",
           });
 
-        const team = await ctx.db.team.findUnique({
+        const oldScoreForCriteria = await db.scores.findFirst({
+          where: {
+            Judge: {
+              userId: user.id,
+            },
+            criteriaId: input.criteriaId,
+            teamId: input.teamId,
+          },
+        });
+
+        if (!oldScoreForCriteria) {
+          if (input.score <= criteria.maxScore) {
+            await db.scores.create({
+              data: {
+                score: input.score,
+                criteriaId: input.criteriaId,
+                teamId: input.teamId,
+                judgeId: judge.id,
+              },
+            });
+            return await db.team.update({
+              where: {
+                id: input.teamId,
+              },
+              data: {
+                validatorScore: {
+                  increment: input.score,
+                },
+              },
+            });
+          } else {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Score exceeds maximum limit",
+            });
+          }
+        }
+
+        const diffScore = input.score - oldScoreForCriteria.score;
+        await db.scores.update({
+          where: {
+            teamId_criteriaId_judgeId: {
+              criteriaId: input.criteriaId,
+              teamId: input.teamId,
+              judgeId: judge.userId,
+            },
+          },
+          data: {
+            score: input.score,
+          },
+        });
+
+        return await db.team.update({
           where: {
             id: input.teamId,
           },
-          include: {
-            Scores: {
-              where: {
-                userId: user.id,
-              },
-              include: {
-                score: true,
-              },
+          data: {
+            validatorScore: {
+              increment: diffScore,
             },
           },
         });
-
-        // If team already has a score just update it
-        if (team && team?.Scores.length > 0 && team.Scores[0]?.score) {
-          const newTotalScore =
-            team.ValidatorTotalScore -
-            Number(team.Scores[0]?.score.score) +
-            Number(input.score);
-          await ctx.db.scoresByJudge.update({
-            where: {
-              teamId_userId_scoreId: {
-				scoreId: team.Scores[0]?.score.id,
-                teamId: input.teamId,
-                userId: user.id,
-              },
-            },
-            data: {
-              score: {
-                update: {
-                  score: input.score as string,
-                },
-              },
-            },
-          });
-          await ctx.db.team.update({
-            where: {
-              id: input.teamId,
-            },
-            data: {
-              ValidatorTotalScore: newTotalScore,
-            },
-          });
-        }
-        // If team is not yet given a score
-        else {
-          // Check if criteria exists
-          const validatorCriteria = await ctx.db.criteria.findFirst({
-            where: {
-              type: "VALIDATOR",
-            },
-          });
-          // if no criteria create one
-          // Update score for that team in validator criteria
-          await ctx.db.scoresByJudge.create({
-            data: {
-              userId: user.id,
-              Judges: {
-                connect: {
-                  userId: user.id,
-                  User: {
-                    id: user.id,
-                  },
-                },
-              },
-              Team: {
-                connect: {
-                  id: input.teamId,
-                },
-              },
-              score: {
-                create: {
-                  score: input.score as string,
-                  criteria: {
-                    connect: {
-                      id: validatorCriteria?.id,
-                    },
-                  },
-                },
-              },
-            },
-          });
-          await ctx.db.team.update({
-            where: {
-              id: input.teamId,
-            },
-            data: {
-              ValidatorTotalScore: { increment: Number(input.score) },
-            },
-          });
-        }
-      } catch (error) {
-        console.log(error);
-        if (error instanceof TRPCError && error.code === "BAD_REQUEST")
-          throw error;
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Something went wrong",
-        });
-      }
+      });
     }),
 });

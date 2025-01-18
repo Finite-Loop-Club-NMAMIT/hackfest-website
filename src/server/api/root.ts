@@ -2,19 +2,15 @@ import { userRouter } from "~/server/api/routers/user";
 import { createTRPCRouter } from "~/server/api/trpc";
 import { teamRouter } from "./routers/team";
 import { collegeRouter } from "./routers/college";
-import { ideaRouter } from "./routers/idea";
-import { FAQRouter } from "./routers/faq";
-import { referralRouter } from "./routers/referral";
 import { validatorRouter } from "./routers/validator";
 import { organiserRouter } from "./routers/organiser";
 import { superValidatorRouter } from "./routers/super-validator";
-import { finalSubmissionRoute } from "./routers/finalSubmission";
 import { githubRouter } from "./routers/github";
-import { GamefestRouter } from "./routers/gamefest";
 import { JudgeRouter } from "./routers/judges";
-import { criteraRouter } from "./routers/criteria";
 import { videoRouter } from "./routers/videoSubmission";
 import { appSettingsRouter } from "./routers/app";
+import { remarkRouter } from "./routers/remark";
+import { ideaRouter } from "./routers/idea";
 
 /**
  * This is the primary router for your server.
@@ -25,19 +21,15 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   team: teamRouter,
   college: collegeRouter,
-  criteria: criteraRouter,
-  idea: ideaRouter,
-  faq: FAQRouter,
-  referrals: referralRouter,
   validator: validatorRouter,
   organiser: organiserRouter,
   superValidator: superValidatorRouter,
-  finalSubmission: finalSubmissionRoute,
   github: githubRouter,
-  gamefest: GamefestRouter,
   judges: JudgeRouter,
   video: videoRouter,
   appSettings: appSettingsRouter,
+  remark: remarkRouter,
+  idea: ideaRouter,
 });
 
 // export type definition of API

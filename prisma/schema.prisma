@@ -42,32 +42,29 @@ model User {
   email           String?    @unique
   emailVerified   DateTime?
   phone           String?
-  state           String?
-  collegeId       String?
   image           String?    @default("https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=900&t=st=1709875148~exp=1709875748~hmac=2f5b619c6bda073396a93cd48021b7013f5231bdfa745dcf976c260cca8c1b38")
+  state           String?
   course          Courses?
-  college_id      String?
   isVerified      Boolean    @default(false)
-  teamId          String?
   isLeader        Boolean    @default(false)
-  role            Role       @default(PARTICIPANT)
-  destination     String?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  profileProgress Progress   @default(FILL_DETAILS)
-  aadhaar         String?
   tShirtSize      TshirtSize @default(S)
+  role            Role       @default(PARTICIPANT)
+  profileProgress Progress   @default(FILL_DETAILS)
   attended        Boolean    @default(false)
+  aadhaar         String?
+  college_id      String?
   resume          String?
+  github          String?
+  teamId          String?
+  collegeId       String?
   accounts        Account[]
   Judges          Judges?
   sessions        Session[]
-  college         College?   @relation(fields: [collegeId], references: [id])
-  team            Team?      @relation(fields: [teamId], references: [id])
-  github          String?
-  gameTeam        GameTeam?  @relation(fields: [gameTeamId], references: [id])
-  gameTeamId      String?
-  isGameLeader    Boolean    @default(false)
+  College         College?   @relation(fields: [collegeId], references: [id])
+  Team            Team?      @relation(fields: [teamId], references: [id])
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  Judge           Judge[]
 
   @@index([collegeId])
   @@index([teamId])
@@ -82,65 +79,98 @@ model VerificationToken {
 }
 
 model College {
-  id       String     @id @default(cuid())
-  name     String
-  state    States
-  Referral Referral[]
-  users    User[]
+  id    String @id @default(cuid())
+  name  String
+  state States
+  User  User[]
 }
 
 model Team {
   id                  String            @id @default(cuid())
-  teamNo              Int?              @default(0)
   name                String            @unique
+  teamNo              Int               @default(0)
+  teamProgress        TeamProgress      @default(NOT_SELECTED)
   isComplete          Boolean           @default(false)
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
   referralId          Int?
   paymentStatus       PaymentStatus     @default(PENDING)
-  JudgeTotalScore     Float             @default(0)
-  ValidatorTotalScore Int               @default(0)
-  teamProgress        TeamProgress      @default(NOT_SELECTED)
+  validatorScore      Int               @default(0)
+  superValidatorScore Int               @default(0)
+  judgeScore          Int               @default(0)
   attended            Boolean           @default(false)
-  ideaSubmission      IdeaSubmission?
-  Scores              ScoresByJudge[]
-  referral            Referral?         @relation(fields: [referralId], references: [id])
-  members             User[]
-  videoSubmission     VideoSubmissions?
+  IdeaSubmission      IdeaSubmission?
   github              Github?
   paymentProof        String?
   transactionId       String?
-  transportation      Boolean           @default(false)
-  Remarks             Remarks[]
-  FinalScores         FinalScores[]
-}
-
-model GameTeam {
-  id           String       @id @default(cuid())
-  name         String       @unique
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  teamProgress TeamProgress @default(NOT_SELECTED)
-  attended     Boolean      @default(false)
-  members      User[]
-  game         Game         @default(VALORANT)
-  isConfirmed  Boolean      @default(false)
+  Members             User[]
+  VideoSubmission     VideoSubmissions?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  Scores              Scores[]
+  Remark              Remark[]
 }
 
 model VideoSubmissions {
-  id     Int    @id @default(autoincrement())
+  id     String @id @default(cuid())
   teamId String @unique
   url    String
   Team   Team   @relation(fields: [teamId], references: [id])
 }
 
 model IdeaSubmission {
-  id               Int    @id @default(autoincrement())
-  teamId           String @unique
-  track            Tracks
-  problemStatement String
-  pptUrl           String
-  Team             Team   @relation(fields: [teamId], references: [id])
+  id     String @id @default(cuid())
+  teamId String @unique
+  track  Tracks
+  pptUrl String
+  Team   Team   @relation(fields: [teamId], references: [id])
+}
+
+model Judges {
+  id     String    @id @default(cuid())
+  userId String    @unique
+  type   JudgeType @default(VALIDATOR)
+  User   User      @relation(fields: [userId], references: [id])
+}
+
+model Github {
+  id             String   @id @default(cuid())
+  githubTeamId   Int
+  githubTeamSlug String
+  teamId         String   @unique
+  githubRepoName String[]
+  githubRepoId   Int[]
+  team           Team     @relation(fields: [teamId], references: [id])
+}
+
+model Judge {
+  id     String    @id @default(cuid())
+  userId String
+  type   JudgeType
+  User   User      @relation(fields: [userId], references: [id])
+  Scores Scores[]
+  Remark Remark[]
+}
+
+model Criteria {
+  id        String    @id @default(cuid())
+  criteria  String
+  maxScore  Int
+  JudgeType JudgeType @default(VALIDATOR)
+  Scores    Scores[]
+}
+
+model Scores {
+  id         Int      @id @default(autoincrement())
+  Criteria   Criteria @relation(fields: [criteriaId], references: [id])
+  Judge      Judge    @relation(fields: [judgeId], references: [id])
+  score      Int
+  Team       Team     @relation(fields: [teamId], references: [id])
+  criteriaId String
+  judgeId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  teamId     String
+
+  @@unique([teamId, criteriaId, judgeId])
 }
 
 model AppSettings {
@@ -151,88 +181,19 @@ model AppSettings {
   isProfileEditOpen     Boolean @default(true)
 }
 
-model Referral {
-  id        Int     @id @default(autoincrement())
-  code      String  @unique
-  referrer  String
-  collegeId String
-  contact   String
-  name      String
-  college   College @relation(fields: [collegeId], references: [id])
-  teams     Team[]
-}
+model Remark {
+  id     String @id @default(cuid())
+  remark String
 
-model Faq {
-  id        Int      @id @default(autoincrement())
-  question  String
-  answer    String
-  category  Category @default(GENERAL)
-  published Boolean  @default(false)
-}
+  Team    Team   @relation(fields: [teamId], references: [id])
+  Judge   Judge  @relation(fields: [judgeId], references: [id])
+  teamId  String
+  judgeId String
 
-model Criteria {
-  id     Int          @id @default(autoincrement())
-  name   String
-  type   CriteriaType
-  weight Int          @default(1)
-  scores Scores[]
-}
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-model FinalScores {
-  id     Int    @id @default(autoincrement())
-  score  Int
-  team   Team   @relation(fields: [teamId], references: [id])
-  teamId String
-}
-
-model ScoresByJudge {
-  id       Int     @id @default(autoincrement())
-  userId   String
-  teamId   String
-  scoreId  Int     @unique
-  judgesId Int?
-  Judges   Judges? @relation(fields: [judgesId], references: [id])
-  score    Scores  @relation(fields: [scoreId], references: [id])
-  Team     Team    @relation(fields: [teamId], references: [id])
-
-  @@unique([teamId, userId, scoreId])
-}
-
-model Scores {
-  id            Int            @id @default(autoincrement())
-  score         String
-  criteriaId    Int
-  criteria      Criteria       @relation(fields: [criteriaId], references: [id])
-  ScoresByJudge ScoresByJudge?
-}
-
-model Judges {
-  track   Tracks
-  userId  String          @unique
-  id      Int             @id @default(autoincrement())
-  type    JudgeType       @default(VALIDATOR)
-  User    User            @relation(fields: [userId], references: [id])
-  scores  ScoresByJudge[]
-  Remarks Remarks[]
-}
-
-model Remarks {
-  id       Int    @id @default(autoincrement())
-  teamId   String
-  remarks  String
-  judge    Judges @relation(fields: [judgesId], references: [id])
-  team     Team   @relation(fields: [teamId], references: [id])
-  judgesId Int
-}
-
-model Github {
-  id             Int      @id @default(autoincrement())
-  githubTeamId   Int
-  githubTeamSlug String
-  teamId         String   @unique
-  githubRepoName String[]
-  githubRepoId   Int[]
-  team           Team     @relation(fields: [teamId], references: [id])
+  @@unique([teamId, judgeId])
 }
 
 enum JudgeType {
@@ -243,20 +204,13 @@ enum JudgeType {
   SUPER_VALIDATOR
 }
 
-enum CriteriaType {
-  JUDGE
-  VALIDATOR
-  SUPER_VALIDATOR
-}
-
 enum Role {
-  PARTICIPANT
-  ORGANISER
+  ADMIN
   JUDGE
   VALIDATOR
-  TEAM
-  ADMIN
   SUPER_VALIDATOR
+  TEAM
+  PARTICIPANT
 }
 
 enum Courses {
@@ -269,27 +223,19 @@ enum Courses {
 enum PaymentStatus {
   PENDING
   PAID
-  PROCESSING
 }
 
 enum Progress {
   FILL_DETAILS
-  PAYMENT
   FORM_TEAM
   SUBMIT_IDEA
   COMPLETE
-}
-
-enum Game {
-  VALORANT
-  BGMI
 }
 
 enum Tracks {
   FINTECH
   SUSTAINABLE_DEVELOPMENT
   HEALTHCARE
-  METAVERSE
   LOGISTICS
   OPEN_INNOVATION
   ALL
@@ -351,16 +297,4 @@ enum TeamProgress {
   RUNNER
   SECOND_RUNNER
   TRACK
-}
-
-enum Category {
-  GENERAL
-  FOOD
-  STAY
-  TRAVEL
-}
-
-enum Event {
-  HACKFEST
-  GAMEFEST
 }

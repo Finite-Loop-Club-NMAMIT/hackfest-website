@@ -69,11 +69,11 @@ export default function TeamDetails({
   } | null>(null);
 
   useEffect(() => {
-    const leader = user?.team?.members.filter((member) => {
+    const leader = user?.Team?.Members.filter((member) => {
       return member.isLeader;
     });
     const members =
-      user?.team?.members.filter((member) => {
+      user?.Team?.Members.filter((member) => {
         return !member.isLeader;
       }) ?? [];
 
@@ -98,14 +98,14 @@ export default function TeamDetails({
     <>
       <div className="flex h-full w-full flex-col gap-4 rounded-md border-2 p-2">
         <h1 className="text-xl">Team Details</h1>
-        {user?.team ? (
+        {user?.Team ? (
           <div className="flex h-full w-full flex-col">
             <div className="flex w-full flex-nowrap items-center justify-between px-4">
-              <h1 className="text-2xl font-semibold">{user.team.name}</h1>
+              <h1 className="text-2xl font-semibold">{user.Team.name}</h1>
               {teamMembers?.members &&
               teamMembers?.members.length >= 3 &&
               teamMembers?.members.length <= 4 ? (
-                user.team.isComplete ? (
+                user.Team.isComplete ? (
                   <Badge className="bg-green-800 p-2 py-1 text-white">
                     Complete
                   </Badge>
@@ -119,9 +119,11 @@ export default function TeamDetails({
               )}
             </div>
 
-            <div className="flex flex-col h-full items-center justify-between">
-              <TeamList teamId={user.team.id} showTeamName={false}/>
-              <div className={`${!session.data?.user.isLeader && "hidden"} flex justify-center gap-4 mt-4`}>
+            <div className="flex h-full flex-col items-center justify-between">
+              <TeamList teamId={user.Team.id} showTeamName={false} />
+              <div
+                className={`${!session.data?.user.isLeader && "hidden"} mt-4 flex justify-center gap-4`}
+              >
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="destructive">Delete</Button>

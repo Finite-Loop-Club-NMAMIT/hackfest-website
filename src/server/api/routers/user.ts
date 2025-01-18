@@ -1,5 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  teamProcedure,
+} from "~/server/api/trpc";
 import {
   editProfileZ,
   updateProfileZ,
@@ -43,17 +47,17 @@ export const userRouter = createTRPCRouter({
       const user = await ctx.db.user.findUnique({
         where: { id: ctx.session.user.id },
         include: {
-          college: true,
-          team: {
+          College: true,
+          Team: {
             include: {
-              members: true,
+              Members: true,
             },
           },
         },
       });
 
-      if (input.college !== user?.college?.id) {
-        if (user?.team && user?.team?.members?.length > 1) {
+      if (input.college !== user?.College?.id) {
+        if (user?.Team && user?.Team?.Members?.length > 1) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "All team members should belong to same college!",
@@ -76,7 +80,7 @@ export const userRouter = createTRPCRouter({
         user?.phone === input.phone &&
         input.aadhaarUrl === user?.aadhaar &&
         input.collegeIdUrl === user?.college_id &&
-        user?.college?.id === input.college &&
+        user?.College?.id === input.college &&
         user?.tShirtSize === input.tshirtSize &&
         user?.course === input.course &&
         user?.github === input.github;
@@ -117,7 +121,7 @@ export const userRouter = createTRPCRouter({
           phone: input.phone,
           aadhaar: input.aadhaarUrl,
           college_id: input.collegeIdUrl,
-          college: { connect: { id: input.college } },
+          College: { connect: { id: input.college } },
           course: input.course,
           tShirtSize: input.tshirtSize,
           github: input.github,
@@ -133,17 +137,17 @@ export const userRouter = createTRPCRouter({
       const user = await ctx.db.user.findUnique({
         where: { id: ctx.session.user.id },
         include: {
-          college: true,
-          team: {
+          College: true,
+          Team: {
             include: {
-              members: true,
+              Members: true,
             },
           },
         },
       });
 
-      if (input.college !== user?.college?.id) {
-        if (user?.team && user?.team?.members?.length > 1) {
+      if (input.college !== user?.College?.id) {
+        if (user?.Team && user?.Team?.Members?.length > 1) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "All team members should belong to same college!",
@@ -165,7 +169,7 @@ export const userRouter = createTRPCRouter({
         user?.phone === input.phone &&
         input.aadhaarUrl === user?.aadhaar &&
         input.collegeIdUrl === user?.college_id &&
-        user?.college?.id === input.college &&
+        user?.College?.id === input.college &&
         user?.course === input.course;
 
       if (hasNoChanges) {
@@ -182,7 +186,7 @@ export const userRouter = createTRPCRouter({
           phone: input.phone,
           aadhaar: input.aadhaarUrl,
           college_id: input.collegeIdUrl,
-          college: { connect: { id: input.college } },
+          College: { connect: { id: input.college } },
           course: input.course,
         },
       });
@@ -196,7 +200,7 @@ export const userRouter = createTRPCRouter({
       if (user?.profileProgress !== "SUBMIT_IDEA")
         await ctx.db.team.update({
           data: {
-            members: {
+            Members: {
               updateMany: {
                 where: {
                   teamId: user?.team?.id,
@@ -231,7 +235,7 @@ export const userRouter = createTRPCRouter({
     }
   }),
 
-  getUserDetails: protectedProcedure.query(async({ctx}) => {
+  getUserDetails: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.user.findUnique({
       where: { id: ctx.session.user.id },
       select: {
@@ -244,42 +248,41 @@ export const userRouter = createTRPCRouter({
         aadhaar: true,
         college_id: true,
         github: true,
-        college: {
+        College: {
           select: {
             name: true,
             state: true,
-          }
+          },
         },
-        team: {
+        Team: {
           select: {
             id: true,
             name: true,
-            teamNo: true,
             isComplete: true,
             github: {
               select: {
                 githubTeamId: true,
                 githubTeamSlug: true,
-              }
+              },
             },
-            members: {
+            Members: {
               select: {
                 name: true,
                 image: true,
                 isLeader: true,
-              }
-            }
-          }
-        }
-      }
-    })
+              },
+            },
+          },
+        },
+      },
+    });
   }),
 
   getUserWithCollege: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.user.findUnique({
       where: { id: ctx.session.user.id },
       include: {
-        college: true,
+        College: true,
       },
     });
   }),
@@ -288,12 +291,12 @@ export const userRouter = createTRPCRouter({
     return await ctx.db.user.findUnique({
       where: { id: ctx.session.user.id },
       include: {
-        team: {
+        Team: {
           include: {
-            ideaSubmission: true,
+            IdeaSubmission: true,
           },
         },
-        college: true,
+        College: true,
       },
     });
   }),
@@ -302,12 +305,12 @@ export const userRouter = createTRPCRouter({
     try {
       return await ctx.db.user.findMany({
         include: {
-          college: true,
-          team: {
+          College: true,
+          Team: {
             include: {
-              ideaSubmission: true
-            }
-          }
+              IdeaSubmission: true,
+            },
+          },
         },
       });
     } catch (e) {
@@ -318,22 +321,13 @@ export const userRouter = createTRPCRouter({
       });
     }
   }),
-  markAttendance: protectedProcedure
+  markAttendance: teamProcedure
     .input(
       z.object({
         userId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      if (
-        ctx.session.user.role === "PARTICIPANT" ||
-        ctx.session.user.role === "JUDGE" ||
-        ctx.session.user.role === "VALIDATOR"
-      )
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You cannot perform this action",
-        });
       try {
         const updatedUser = await ctx.db.user.update({
           where: { id: input.userId },
@@ -341,20 +335,20 @@ export const userRouter = createTRPCRouter({
             attended: true,
           },
           include: {
-            college: true,
-            team: {
+            College: true,
+            Team: {
               include: {
-                members: true,
-                ideaSubmission: true,
+                Members: true,
+                IdeaSubmission: true,
               },
             },
           },
         });
 
-        const teamMembers = updatedUser.team?.members;
+        const teamMembers = updatedUser.Team?.Members;
         if (teamMembers?.filter((member) => !member.attended).length === 0) {
           await ctx.db.team.update({
-            where: { id: updatedUser.team?.id },
+            where: { id: updatedUser.Team?.id },
             data: {
               attended: true,
             },
@@ -363,8 +357,8 @@ export const userRouter = createTRPCRouter({
 
         return {
           name: updatedUser.name,
-          teamName: updatedUser.team?.name,
-          collegeName: updatedUser.college?.name,
+          teamName: updatedUser.Team?.name,
+          collegeName: updatedUser.College?.name,
         };
       } catch (e) {
         console.log(e);

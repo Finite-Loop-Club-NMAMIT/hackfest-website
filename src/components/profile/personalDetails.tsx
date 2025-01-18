@@ -41,7 +41,7 @@ export default function PersonalDeatils({
           <Input
             readOnly
             className="rounded-l-none pl-5 focus-visible:ring-[0px]"
-            value={user?.college?.name ?? "University of Full time coders"}
+            value={user?.College?.name ?? "University of Full time coders"}
           />
         </div>
         <div className="flex h-auto w-full flex-nowrap">
@@ -51,7 +51,7 @@ export default function PersonalDeatils({
           <Input
             readOnly
             className="rounded-l-none pl-5 focus-visible:ring-[0px]"
-            value={user?.college?.state ?? "State not selected"}
+            value={user?.College?.state ?? "State not selected"}
           />
         </div>
         <div className="flex h-auto w-full flex-nowrap">

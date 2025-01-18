@@ -4,17 +4,10 @@ import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import { Anton, Caesar_Dressing, Poppins } from "next/font/google";
-import localFont from "next/font/local";
 
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { siteMetadata } from "~/constants";
-
-const obscura = localFont({
-  src: "../../public/fonts/camera-obscura.otf",
-  display: "swap",
-  variable: "--font-obscura",
-});
 
 export const anton = Anton({
   subsets: ["latin"],
@@ -96,7 +89,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         />
       </Head>
       <main
-        className={`${poppins.className} ${obscura.variable} ${anton.variable} ${caesarDressing.variable}`}
+        className={`${poppins.className}  ${anton.variable} ${caesarDressing.variable}`}
       >
         <Component {...pageProps} />
       </main>
