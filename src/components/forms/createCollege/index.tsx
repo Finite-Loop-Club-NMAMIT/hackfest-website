@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { type z } from "zod";
 import { createCollegeZ } from "~/server/schema/zod-schema";
@@ -32,11 +32,20 @@ import { Input } from "~/components/ui/input";
 import { LuChevronsUpDown } from "react-icons/lu";
 import { FaCheck } from "react-icons/fa";
 import { toast } from "sonner";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 
-export default function CreateCollegeForm({ closeDialog, refetch }: { closeDialog: () => void; refetch: () => void }) {
+export default function CreateCollegeForm({
+  closeDialog,
+  refetch,
+}: {
+  closeDialog: () => void;
+  refetch: () => void;
+}) {
   const [selectedState, setSelectedState] = useState("");
-  const [ isPopoverOpen, setPopoverOpen ] = useState(false);
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const commandRef = useRef<HTMLDivElement>(null);
 
   const createCollegeMutation = api.college.createCollege.useMutation({
     onSuccess: () => {
@@ -61,10 +70,32 @@ export default function CreateCollegeForm({ closeDialog, refetch }: { closeDialo
     createCollegeMutation.mutate(values);
   }
 
+  useGSAP(() => {
+    if (commandRef.current) {
+      if (isCommandOpen) {
+        gsap.to(commandRef.current, {
+          height: 200,
+          duration: 0.3,
+          border: "1px solid #162031",
+        });
+      } else {
+        gsap.to(commandRef.current, {
+          height: 0,
+          duration: 0.3,
+          border: "none",
+        });
+      }
+    }
+  }, [isCommandOpen]);
+
   return (
     <div>
       <Form {...form}>
-        <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-8">
+        <form
+          ref={formRef}
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="mt-4 space-y-8 text-left"
+        >
           <FormField
             control={form.control}
             name="name"
@@ -89,60 +120,67 @@ export default function CreateCollegeForm({ closeDialog, refetch }: { closeDialo
               <FormItem>
                 <FormLabel className="text-lg">State</FormLabel>
                 <FormControl>
-                  <Popover open={isPopoverOpen} onOpenChange={setPopoverOpen}>
-                    <PopoverTrigger asChild>
-                      <Button className="w-full border-[1px] bg-background text-left text-white hover:bg-background">
-                        <p className="mr-auto">
-                          {selectedState === ""
-                            ? "Select State"
-                            : selectedState}
-                        </p>
-                        <LuChevronsUpDown />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-screen border-none bg-transparent p-6 py-1">
-                      <Command className="mx-auto max-w-96 border-2 p-2">
-                        <CommandInput placeholder="Search State" />
-                        <CommandList>
-                          <CommandEmpty>No results found.</CommandEmpty>
-                          <CommandGroup className="max-h-48 overflow-auto">
-                            {states.map((state) => {
-                              return (
-                                <CommandItem
-                                  key={state.key}
-                                  value={state.name}
-                                  onSelect={() => {
-                                    form.setValue("state", state.key);
-                                    setSelectedState(state.name);
-                                    setPopoverOpen(false);
-                                  }}
-                                >
-                                  <p className="w-full text-wrap">
-                                    {state.name}
-                                  </p>
-                                  {selectedState === state.name ? (
-                                    <FaCheck className="ml-4 size-4" />
-                                  ) : (
-                                    <div className="ml-4 size-4"></div>
-                                  )}
-                                </CommandItem>
-                              );
-                            })}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <>
+                    <Button
+                      className="w-full border-[1px] bg-background text-left text-white hover:bg-background"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsCommandOpen(!isCommandOpen);
+                      }}
+                    >
+                      <p className="mr-auto">
+                        {selectedState === "" ? "Select State" : selectedState}
+                      </p>
+                      <LuChevronsUpDown />
+                    </Button>
+
+                    <Command ref={commandRef} style={{ height: 0 }}>
+                      <CommandInput placeholder="Enter state" />
+                      <CommandEmpty>State not found</CommandEmpty>
+                      <CommandList>
+                        <CommandGroup>
+                          {states.map((state) => {
+                            return (
+                              <CommandItem
+                                className="text-left"
+                                key={state.key}
+                                value={state.name}
+                                onSelect={() => {
+                                  form.setValue("state", state.key);
+                                  setSelectedState(state.name);
+                                  setIsCommandOpen(false);
+                                }}
+                              >
+                                <p className="w-full text-wrap">{state.name}</p>
+                                {selectedState === state.name ? (
+                                  <FaCheck className="ml-4 size-4" />
+                                ) : (
+                                  <div className="ml-4 size-4"></div>
+                                )}
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button onClick={async(e) => {
-            e.preventDefault();
-            await form.handleSubmit(onSubmit)();
-          }}>Submit</Button>
+          <div className="w-full flex justify-end">
+            <Button
+              className=""
+              onClick={async (e) => {
+                e.preventDefault();
+                await form.handleSubmit(onSubmit)();
+              }}
+            >
+              Submit
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

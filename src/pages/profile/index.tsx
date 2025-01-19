@@ -31,7 +31,7 @@ export default function ProfilePage() {
   } else {
     return (
       <RootLayout>
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328]">
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328] px-2">
           <div className="mx-auto flex w-full max-w-7xl flex-col justify-center py-40">
             {data?.user && (
               <Card className="bg-black/50">

@@ -51,6 +51,7 @@ import { FaCheck, FaInfoCircle } from "react-icons/fa";
 import { FaCircleCheck } from "react-icons/fa6";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useGSAP } from "@gsap/react";
 
 export default function RegisterProfileForm() {
   const horizontalBar = useRef<HTMLDivElement>(null);
@@ -140,7 +141,7 @@ export default function RegisterProfileForm() {
     }
   }, [aadhaarUrl, collegeIdUrl, form]);
 
-  useEffect(() => {
+  useGSAP(() => {
     if (horizontalBar.current ?? registerd) {
       gsap.fromTo(
         horizontalBar.current,
@@ -148,7 +149,7 @@ export default function RegisterProfileForm() {
         { width: "0%", duration: 5 },
       );
     }
-  }, [registerd]);
+  },[registerd]);
 
   useEffect(() => {
     if (registerd && redirectingIn > 0) {
@@ -208,7 +209,7 @@ export default function RegisterProfileForm() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="relative mt-4 min-h-[32rem] sm:min-h-[28rem]"
+          className="mt-4 min-h-[32rem] sm:min-h-[28rem] h-full flex flex-col gap-4"
         >
           <div className="flex w-full flex-row justify-center">
             <div
@@ -346,7 +347,7 @@ export default function RegisterProfileForm() {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-screen max-w-3xl border-none bg-transparent p-0 px-10">
-                        <Command className="w-full border-2 p-2">
+                        <Command className="w-full border-2">
                           <CommandInput placeholder="Search College..." />
                           <CommandEmpty>
                             <p>College not found</p>
@@ -548,26 +549,33 @@ export default function RegisterProfileForm() {
                   }
 
                   setTab(1);
-                  gsap.to("#tab-1", {
-                    x: "-2rem",
-                    opacity: 0,
-                    classList: "hidden",
-                    duration: 0.5,
-                  });
-                  gsap.fromTo(
+                  const tl = gsap.timeline();
+                  tl.fromTo(
+                    "#tab-1",
+                    {
+                      x: "0rem",
+                      opacity: 1,
+                      display: "flex",
+                    },
+                    {
+                      x: "-2rem",
+                      opacity: 0,
+                      display: "none",
+                      duration: 0.3,
+                    },
+                  );
+                  tl.fromTo(
                     "#tab-2",
                     {
                       x: "2rem",
                       opacity: 0,
-                      height: "18rem",
-                      classList: "hidden opacity-0",
+                      display: "none",
                     },
                     {
                       x: "0rem",
                       opacity: 1,
-                      height: "18rem",
-                      classList: "absolute w-full",
-                      duration: 0.5,
+                      display: "flex",
+                      duration: 0.3,
                     },
                   );
                   gsap.to("#form-title", { innerText: "Details Verification" });
@@ -578,8 +586,8 @@ export default function RegisterProfileForm() {
             </div>
           </div>
 
-          <div id="tab-2" className="absolute opacity-0">
-            <div className="mt-6 flex h-[22rem] w-full flex-col gap-4 sm:h-[18rem] md:flex-row">
+          <div id="tab-2" className="flex flex-col h-full" style={{ display: "none" }}>
+            <div className="mt-6 flex md:h-[23rem] h-[26rem] w-full flex-col gap-4 md:flex-row">
               <DragAndDropFile
                 accept="image/*"
                 onChange={setAadhaar}
@@ -591,6 +599,7 @@ export default function RegisterProfileForm() {
                 text="College ID"
               />
             </div>
+
             <div className="mt-6 flex w-full flex-nowrap items-center justify-center gap-2 text-white/50">
               <FaInfoCircle /> Drop image(jpg, png, jpeg) of size less than 2MB.
             </div>
@@ -602,19 +611,35 @@ export default function RegisterProfileForm() {
                 onClick={(e) => {
                   e.preventDefault();
                   setTab(0);
-                  gsap.to("#tab-1", {
-                    x: "0rem",
-                    opacity: 1,
-                    classList: "block",
-                    duration: 0.5,
-                  });
-                  gsap.to("#tab-2", {
-                    x: "2rem",
-                    opacity: 0,
-                    classList: "hidden",
-                    duration: 0.5,
-                  });
-
+                  const tl = gsap.timeline();
+                  tl.fromTo(
+                    "#tab-2",
+                    {
+                      x: "0rem",
+                      opacity: 1,
+                      display: "flex",
+                    },
+                    {
+                      x: "2rem",
+                      opacity: 0,
+                      display: "none",
+                      duration: 0.3,
+                    },
+                  );
+                  tl.fromTo(
+                    "#tab-1",
+                    {
+                      x: "-2rem",
+                      opacity: 0,
+                      display: "none",
+                    },
+                    {
+                      x: "0rem",
+                      opacity: 1,
+                      display: "flex",
+                      duration: 0.3,
+                    },
+                  );
                   gsap.to("#form-title", { innerText: "Personal Details" });
                 }}
               >
