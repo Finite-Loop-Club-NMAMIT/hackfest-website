@@ -319,7 +319,6 @@ export default function RegisterProfileForm() {
                       )}
                     </div>
                   </FormControl>
-                  {/* <FormDescription>Enter user username only</FormDescription> */}
                   <FormMessage />
                 </FormItem>
               )}

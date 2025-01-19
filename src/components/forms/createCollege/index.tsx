@@ -85,7 +85,7 @@ export default function CreateCollegeForm({ closeDialog, refetch }: { closeDialo
           <FormField
             control={form.control}
             name="state"
-            render={({ field }) => (
+            render={({}) => (
               <FormItem>
                 <FormLabel className="text-lg">State</FormLabel>
                 <FormControl>
