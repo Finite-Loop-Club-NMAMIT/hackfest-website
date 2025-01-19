@@ -1,40 +1,52 @@
-import React, { createContext, useContext, useState } from "react";
+import { type inferRouterOutputs } from "@trpc/server";
+import React, { createContext, useContext } from "react";
+import { type appSettingsRouter } from "~/server/api/routers/app";
+import { api } from "~/utils/api";
 
-const AppSettingValidator = createContext(true);
+const AppSettingValidator = createContext<{
+  open: boolean;
+  settings: inferRouterOutputs<typeof appSettingsRouter>["getAppSettings"] | null;
+}>({
+  open: true,
+  settings: null,
+});
 
 function Provider({
   value,
   children,
 }: {
-  value: boolean;
+  value?: boolean;
   children: React.ReactNode;
 }) {
-  const [open] = useState(value);
+  const settings = api.appSettings.getAppSettings.useQuery();
 
   return (
-    <AppSettingValidator.Provider value={open}>
+    <AppSettingValidator.Provider value={{
+      open: value ?? true,
+      settings: settings.data ?? null,
+    }}>
       {children}
     </AppSettingValidator.Provider>
   );
 }
 
 function Active({ children }: { children: React.ReactNode }) {
-  const open = useContext(AppSettingValidator);
+  const ctx = useContext(AppSettingValidator);
 
-  if (open) {
+  if (ctx.open) {
     return <>{children}</>;
   }
   return <></>;
 }
 
 function FallBack({ children }: { children: React.ReactNode }) {
-  const open = useContext(AppSettingValidator);
+  const ctx = useContext(AppSettingValidator);
 
-  if (!open) {
+  if (!ctx.open) {
     return <>{children}</>;
   } else {
     return <></>;
   }
 }
 
-export { Provider, Active, FallBack };
+export { AppSettingValidator as context, Provider, Active, FallBack };

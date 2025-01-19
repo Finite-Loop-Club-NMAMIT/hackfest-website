@@ -29,7 +29,10 @@ export const teamRouter = createTRPCRouter({
         return { status: "success", message: true };
       } catch (error) {
         console.log(error);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Something went wrong" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+        });
       }
     }),
 
@@ -325,14 +328,16 @@ export const teamRouter = createTRPCRouter({
           },
         });
       }
-      await ctx.db.team.update({
-        where: {
-          id: user?.team?.id,
-        },
-        data: {
-          isComplete,
-        },
-      });
+      if (team?.isComplete && isComplete) {
+        await ctx.db.team.update({
+          where: {
+            id: user?.team?.id,
+          },
+          data: {
+            isComplete,
+          },
+        });
+      }
       return { status: "success", message: "Left team successfully" };
     } catch (error) {
       console.log(error);

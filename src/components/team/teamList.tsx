@@ -39,7 +39,7 @@ export default function TeamList({
 
   if (teamDetails.isLoading) {
     return <div className="text-white/50">Fetching Details...</div>;
-  } else if (leader) {
+  } else if (teamDetails.data) {
     return (
       <div className="flex w-full flex-col items-center justify-center">
         {showTeamName && (
@@ -54,12 +54,17 @@ export default function TeamList({
               width={100}
               height={100}
             />
-            <h1 className=" w-full text-ellipsis sm:text-sm text-xs">
+            <h1 className=" w-full text-ellipsis text-xs sm:text-sm">
               {leader?.name ?? "leader"}
             </h1>
             <Link
+              replace={true}
               className="opacity-50"
-              href={leader?.github ?? "github.com"}
+              href={
+                leader?.github
+                  ? `https://github.com/${leader.github}`
+                  : "https://github.com"
+              }
               target="_blank"
             >
               <FaGithub className="size-6" />
@@ -83,8 +88,13 @@ export default function TeamList({
                     {leader?.name ?? "leader"}
                   </h1>
                   <Link
+                    replace={true}
                     className="opacity-50"
-                    href={member?.github ?? "github.com"}
+                    href={
+                      member?.github
+                        ? `https://github.com/${member.github}`
+                        : "https://github.com"
+                    }
                     target="_blank"
                   >
                     <FaGithub className="size-6" />
