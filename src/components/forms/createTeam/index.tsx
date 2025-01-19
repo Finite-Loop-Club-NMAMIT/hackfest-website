@@ -36,7 +36,7 @@ import { ClipboardCopy } from "lucide-react";
 import TeamList from "~/components/team/teamList";
 
 export default function RegisterTeamForm() {
-  const { update } = useSession();
+  const { data, update } = useSession();
   const params = useSearchParams();
   const router = useRouter();
   const utils = api.useUtils();
@@ -53,13 +53,9 @@ export default function RegisterTeamForm() {
   });
   const joinTeamMutation = api.team.joinTeam.useMutation({
     onSuccess: (data) => {
-      toast.success(data.message);
+      setTeamDetails(data.team as Team);
+      setIsJoined(true);
       gsap.set("#form.title", { innerText: "Team Joined" });
-      const timeout = setTimeout(() => {
-        void router.push("/profile");
-      }, 5000);
-
-      return () => clearTimeout(timeout);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -82,13 +78,14 @@ export default function RegisterTeamForm() {
   const [teamTimeout, setTeamTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchTeamId, setSearchTeamId] = useState<string>("");
+  const [isJoined, setIsJoined] = useState<boolean>(false);
   const [teamDetailsTimeout, setTeamDetailsTimeout] =
     useState<NodeJS.Timeout>();
   const [isTeamNameUnique, setIsTeamNameUnique] = useState<
     "loading" | "inuse" | "available" | "warning" | null
   >(null);
   const [teamDetails, setTeamDetails] = useState<Team | null>(null);
-  const [searchTeamId, setSearchTeamId] = useState<string>("");
 
   function onCreateTeamSubmit(values: z.infer<typeof createTeamZ>) {
     createTeamMutation.mutate(values);
@@ -179,12 +176,12 @@ export default function RegisterTeamForm() {
               Team Created
             </DialogTitle>
             <DialogDescription className="mt-4">
-              <p>
+              <p className="md:text-lg text-center">
                 Your team,{" "}
                 <span className="font-extrabold">
                   {teamDetails?.name ?? "New Team"}
                 </span>
-                , has been created successfully. Use the code below to invite
+                , has been created successfully🥳. Use the code below to invite
                 your fellow members.
               </p>
               <div
@@ -203,13 +200,39 @@ export default function RegisterTeamForm() {
                 <Input
                   value={
                     teamDetails?.id ??
-                    "code not availablecode not availablecode not availablecode not availablecode not availablecode not availablecode not available"
+                    "code not available"
                   }
                   className="cursor-pointer truncate pr-10 text-left"
                   readOnly
                 />
                 <ClipboardCopy className="absolute right-1 top-1 size-8 rounded-r-md p-1" />
               </div>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isJoined}
+        onOpenChange={(value) => {
+          if (!value) {
+            void router.replace("/profile");
+            void update();
+          }
+          setIsJoined(value);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-center text-3xl">
+              Team Joined
+            </DialogTitle>
+            <DialogDescription className="mt-4">
+              <p className="md:text-lg text-center">
+                Congragulations{" "}
+                <span>{data?.user.name ?? "Tech Enthusiast"}</span> 🥳! You have
+                successfully joined {teamDetails?.name ?? "your team"}
+              </p>
             </DialogDescription>
           </DialogHeader>
         </DialogContent>

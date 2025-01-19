@@ -11,7 +11,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       className={`dark text-white ${router.pathname === "/" ? "" : "bg-black"}`}
     >
       <ProgressBarProvider>
-        <Toaster richColors expand={true} position="bottom-center" />
+        <Toaster richColors expand={false} position="bottom-center" />
         <Navbar />
         {props.children}
         <Footer />

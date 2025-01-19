@@ -54,7 +54,7 @@ export default function TeamList({
               width={100}
               height={100}
             />
-            <h1 className=" w-full text-ellipsis text-sm">
+            <h1 className=" w-full text-ellipsis sm:text-sm text-xs">
               {leader?.name ?? "leader"}
             </h1>
             <Link
@@ -79,7 +79,7 @@ export default function TeamList({
                     width={100}
                     height={100}
                   />
-                  <h1 className=" w-full text-ellipsis text-sm">
+                  <h1 className=" w-full text-ellipsis text-xs sm:text-sm">
                     {leader?.name ?? "leader"}
                   </h1>
                   <Link

@@ -651,25 +651,12 @@ export default function RegisterProfileForm() {
                   e.preventDefault();
 
                   if (aadhaar && collegeId) {
-                    toast.loading("Saving Details...", {
-                      id: "loadingToast",
-                    });
-
-                    setTab(2);
-                    setSubmitting(true);
                     const allowedTypes = [
                       "image/jpeg",
                       "image/png",
                       "image/jpg",
                     ];
-
-                    if (
-                      aadhaar.size > 2 * 1000 * 1000 ||
-                      collegeId.size > 2 * 1000 * 1000
-                    ) {
-                      return toast.error("Uploads must be less than 2MB");
-                    }
-
+                    
                     if (
                       !allowedTypes.includes(aadhaar.type) ||
                       !allowedTypes.includes(collegeId.type)
@@ -679,6 +666,19 @@ export default function RegisterProfileForm() {
                       );
                     }
 
+                    if (
+                      aadhaar.size > 2 * 1000 * 1000 ||
+                      collegeId.size > 2 * 1000 * 1000
+                    ) {
+                      return toast.error("Uploads must be less than 2MB");
+                    }
+                    
+                    setTab(2);
+                    setSubmitting(true);
+                    toast.loading("Saving Details...", {
+                      id: "loadingToast",
+                    });
+                    
                     const result = await Promise.all([
                       await uploadFiles(aadhaar, setAadhaarUrl),
                       await uploadFiles(collegeId, setCollegeIdUrl),

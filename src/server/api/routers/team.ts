@@ -29,7 +29,7 @@ export const teamRouter = createTRPCRouter({
         return { status: "success", message: true };
       } catch (error) {
         console.log(error);
-        return { status: "error", message: "Something went wrong" };
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Something went wrong" });
       }
     }),
 
@@ -273,7 +273,7 @@ export const teamRouter = createTRPCRouter({
       });
 
       const isComplete = res.Members.length === 3 || res.Members.length === 4;
-      await ctx.db.team.update({
+      const joinedTeam = await ctx.db.team.update({
         where: {
           id: input.teamId,
         },
@@ -281,7 +281,14 @@ export const teamRouter = createTRPCRouter({
           isComplete,
         },
       });
-      return { status: "success", message: "Joined team successfully" };
+      return {
+        status: "success",
+        message: "Joined team successfully",
+        team: {
+          id: joinedTeam.id,
+          name: joinedTeam.name,
+        },
+      };
     }),
 
   leaveTeam: protectedProcedure.mutation(async ({ ctx }) => {

@@ -13,11 +13,11 @@ export default function IdentityDetails({
       <h1 className="text-xl">Identify Proofs</h1>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <div className="container">
+          <div className="container flex justify-center">
             {user?.aadhaar && (
               <Image
                 src={user?.aadhaar.split(";")[0] ?? ""}
-                className=" size-56 border-2 p-2"
+                className="size-36 border-2 object-contain p-2 sm:size-44 md:size-56"
                 height={100}
                 width={100}
                 alt="aadhaar"
@@ -27,11 +27,11 @@ export default function IdentityDetails({
           <p className="mt-2 text-center">Aadhaar</p>
         </div>
         <div>
-          <div className="container">
+          <div className="container flex justify-center">
             {user?.aadhaar && (
               <Image
                 src={user?.college_id?.split(";")[0] ?? ""}
-                className="size-56 border-2 p-2"
+                className="size-36 border-2 object-contain p-2 sm:size-44 md:size-56"
                 height={100}
                 width={100}
                 alt="college ID"

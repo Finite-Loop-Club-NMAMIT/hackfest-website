@@ -68,7 +68,29 @@ export default function RegisterCards({
               <FormTeam />
             </AppSetting.Active>
             <AppSetting.FallBack>
-              <p>Team registrations are now closed</p>
+              <div className="flex h-screen w-screen items-center justify-center">
+                <div className="mx-4 h-fit w-full max-w-[70rem] rounded-xl bg-black/50 p-10 text-center text-white">
+                  <h1 className="bg-gradient-to-b from-red-300 via-red-800 to-red-500 bg-clip-text text-5xl font-bold text-transparent md:text-8xl">
+                    Too Late!
+                  </h1>
+                  <p className="mt-8 md:text-xl">
+                    Sorry{" "}
+                    <span className="font-semibold">
+                      {session.user.name ?? "Tech Enthusiast"}
+                    </span>
+                    . Registrations are now closed.
+                  </p>
+                  <Button
+                    className="mt-8"
+                    variant="outline"
+                    onClick={() => {
+                      void router.push("/");
+                    }}
+                  >
+                    Home
+                  </Button>
+                </div>
+              </div>
             </AppSetting.FallBack>
           </AppSetting.Provider>
         );
