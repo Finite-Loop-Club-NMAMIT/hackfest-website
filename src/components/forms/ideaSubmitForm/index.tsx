@@ -30,15 +30,12 @@ import { api } from "~/utils/api";
 import { toast } from "sonner";
 import { env } from "~/env";
 
-export default function IdeaSubmitForm({ refetch }: { refetch: () => void }) {
-  const { currentState, setCurrentState, setMaxState } =
-    useContext(ProgressContext);
+export default function IdeaSubmitForm() {
   const form = useForm<z.infer<typeof submitIdeaZ>>({
     resolver: zodResolver(submitIdeaZ),
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("");
   const [pdf, setPdf] = useState<File | null>(null);
   const [wordLimit, setWordLimit] = useState(0);
   const submitIdea = api.idea.submitIdea.useMutation();
@@ -85,6 +82,8 @@ export default function IdeaSubmitForm({ refetch }: { refetch: () => void }) {
   };
 
   const onSubmit = async (data: z.infer<typeof submitIdeaZ>) => {
+    toast.success("Submitting Idea");
+    return;
     setLoading(true);
     await submitIdea
       .mutateAsync(
@@ -92,15 +91,12 @@ export default function IdeaSubmitForm({ refetch }: { refetch: () => void }) {
           pptUrl: data.pptUrl,
           problemStatement: data.problemStatement,
           track: data.track as Tracks,
-          referralCode: data.referralCode,
+          // referralCode: data.referralCode,
         },
         {
           onSuccess: () => {
             toast.success("Idea Submitted");
             setLoading(false);
-            setCurrentState(3);
-            setMaxState(3);
-            refetch();
           },
           onError: (error) => {
             toast.error(error.message);
@@ -117,39 +113,29 @@ export default function IdeaSubmitForm({ refetch }: { refetch: () => void }) {
 
   const user = useSession();
 
-  useEffect(() => {
-    if (error) setTimeout(() => setError(""), 2000);
-  }, [error]);
-
-  if (currentState !== 2) return null;
-
   return (
-    <div className={`relative max-h-max w-full `}>
-      {!user.data?.user.isLeader && (
-        <div className="absolute inset-0 z-50 flex h-full w-full items-center justify-center text-center text-2xl text-white opacity-100 md:text-3xl">
-          {user.status === "loading"
-            ? "Loading..."
-            : "Waiting for team leader to submit the Idea..."}
-        </div>
-      )}
+    <div
+      className={`relative max-h-max w-full max-w-7xl rounded-md bg-black/50 p-4`}
+    >
       <Form {...form}>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            await something();
           }}
           className={`flex flex-col gap-2 md:gap-4 ${
             !user.data?.user.isLeader ? "pointer-events-none opacity-30" : ""
           }`}
         >
-          <h1 className="text-center text-xl lg:text-2xl ">Submit Idea</h1>
-          <p
+          <h1 className="gradient-text text-center text-3xl font-bold md:text-5xl">
+            Submit Idea
+          </h1>
+          {/* <p
             className={`text-center ${
               error.includes("updated") ? "text-green-500" : "text-red-500"
             }`}
           >
             {error}
-          </p>
+          </p> */}
 
           <div className="mx-auto flex flex-col flex-wrap items-center justify-center gap-4 md:flex-row">
             {/* Name */}
@@ -158,7 +144,7 @@ export default function IdeaSubmitForm({ refetch }: { refetch: () => void }) {
               name="problemStatement"
               render={({ field }) => {
                 return (
-                  <FormItem className="w-[92%]">
+                  <FormItem className="w-full">
                     <FormLabel className="flex items-center justify-between">
                       Problem Statement
                       <span
@@ -188,7 +174,7 @@ export default function IdeaSubmitForm({ refetch }: { refetch: () => void }) {
             ></FormField>
 
             {/* Phone */}
-            <FormField
+            {/* <FormField
               control={form.control}
               name="referralCode"
               render={({ field }) => (
@@ -200,7 +186,7 @@ export default function IdeaSubmitForm({ refetch }: { refetch: () => void }) {
                   <FormMessage />
                 </FormItem>
               )}
-            ></FormField>
+            ></FormField> */}
 
             {/* list of tracks*/}
             <FormField
@@ -216,15 +202,19 @@ export default function IdeaSubmitForm({ refetch }: { refetch: () => void }) {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {Object.values(Tracks).map((name, key) => (
-                            <SelectItem
-                              value={name}
-                              key={key}
-                              className="capitalize"
-                            >
-                              {name.replaceAll("_", " ").toLowerCase()}
-                            </SelectItem>
-                          ))}
+                          {Object.values(Tracks).map((name, key) => {
+                            if (name !== "ALL") {
+                              return (
+                                <SelectItem
+                                  value={name}
+                                  key={key}
+                                  className="capitalize"
+                                >
+                                  {name.replaceAll("_", " ").toLowerCase()}
+                                </SelectItem>
+                              );
+                            }
+                          })}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -239,7 +229,7 @@ export default function IdeaSubmitForm({ refetch }: { refetch: () => void }) {
                 control={form.control}
                 name="pptUrl"
                 render={({}) => (
-                  <FormItem className="mx-auto w-[92%]">
+                  <FormItem className="mx-auto w-full max-w-4xl">
                     <FormLabel className="flex items-center justify-between">
                       Idea PPT
                       <a
@@ -270,7 +260,7 @@ export default function IdeaSubmitForm({ refetch }: { refetch: () => void }) {
                 >
                   PPT Template
                 </a>{" "}
-                for your submission; only submissions using this template will
+                for your submission, only submissions using this template will
                 be accepted.
               </p>
               <Button type="submit" className="w-fit">

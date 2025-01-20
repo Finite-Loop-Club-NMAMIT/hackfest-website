@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Card, CardContent } from "../card";
 import { Button } from "../button";
+import PdfPreview from "~/components/pdf";
 
 // Define the props expected by the Dropzone component
 interface DropzoneProps {
@@ -73,7 +74,7 @@ export function Dropzone({
     // Display file information
     setFileInfo(`Uploaded file: ${uploadedFile.name} (${fileSizeInKB} KB)`);
     setError(null); // Reset error state
-    const previewURL = URL.createObjectURL(uploadedFile);
+    const previewURL = URL.createObjectURL(uploadedFile);    
     setPreviewURL(previewURL);
   };
 
@@ -115,14 +116,12 @@ export function Dropzone({
             className="hidden"
           />
         </div>
-        {}
         {pdf && <>{fileInfo}</>}
-        {!pdf && previewURL ? (
-          <img
-            src={previewURL}
-            alt="Uploaded"
-            className="mt-2 h-32 object-cover"
-          />
+        {pdf && previewURL ? (
+          <div className="h-full">
+
+            <PdfPreview file={previewURL} pages={[1]} width={100}/>
+          </div>
         ) : (
           <svg
             className="h-32 w-32 text-gray-600"

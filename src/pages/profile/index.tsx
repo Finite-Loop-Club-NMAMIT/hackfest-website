@@ -71,7 +71,7 @@ function Content({
   switch (user?.profileProgress) {
     case "FILL_DETAILS":
       return (
-        <div className="flex flex-col flex-nowrap items-center justify-center">
+        <div className="order-2 flex flex-col flex-nowrap items-center justify-center">
           <p className="text-center font-medium leading-8 md:text-xl">
             Welcome <span className="font-bold">{user.name}</span>. <br />
             Register below to prove your worthiness
@@ -99,8 +99,10 @@ function Content({
       );
 
     case "FORM_TEAM":
+      return <ProfileCard user={user} order={[2, 3, 4, 0]} />;
     case "SUBMIT_IDEA":
+      return <ProfileCard user={user} order={[2, 3, 5, 4]} />;
     case "COMPLETE":
-      return <ProfileCard user={user} />;
+      return "complete";
   }
 }

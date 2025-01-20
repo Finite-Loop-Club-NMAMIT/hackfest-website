@@ -69,7 +69,7 @@ const submitIdeaZ = z.object({
   track: z.nativeEnum(Tracks, {
     required_error: "Track is required",
   }),
-  referralCode: z.string().default(""),
+  // referralCode: z.string().default(""),
   pptUrl: z.string(),
 });
 

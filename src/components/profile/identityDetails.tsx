@@ -5,11 +5,16 @@ import { type userRouter } from "~/server/api/routers/user";
 
 export default function IdentityDetails({
   user,
+  order,
 }: {
   user: inferRouterOutputs<typeof userRouter>["getUserDetails"];
+  order: number;
 }) {
   return (
-    <div className="flex h-full flex-col gap-4 rounded-md border-2 p-2">
+    <div
+      className="flex h-full flex-col gap-4 rounded-md border-2 p-2"
+      style={{ order: order }}
+    >
       <h1 className="text-xl">Identify Proofs</h1>
       <div className="grid grid-cols-2 gap-2">
         <div>

@@ -280,7 +280,7 @@ export default function RegisterProfileForm() {
                   <FormLabel htmlFor="github">Github</FormLabel>
                   <FormControl>
                     <div className="flex flex-row gap-2">
-                      <Input placeholder="Username only" {...field} />
+                      <Input placeholder="Username" {...field} />
                       {isGithubVerified ? (
                         <Button
                           onClick={(e) => {

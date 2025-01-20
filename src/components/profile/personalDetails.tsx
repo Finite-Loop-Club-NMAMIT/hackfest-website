@@ -7,12 +7,17 @@ import { FaHouseFlag } from "react-icons/fa6";
 
 export default function PersonalDeatils({
   user,
+  order,
 }: {
   user: inferRouterOutputs<typeof userRouter>["getUserDetails"];
+  order: number;
 }) {
   return (
     <>
-      <div className="flex h-full w-full flex-col gap-4 rounded-md border-2 p-2">
+      <div
+        className="flex h-full w-full flex-col gap-4 rounded-md border-2 p-2"
+        style={{ order: order }}
+      >
         <h1 className="text-xl">Personal Details</h1>
         <div className="flex h-auto w-full flex-nowrap">
           <div className="flex items-center text-left">
