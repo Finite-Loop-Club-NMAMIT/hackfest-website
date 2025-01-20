@@ -48,7 +48,7 @@ export default function DragAndDropFile({
                 width={100}
                 src={fileUrl}
                 alt="Preview"
-                className="max-h-xl mx-auto"
+                className="max-h-xl mx-auto object-contain"
               />
             </div>
             {file !== null ? (
