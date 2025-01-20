@@ -1,11 +1,10 @@
 import { useSession } from "next-auth/react";
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "../ui/button";
 import { Download } from "lucide-react";
 import { useRouter } from "next/router";
-
-const templateURL =
-  "https://res.cloudinary.com/dwwno9ngw/raw/upload/v1737346827/Hackathon_Abstract_Submission_-_Goopy_Gophers_mjnwtt.pptx";
+import { templateURL } from "../registrationProgress";
+import PdfPreview from "../pdf";
 
 export default function IdeaDetails({ order }: { order: number }) {
   const { data } = useSession();
@@ -13,6 +12,20 @@ export default function IdeaDetails({ order }: { order: number }) {
 
   if (order !== 0) {
     if (data?.user.team?.ideaSubmission) {
+      return (
+       <div
+             className="flex h-full flex-col gap-4 rounded-md border-2 p-2"
+             style={{ order: order }}
+           >
+             <h1 className="text-xl">Identify Proofs</h1>
+             <div className="grid grid-cols-2 gap-2 h-full">
+               {/* <PdfPreview /> */}
+               {/* <Button onClick={async() => { await fetchIdeaSubmission()}}>click</Button> */}
+               <iframe src={data.user.team.ideaSubmission.split(";")[0]}></iframe>
+             </div>
+             <p className="text-center opacity-50">You have submitted you idea</p>
+           </div>
+      );
     } else {
       return (
         <div
@@ -42,7 +55,6 @@ export default function IdeaDetails({ order }: { order: number }) {
                   variant="outline"
                   className="flex flex-row gap-1 text-xs text-white md:text-sm"
                   onClick={async () => {
-                    // await router.push("/register?t=create");
                     const a = document.createElement("a");
                     a.href = templateURL;
                     a.download = "Idea_template.pptx";

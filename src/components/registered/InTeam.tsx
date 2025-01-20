@@ -57,7 +57,7 @@ export default function InTeam({ isLeader }: { isLeader: boolean }) {
   });
 
   return (
-    <div className="flex w-full max-w-4xl flex-col items-center justify-center rounded-md bg-black/50 p-4">
+    <div className="flex w-full max-w-4xl flex-col items-center justify-center rounded-md bg-black/50 p-4 border border-white/20">
       <h1 className="gradient-text text-2xl font-bold md:text-4xl">
         Team Details
       </h1>

@@ -164,15 +164,12 @@ function TeamSettings({
     members: User[];
   } | null;
 }) {
-  const { update } = useSession();
+  const router = useRouter();
 
   const deleteTeamMutaion = api.team.deleteTeam.useMutation({
     onSuccess: () => {
       toast.success("Team deleted successfully");
-      const timeout = setTimeout(() => {
-        void update();
-      }, 2000);
-      return () => clearTimeout(timeout);
+      router.reload();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -181,10 +178,7 @@ function TeamSettings({
   const updateProfileMutation = api.user.updateProfileProgress.useMutation({
     onSuccess: () => {
       toast.success("Team registered successfully");
-      const timeout = setTimeout(() => {
-        void update();
-      });
-      return () => clearTimeout(timeout);
+      router.reload();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -193,10 +187,7 @@ function TeamSettings({
   const leaveTeamMutation = api.team.leaveTeam.useMutation({
     onSuccess: () => {
       toast.success("Team left successfully");
-      const timeout = setTimeout(() => {
-        void update();
-      });
-      return () => clearTimeout(timeout);
+      router.reload();
     },
     onError: (error) => {
       toast.error(error.message);

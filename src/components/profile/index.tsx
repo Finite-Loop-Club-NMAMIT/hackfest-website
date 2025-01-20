@@ -6,6 +6,7 @@ import PersonalDeatils from "./personalDetails";
 import TeamDetails from "./teamDetails";
 import IdentityDetails from "./identityDetails";
 import IdeaDetails from "./ideaDetails";
+import ResumeDetails from "./resume";
 
 export default function ProfileCard({
   user,
@@ -20,6 +21,7 @@ export default function ProfileCard({
     <PersonalDeatils user={user} order={order[1] ?? 2}/>
     <IdentityDetails user={user} order={order[2] ?? 3}/>
     <IdeaDetails order={order[3] ?? 4}/>
+    <ResumeDetails order={order[4] ?? 5}/>
     </>
   )
 }

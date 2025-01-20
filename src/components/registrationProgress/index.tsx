@@ -11,7 +11,7 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/router";
 import IdeaSubmitForm from "../forms/ideaSubmitForm";
 
-const templateURL =
+export const templateURL =
   "https://res.cloudinary.com/dwwno9ngw/raw/upload/v1737346827/Hackathon_Abstract_Submission_-_Goopy_Gophers_mjnwtt.pptx";
 
 export default function RegisterCards({
@@ -57,55 +57,119 @@ export default function RegisterCards({
       );
 
     case "SUBMIT_IDEA":
-      return (
-        <AppSetting.Provider value={settings?.isRegistrationOpen ?? false}>
-          <AppSetting.Active>
-            <div className="flex h-full w-full justify-center pt-14 md:pt-8">
-              {session.user.isLeader ? (
-                <IdeaSubmitForm />
-              ) : (
-                <div className="flex w-full max-w-3xl flex-col justify-center rounded-md bg-black/50 p-8">
-                  <h1 className="bg-gradient-to-b from-orange-200 via-orange-700 to-orange-500 bg-clip-text text-center text-3xl font-bold text-transparent md:text-5xl">
-                    Not allowed!
-                  </h1>
-                  <p className="mt-4 text-center">
-                    Only the team leader can submit the idea. Only ideas
-                    submitted using the{" "}
-                    <a
-                      download={"idea_template.pptx"}
-                      href={templateURL}
-                      className="underline"
-                    >
-                      template
-                    </a>{" "}
-                    provided will be considered.
-                  </p>
-                  <Button
-                    className="mx-auto mt-2"
-                    onClick={async() => {
-                      await router.push("/profile");
-                    }}
-                  >
-                    Profile
-                  </Button>
-                </div>
-              )}
+      if (session.user.team?.ideaSubmission) {
+        return (
+          <div className="flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg bg-gradient-to-r from-black/50 via-blue-700/50 to-black/50 p-6 shadow-lg transition duration-500 ease-in-out hover:scale-105">
+            <h1 className="gradient-text mt-2 text-center text-3xl font-bold text-white drop-shadow-xl md:text-6xl">
+              Idea Submitted!
+            </h1>
+            <p className="p-4 text-center text-sm text-white md:text-lg">
+              You have already submitted your idea. We wish you to be in the top
+              60 teams.
+            </p>
+            <div className="mt-4">
+              <svg
+                className="h-16 w-16 animate-bounce text-yellow-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M10 15l-3.5 2.1 1-4.2-3.2-2.8 4.3-.4L10 6l1.4 3.7 4.3.4-3.2 2.8 1 4.2z" />
+              </svg>
             </div>
-          </AppSetting.Active>
-          <AppSetting.FallBack>
-            <RegistrationClosed session={session} />
-          </AppSetting.FallBack>
-        </AppSetting.Provider>
+            <Button
+              className="mt-4"
+              onClick={async () => {
+                await router.push("/profile");
+              }}
+            >
+              Profile
+            </Button>
+          </div>
+        );
+      } else {
+        return (
+          <AppSetting.Provider value={settings?.isRegistrationOpen ?? false}>
+            <AppSetting.Active>
+              <div className="flex h-full w-full justify-center pt-14 md:pt-8">
+                {session.user.isLeader ? (
+                  <IdeaSubmitForm />
+                ) : (
+                  <div className="flex w-full max-w-3xl flex-col justify-center rounded-md bg-black/50 p-8">
+                    <h1 className="bg-gradient-to-b from-orange-200 via-orange-700 to-orange-500 bg-clip-text text-center text-3xl font-bold text-transparent md:text-5xl">
+                      Not allowed!
+                    </h1>
+                    <p className="mt-4 text-center">
+                      The team leader should submit the idea. Only ideas
+                      submitted using the{" "}
+                      <a
+                        download={"idea_template.pptx"}
+                        href={templateURL}
+                        className="underline"
+                      >
+                        template
+                      </a>{" "}
+                      provided will be considered.
+                    </p>
+                    <Button
+                      className="mx-auto mt-2"
+                      onClick={async () => {
+                        await router.push("/profile");
+                      }}
+                    >
+                      Profile
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </AppSetting.Active>
+            <AppSetting.FallBack>
+              <RegistrationClosed session={session} />
+            </AppSetting.FallBack>
+          </AppSetting.Provider>
+        );
+      }
+
+    case "COMPLETE":
+      return (
+        <div className="mx-4 flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg border border-white/20 bg-black/50 p-4 shadow-lg transition duration-500 ease-in-out hover:scale-105">
+          <h1 className="gradient-text mt-2 text-center text-3xl font-bold text-white drop-shadow-xl md:text-6xl">
+            Idea Submitted!
+          </h1>
+          <p className="p-4 text-center text-sm text-white md:text-lg">
+            You have already submitted your idea. We wish you to be in the top
+            60 teams.
+          </p>
+          <div className="mt-4">
+            <svg
+              className="h-16 w-16 animate-bounce text-yellow-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 15l-3.5 2.1 1-4.2-3.2-2.8 4.3-.4L10 6l1.4 3.7 4.3.4-3.2 2.8 1 4.2z" />
+            </svg>
+          </div>
+          <Button
+            className="mt-4"
+            onClick={async () => {
+              await router.push("/profile");
+            }}
+          >
+            Profile
+          </Button>
+        </div>
       );
 
     case "PAYMENT":
       return <p>Payment</p>;
 
-    case "COMPLETE":
-      return <p>Complete</p>;
-
     default:
-      return "something went wrong";
+      return (
+        <AppSetting.Provider value={true}>
+          <AppSetting.Active>
+            <RegistrationClosed session={session} />
+          </AppSetting.Active>
+        </AppSetting.Provider>
+      );
   }
 }
 
@@ -114,7 +178,7 @@ function RegistrationClosed({ session }: { session: Session }) {
 
   return (
     <div className="flex h-screen w-screen items-center justify-center">
-      <div className="mx-4 h-fit w-full max-w-[70rem] rounded-xl bg-black/50 p-10 text-center text-white">
+      <div className="mx-4 h-fit w-full max-w-[70rem] rounded-xl border border-white/20 bg-black/50 p-10 text-center text-white">
         <h1 className="bg-gradient-to-b from-red-300 via-red-800 to-red-500 bg-clip-text text-5xl font-bold text-transparent md:text-8xl">
           Too Late!
         </h1>

@@ -13,7 +13,7 @@ export default function ProfilePhoto({
 }) {
   if (isLeader) {
     return (
-      <div className="order-1 flex min-h-[60dvh] flex-col items-center justify-center md:min-h-0">
+      <div className="order-1 flex min-h-[60dvh] flex-col items-center justify-center md:min-h-0 pb-4">
         <div className="relative p-10 md:p-8">
           <Image
             src={image}
@@ -35,7 +35,7 @@ export default function ProfilePhoto({
     );
   } else {
     return (
-      <div className="order-1 flex min-h-[60dvh] flex-col items-center justify-center md:min-h-0">
+      <div className="order-1 flex min-h-[60dvh] flex-col items-center justify-center md:min-h-0 pb-4">
         <div className="relative p-10 md:p-8">
           <Image
             src={image}
