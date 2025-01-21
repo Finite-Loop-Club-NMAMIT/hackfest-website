@@ -10,27 +10,35 @@ const config = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
+        protocol: "https",
+        hostname: "res.cloudinary.com",
       },
       {
-        protocol:"https",
-        hostname:"lh3.googleusercontent.com"
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
       {
-        protocol:"https",
-        hostname:"res.cloudinary.com",
+        protocol: "https",
+        hostname: "res.cloudinary.com",
         // pathname:"/"
       },
       {
-        protocol:"https",
-        hostname:"i1.sndcdn.com",
+        protocol: "https",
+        hostname: "i1.sndcdn.com",
         // pathname:"/"
       },
       {
-        protocol:"https",
-        hostname:"img.freepik.com",
+        protocol: "https",
+        hostname: "img.freepik.com",
         // pathname:"/"
+      },
+      {
+        protocol: "https",
+        hostname: "api.github.com",
+      },
+      {
+        protocol: "https",
+        hostname: "github.com",
       },
     ],
   },
@@ -43,6 +51,13 @@ const config = {
   i18n: {
     locales: ["en"],
     defaultLocale: "en",
+  },
+  experimental: {
+    turbo: {
+      resolveAlias: {
+        canvas: "./empty-module.ts",
+      },
+    },
   },
 };
 

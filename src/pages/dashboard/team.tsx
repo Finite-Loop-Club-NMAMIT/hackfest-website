@@ -1,5 +1,3 @@
-import DownloadDataButtons from "~/components/downloadData";
-import FaqAdmin from "~/components/faq/faqAdmin";
 import DashboardLayout from "~/components/layout/dashboardLayout";
 import FinalParticipantsTable from "~/components/teamDashboard/finalParticipantsTable";
 import { api } from "~/utils/api";
@@ -21,7 +19,6 @@ import NotFound from "../404";
 
 export default function Team() {
   const res = api.team.getTeamsList.useQuery();
-  const users = api.user.getAllUsers.useQuery().data;
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const [selectedTeams, setSelectedTeams] = useState(res.data);
@@ -45,7 +42,7 @@ export default function Team() {
         (team) => team.paymentStatus === paymentQuery,
       );
     });
-  }, [res.data, searchQuery, paymentQuery]);
+  }, [res.data, searchQuery, paymentQuery, res]);
 
   if (status === "loading")
     return (

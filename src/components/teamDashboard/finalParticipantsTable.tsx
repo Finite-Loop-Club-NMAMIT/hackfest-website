@@ -24,7 +24,7 @@ import {
 } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import { Team } from "@prisma/client";
+import type { Team } from "@prisma/client";
 import { Check, X } from "lucide-react";
 
 interface MembersRow {
@@ -33,7 +33,7 @@ interface MembersRow {
 
 export default function FinalParticipantsTable({
   data,
-  dataRefecth
+  dataRefecth,
 }: {
   data:
     | inferRouterOutputs<typeof teamRouter>["getTeamsList"]
@@ -53,16 +53,16 @@ export default function FinalParticipantsTable({
     },
     onError: (error) => {
       toast.error(error.message);
-    }
+    },
   });
   async function ToggleAttendance(id: string) {
     await toggleAttendance.mutateAsync({
-        teamId: id
-    })
+      teamId: id,
+    });
   }
 
-  if(toggleAttendance.isLoading){
-    toast.loading("Updating Attendance", {id: "attendanceToast"});
+  if (toggleAttendance.isLoading) {
+    toast.loading("Updating Attendance", { id: "attendanceToast" });
   }
 
   const columns: ColumnDef<
@@ -83,37 +83,44 @@ export default function FinalParticipantsTable({
       ),
     },
     {
-      accessorKey: '',
-      header: 'Attendance',
+      accessorKey: "",
+      header: "Attendance",
       cell: (cell) => {
-        return(
+        return (
           <>
             <div className="flex">
-            {
-              !(cell.cell.row.original as Team).attended ? (
-                <div className="bg-green-500 inline-block p-2 rounded-lg">
-                  <span className=" text-white cursor-pointer" onClick={async () => {
-                       await ToggleAttendance(`${(cell.cell.row.original as Team).id}`);
-                  }} ><Check /></span>
+              {!(cell.cell.row.original as Team).attended ? (
+                <div className="inline-block rounded-lg bg-green-500 p-2">
+                  <span
+                    className=" cursor-pointer text-white"
+                    onClick={async () => {
+                      await ToggleAttendance(
+                        `${(cell.cell.row.original as Team).id}`,
+                      );
+                    }}
+                  >
+                    <Check />
+                  </span>
                 </div>
               ) : (
-                <div className="bg-red-500 inline-block p-2 rounded-lg">
-                  <span className=" text-white cursor-pointer" onClick={async () => {
-                      await ToggleAttendance(`${(cell.cell.row.original as Team).id}`);
-                  }}>
-                  <X/>
-                </span>
+                <div className="inline-block rounded-lg bg-red-500 p-2">
+                  <span
+                    className=" cursor-pointer text-white"
+                    onClick={async () => {
+                      await ToggleAttendance(
+                        `${(cell.cell.row.original as Team).id}`,
+                      );
+                    }}
+                  >
+                    <X />
+                  </span>
                 </div>
-              )
-              
-            }
+              )}
             </div>
           </>
-        )
-      }
+        );
+      },
     },
-    
-    
   ];
 
   const table = useReactTable({
@@ -157,14 +164,13 @@ export default function FinalParticipantsTable({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row,index) => (
+              table.getRowModel().rows.map((row, index) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
                   <TableCell key={index}>{index}</TableCell>
                   {row.getVisibleCells().map((cell) => (
-                    
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,

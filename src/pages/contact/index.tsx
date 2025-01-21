@@ -1,4 +1,5 @@
-import ContactCard from "~/components/contact";
+import { FaPhone } from "react-icons/fa";
+import { IoIosMail } from "react-icons/io";
 import RootLayout from "~/components/layout";
 import { SectionHeading } from "~/components/ui/sectionHeading";
 
@@ -51,7 +52,7 @@ const technicalContact = [
     email: "4nm21cs171@nmamit.in",
     ph: "9449414199",
   },
-]
+];
 
 export default function Contact() {
   return (
@@ -79,17 +80,17 @@ export default function Contact() {
           </div>
 
           <SectionHeading
-          title="TECHNICAL SUPPORT"
-          classname="text-5xl md:text-6xl xl:text-7xl"
-        />
+            title="TECHNICAL SUPPORT"
+            classname="text-5xl md:text-6xl xl:text-7xl"
+          />
 
-<div className="flex w-full flex-wrap items-center justify-center gap-3 md:gap-24">
+          <div className="flex w-full flex-wrap items-center justify-center gap-3 md:gap-24">
             {technicalContact.map((contact, idx) => {
               return (
                 <div key={idx} className="w-full max-w-xs md:max-w-sm">
                   <ContactCard {...contact} />
                 </div>
-              )
+              );
             })}
           </div>
 
@@ -127,5 +128,37 @@ export default function Contact() {
         </div>
       </main>
     </RootLayout>
+  );
+}
+
+function ContactCard({
+  name,
+  designation,
+  email,
+  ph,
+}: {
+  name: string;
+  designation: string;
+  email: string;
+  ph: string;
+}) {
+  return (
+    <div className="rounded-2xl border-2 border-teal-600 bg-gradient-to-br from-teal-700/50 via-teal-300/50 to-teal-700/50 px-6 py-6 text-sm text-white backdrop-blur-2xl md:px-10  md:text-base xl:text-lg">
+      <div className="flex flex-col gap-1 text-justify">
+        <div className="text-lg font-semibold md:text-xl xl:text-2xl">
+          {name}
+        </div>
+        <h2 className="text-base md:text-lg xl:text-xl">{designation}</h2>
+        <a
+          href={`mailto:${email}`}
+          className="flex items-center justify-start gap-2"
+        >
+          <IoIosMail /> {email}
+        </a>
+        <a href={`tel:${ph}`} className="flex items-center justify-start gap-2">
+          <FaPhone className="text-sm md:text-base" /> {ph}
+        </a>
+      </div>
+    </div>
   );
 }

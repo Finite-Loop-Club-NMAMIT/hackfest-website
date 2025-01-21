@@ -1,5 +1,3 @@
-import DownloadDataButtons from "~/components/downloadData";
-import FaqAdmin from "~/components/faq/faqAdmin";
 import DashboardLayout from "~/components/layout/dashboardLayout";
 import ParticipantsTable from "~/components/participantsTable";
 import { api } from "~/utils/api";
@@ -9,33 +7,19 @@ import {
   TabsList,
   TabsTrigger,
 } from "../../components/ui/tabs";
-import ReferralsAdmin from "~/components/organiserDashboard/referralsAdmin";
 import { useEffect, useState } from "react";
 import Spinner from "~/components/spinner";
-
 import { useSession } from "next-auth/react";
 import NotFound from "../404";
 import JudgePanel from "~/components/organiserDashboard/judgePanel";
 import VolunteerPanel from "~/components/organiserDashboard/volunteerPanel";
-import { TeamProgress } from "@prisma/client";
-
-import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
 import FilterSheet from "~/components/organiserDashboard/filterSheet";
 import GithubSheet from "~/components/organiserDashboard/githubSheet";
-import { Button } from "~/components/ui/button";
+
 export default function Organiser() {
   const res = api.team.getTeamsList.useQuery();
   const users = api.user.getAllUsers.useQuery().data;
   const top15 = api.team.top15.useQuery().data;
-  const normalize = api.judges.fuckIt.useMutation({
-    onSuccess: () => {
-      toast.success("Done")
-    },
-    onError: (e) => {
-      toast.error(e.message)
-    }
-  })
 
   const allTeams = res.data;
   const [selectedTeams, setSelectedTeams] = useState(top15);
@@ -60,15 +44,6 @@ export default function Organiser() {
   };
 
   const { data, status } = useSession();
-  // const assignteamNumbers = api.organiser.assignTeamNumbers.useMutation({
-  //   onSuccess: async () => {
-  //     toast.success("Team Numbers assigned successfully");
-  //     await res.refetch();
-  //   },
-  //   onError: () => {
-  //     toast.error("Error assigning team numbers");
-  //   },
-  // })
 
   useEffect(() => {
     setSelectedTeams(() => {
@@ -91,8 +66,6 @@ export default function Organiser() {
         );
       }
 
-      
-
       if (top60Query !== "ALL") {
         partiallyFiltered = partiallyFiltered?.filter((team) => {
           const temp =
@@ -101,7 +74,7 @@ export default function Organiser() {
               : top60Query === "TOP 100"
                 ? "SEMI_SELECTED"
                 : top60Query === "TOP 60"
-               ? "SELECTED"
+                  ? "SELECTED"
                   : "";
 
           return team.teamProgress === temp;
@@ -110,13 +83,13 @@ export default function Organiser() {
 
       if (submissionQuery !== "ALL") {
         partiallyFiltered = partiallyFiltered?.filter(
-          (team) => !!team.ideaSubmission === (submissionQuery === "SUBMITTED"),
+          (team) => !!team.IdeaSubmission === (submissionQuery === "SUBMITTED"),
         );
       }
 
       if (trackQuery !== "ALL" && submissionQuery !== "NOT SUBMITTED") {
         partiallyFiltered = partiallyFiltered?.filter(
-          (team) => team.ideaSubmission?.track === trackQuery,
+          (team) => team.IdeaSubmission?.track === trackQuery,
         );
       }
 
@@ -129,18 +102,8 @@ export default function Organiser() {
     top60Query,
     submissionQuery,
     trackQuery,
+    allTeams,
   ]);
-
-  // const revalidateScores = api.team.revalidateScore.useMutation({
-  //   onSuccess: async () => {
-  //     toast.success("Scores revalidated successfully");
-  //     await res.refetch();
-  //   },
-  //   onError: () => {
-  //     toast.error("Error revalidating scores");
-  //   },
-  // });
-
   if (status === "loading")
     return (
       <DashboardLayout>
@@ -150,11 +113,7 @@ export default function Organiser() {
       </DashboardLayout>
     );
 
-  if (
-    !data ||
-    !data.user ||
-    (data.user.role !== "ORGANISER" && data.user.role !== "ADMIN")
-  ) {
+  if (!data || !data.user || data.user.role !== "ADMIN") {
     return <NotFound />;
   }
 
@@ -164,9 +123,6 @@ export default function Organiser() {
         <TabsList className="flex flex-row items-center justify-center">
           <TabsTrigger className="w-full" value="teams">
             Teams
-          </TabsTrigger>
-          <TabsTrigger className="w-full" value="referrals">
-            Referrals
           </TabsTrigger>
           <TabsTrigger className="w-full" value="roles">
             Roles
@@ -186,33 +142,15 @@ export default function Organiser() {
               </span>
               <span className="text-xl">
                 Number of Idea submissions :{" "}
-                {res?.data?.filter((team) => team.ideaSubmission).length}
+                {res?.data?.filter((team) => team.IdeaSubmission).length}
               </span>
             </div>
-            <FaqAdmin />
           </div>
           <div className="m-auto overflow-x-scroll md:max-w-screen-xl">
             <h1 className="my-8 text-center text-2xl font-bold">
               Participants
             </h1>
             <div className="my-4 flex h-full w-full flex-col items-center justify-around gap-3 md:flex-row">
-              <DownloadDataButtons />
-              {/* <Button 
-                onClick={async () => {
-                  await assignteamNumbers.mutateAsync();
-                }}
-              >
-                Assign Team Numbers
-              </Button> */}
-              {/* {data.user.role === "ADMIN" && (
-                <Button
-                  onClick={async () => {
-                    await revalidateScores.mutateAsync();
-                  }}
-                >
-                  Revalidate Scores
-                </Button>
-              )} */}
               <GithubSheet />
               <FilterSheet {...filterSheetProps} />
             </div>
@@ -225,17 +163,7 @@ export default function Organiser() {
               />
             )}
           </div>
-          <div>
-            {/* <TeamsList
-              teams={res?.map((team) => {
-                return { id: team.id, teamName: team.name };
-              })}
-            /> */}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="referrals">
-          <ReferralsAdmin />
+          <div></div>
         </TabsContent>
 
         <TabsContent value="roles">

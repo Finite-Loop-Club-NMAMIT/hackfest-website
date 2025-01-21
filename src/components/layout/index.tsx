@@ -3,7 +3,6 @@ import Navbar from "../navbar";
 import Footer from "../footer";
 import ProgressBarProvider from "../progressBarProvider";
 import { useRouter } from "next/router";
-import NewsBanner from "../newsBanner";
 export default function RootLayout(props: { children: React.ReactNode }) {
   const router = useRouter();
 
@@ -12,10 +11,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       className={`dark text-white ${router.pathname === "/" ? "" : "bg-black"}`}
     >
       <ProgressBarProvider>
-        <Toaster richColors expand={true} position="bottom-center" />
-        <div className="">
-          <NewsBanner />
-        </div>
+        <Toaster richColors expand={false} position="bottom-center" />
         <Navbar />
         {props.children}
         <Footer />

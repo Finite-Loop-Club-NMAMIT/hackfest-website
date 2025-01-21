@@ -9,7 +9,7 @@ import { type Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import { env } from "~/env";
 import { db } from "~/server/db";
-import type { GameTeam, Progress, Role, TeamProgress } from "@prisma/client";
+import type { Progress, Role, TeamProgress } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -27,7 +27,7 @@ declare module "next-auth" {
             name: string;
             isComplete: boolean;
             ideaSubmission: string | undefined;
-            teamProgress : TeamProgress
+            teamProgress: TeamProgress;
           }
         | null
         | undefined;
@@ -37,7 +37,6 @@ declare module "next-auth" {
       phone: string;
       role: Role;
       profileProgress: Progress;
-      gameTeam: GameTeam | null | undefined;
     } & DefaultSession["user"];
   }
 }
@@ -62,9 +61,8 @@ export const authOptions: NextAuthOptions = {
           email: session.user.email!,
         },
         include: {
-          team: { include: { ideaSubmission: true } },
-          college: true,
-          gameTeam: true,
+          Team: { include: { IdeaSubmission: true } },
+          College: true,
         },
       });
       if (!dbUser) {
@@ -72,23 +70,21 @@ export const authOptions: NextAuthOptions = {
       }
       session.user.id = dbUser.id;
       session.user.role = dbUser.role;
-      if (dbUser.team) {
+      if (dbUser.Team) {
         const team = {
-          id: dbUser?.team?.id,
-          name: dbUser?.team?.name,
-          isComplete: dbUser?.team?.isComplete,
-          ideaSubmission: dbUser?.team?.ideaSubmission?.pptUrl,
-          teamProgress: dbUser?.team?.teamProgress,
+          id: dbUser?.Team?.id,
+          name: dbUser?.Team?.name,
+          isComplete: dbUser?.Team?.isComplete,
+          ideaSubmission: dbUser?.Team?.IdeaSubmission?.pptUrl,
+          teamProgress: dbUser?.Team?.teamProgress,
         };
         session.user.team = team;
       } else session.user.team = null;
-      session.user.college = dbUser.college?.name ?? "";
+      session.user.college = dbUser.College?.name ?? "";
       session.user.isLeader = dbUser?.isLeader;
       session.user.phone = dbUser?.phone ?? "";
       session.user.profileProgress = dbUser?.profileProgress;
-      session.user.gameTeam = dbUser?.gameTeam;
-      session.user.isGameLeader = dbUser?.isGameLeader;
-      
+
       return session;
     },
   },
@@ -97,6 +93,11 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "select_account",
+        },
+      },
     }),
     /**
      * ...add more providers here.

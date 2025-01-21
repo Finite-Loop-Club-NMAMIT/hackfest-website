@@ -1,203 +1,387 @@
-import { useContext, useEffect, useState } from "react";
-import { ProgressContext } from "../../progressProvider";
-import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
-import { Badge } from "../../ui/badge";
-import { Button } from "../../ui/button";
-import { Loader2Icon, UserRoundPlus } from "lucide-react";
-import { Input } from "../../ui/input";
+// create and join team tabs
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { type z } from "zod";
+import { createTeamZ, joinTeamZ } from "~/server/schema/zod-schema";
+import { useSearchParams } from "next/navigation";
 import { api } from "~/utils/api";
+import { useRouter } from "next/router";
 import { toast } from "sonner";
+import gsap from "gsap";
+import { useSession } from "next-auth/react";
+import { Team } from "@prisma/client";
 
-export default function CreateTeam({ refetch }: { refetch: () => void }) {
-  const { currentState } = useContext(ProgressContext);
+import { Button } from "~/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { RxCrossCircled } from "react-icons/rx";
+import { ClipboardCopy } from "lucide-react";
+import TeamList from "~/components/team/teamList";
 
-  const [teamId, setTeamId] = useState("");
-  const [Error, setError] = useState("");
-  const [Message, setMessage] = useState("");
-  const [isWaiting, setIsWaiting] = useState(false);
-  const [Loading1, setLoading1] = useState(false);
-  const [Loading2, setLoading2] = useState(false);
-  const [teamName, setTeamName] = useState("");
-  const createTeam = api.team.createTeam.useMutation({
-    onSuccess: () => {
-      setMessage("Team created successfully");
-      refetch();
+export default function RegisterTeamForm() {
+  const { data, update } = useSession();
+  const params = useSearchParams();
+  const router = useRouter();
+  const utils = api.useUtils();
+
+  const createTeamMutation = api.team.createTeam.useMutation({
+    onSuccess: (data) => {
+      setTeamDetails(data.team as Team);
+      setIsCreateDialogOpen(true);
+      gsap.set("#form.title", { innerText: "Team Created" });
     },
     onError: (error) => {
-      console.log(error);
-      setError(error.message);
+      toast.error(error.message);
     },
   });
-  const joinTeam = api.team.joinTeam.useMutation({
-    onSuccess: () => {
-      setMessage("Team joined successfully");
-      refetch();
+  const joinTeamMutation = api.team.joinTeam.useMutation({
+    onSuccess: (data) => {
+      setTeamDetails(data.team as Team);
+      setIsJoined(true);
+      gsap.set("#form.title", { innerText: "Team Joined" });
     },
     onError: (error) => {
-      console.log(error.message);
-      setError(error.message);
+      toast.error(error.message);
     },
   });
 
-  useEffect(() => {
-    if (isWaiting) setTimeout(() => setIsWaiting(false), 200);
-  }, [isWaiting]);
+  const createTeamForm = useForm<z.infer<typeof createTeamZ>>({
+    resolver: zodResolver(createTeamZ),
+    defaultValues: {
+      teamName: "",
+    },
+  });
+  const joinTeamForm = useForm<z.infer<typeof joinTeamZ>>({
+    resolver: zodResolver(joinTeamZ),
+    defaultValues: {
+      teamId: "",
+    },
+  });
 
-  // const nameHandler = async (name: string) => {
-  //   setTeamName(name);
-  //   if (!isWaiting && name.length > 3) {
-  //     const res = checkName.data;
-  //     if (
-  //       res?.status === "success" &&
-  //       (res?.message === true || res?.message === false)
-  //     ) {
-  //       console.log(res?.message);
-  //       setIsNameAvailable(res?.message);
-  //     } else {
-  //       setError(res?.message as string);
-  //     }
-  //   } else setIsNameAvailable(false);
-  // };
+  const [teamTimeout, setTeamTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchTeamId, setSearchTeamId] = useState<string>("");
+  const [isJoined, setIsJoined] = useState<boolean>(false);
+  const [teamDetailsTimeout, setTeamDetailsTimeout] =
+    useState<NodeJS.Timeout>();
+  const [isTeamNameUnique, setIsTeamNameUnique] = useState<
+    "loading" | "inuse" | "available" | "warning" | null
+  >(null);
+  const [teamDetails, setTeamDetails] = useState<Team | null>(null);
 
-  useEffect(() => {
-    if (Error) setTimeout(() => setError(""), 2000);
-    if (Message) setTimeout(() => setMessage(""), 2000);
-  }, [Error, Message]);
+  function onCreateTeamSubmit(values: z.infer<typeof createTeamZ>) {
+    createTeamMutation.mutate(values);
+  }
+  function onJoinTeamSubmit(values: z.infer<typeof joinTeamZ>) {
+    joinTeamMutation.mutate(values);
+  }
 
-  if (currentState !== 1) return null;
+  function checkIsTeamNameUnique(event: React.ChangeEvent<HTMLInputElement>) {
+    const teamName = event.currentTarget.value;
+    const length = createTeamForm.getValues("teamName").length;
+    const isSpecialChar = /[^a-zA-Z0-9]/.test(teamName);
+
+    if (length > 10 || isSpecialChar) {
+      setIsTeamNameUnique("warning");
+      if (teamTimeout) {
+        clearTimeout(teamTimeout);
+      }
+      return;
+    }
+
+    if (teamName.length > 0) {
+      setIsTeamNameUnique("loading");
+      if (teamTimeout) {
+        clearTimeout(teamTimeout);
+      }
+
+      if (teamName.length > 10) {
+        setIsTeamNameUnique("warning");
+        return;
+      }
+
+      const timeout = setTimeout(() => {
+        void utils.team.checkName
+          .fetch({ teamName: teamName })
+          .then((response) => {
+            setIsTeamNameUnique(response.message ? "available" : "inuse");
+          })
+          .catch((error: { message: string }) => {
+            console.log(error.message);
+          });
+      }, 500);
+
+      setTeamTimeout(timeout);
+    } else {
+      setIsTeamNameUnique(null);
+      if (teamTimeout) {
+        clearTimeout(teamTimeout);
+      }
+    }
+  }
+
+  function getTeamDetails(event: React.ChangeEvent<HTMLInputElement>) {
+    const value = event.currentTarget.value;
+
+    if (value) {
+      if (teamDetailsTimeout) {
+        clearTimeout(teamDetailsTimeout);
+      }
+      const timeout = setTimeout(() => {
+        setSearchTeamId(value);
+      }, 500);
+
+      setTeamDetailsTimeout(timeout);
+    } else {
+      setSearchTeamId("");
+      if (teamDetailsTimeout) {
+        clearTimeout(teamDetailsTimeout);
+      }
+    }
+  }
 
   return (
-    <Card className="h-fit w-full">
-      <CardHeader>
-        <CardTitle className="text-center">Team management</CardTitle>
-      </CardHeader>
-      <CardContent className="px-2">
-        <div className="m-auto flex flex-col justify-evenly rounded-lg">
-          <div className="flex w-full justify-center">
-            {(Error || Message) && (
-              <Badge
-                className={`-mt-2 w-fit text-center ${
-                  !Error ? "text-green-500" : "text-red-500"
-                }`}
+    <>
+      <Dialog
+        open={isCreateDialogOpen}
+        onOpenChange={(value) => {
+          if (!value) {
+            void router.replace("/profile");
+            void update();
+          }
+          setIsCreateDialogOpen(value);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-center text-3xl">
+              Team Created
+            </DialogTitle>
+            <DialogDescription className="mt-4">
+              <p className="md:text-lg text-center">
+                Your team,{" "}
+                <span className="font-extrabold">
+                  {teamDetails?.name ?? "New Team"}
+                </span>
+                , has been created successfully🥳. Use the code below to invite
+                your fellow members.
+              </p>
+              <div
+                className="relative mt-4 flex cursor-pointer flex-row flex-nowrap"
+                onClick={async () => {
+                  if (teamDetails?.name) {
+                    await window.navigator.clipboard.writeText(
+                      teamDetails.id ?? "",
+                    );
+                    toast.info("Code copied successfully!");
+                  } else {
+                    toast.error("Failed to copy code!");
+                  }
+                }}
               >
-                {Error || Message}
-              </Badge>
-            )}
-          </div>
+                <Input
+                  value={
+                    teamDetails?.id ??
+                    "code not available"
+                  }
+                  className="cursor-pointer truncate pr-10 text-left"
+                  readOnly
+                />
+                <ClipboardCopy className="absolute right-1 top-1 size-8 rounded-r-md p-1" />
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
 
-          <div className="my-4 flex flex-col items-center justify-center gap-3 lg:flex-row">
-            <Card className="w-full p-5">
-              <CardContent>
-                <form
-                  className="flex flex-col gap-2 text-center"
-                  onSubmit={async (e) => {
-                    setLoading1(true);
-                    e.preventDefault();
-                    if (teamName.length > 10) {
-                      setLoading1(false);
-                      return toast.error(
-                        "Team name should be less than 10 characters",
-                      );
+      <Dialog
+        open={isJoined}
+        onOpenChange={(value) => {
+          if (!value) {
+            void router.replace("/profile");
+            void update();
+          }
+          setIsJoined(value);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-center text-3xl">
+              Team Joined
+            </DialogTitle>
+            <DialogDescription className="mt-4">
+              <p className="md:text-lg text-center">
+                Congragulations{" "}
+                <span>{data?.user.name ?? "Tech Enthusiast"}</span> 🥳! You have
+                successfully joined {teamDetails?.name ?? "your team"}
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+      <Tabs
+        defaultValue={params.get("t") ?? "create"}
+        onValueChange={async (value) => {
+          await router.push("/register", { query: { t: value } });
+        }}
+        className="mx-auto flex w-full max-w-3xl flex-col justify-center"
+      >
+        <TabsList className="mx-auto mt-8 w-full max-w-lg">
+          <TabsTrigger value="create" className="w-full">
+            Create
+          </TabsTrigger>
+          <TabsTrigger value="join" className="w-full">
+            Join
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="create" className="mt-4">
+          <Form {...createTeamForm}>
+            <form
+              onSubmit={createTeamForm.handleSubmit(onCreateTeamSubmit)}
+              className="space-y-8"
+            >
+              <FormField
+                control={createTeamForm.control}
+                name="teamName"
+                render={({ field }) => (
+                  <FormItem className="min-h-24">
+                    <FormLabel>Team Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter team name"
+                        {...field}
+                        onInput={checkIsTeamNameUnique}
+                      />
+                    </FormControl>
+                    <div className="left-2 text-xs md:text-sm">
+                      {isTeamNameUnique === "loading" && (
+                        <div className="flex flex-row items-center gap-2 opacity-60">
+                          <span className="loader size-4 text-[1px]"></span>{" "}
+                          <p>Checking availability</p>
+                        </div>
+                      )}
+                      {isTeamNameUnique === "available" && (
+                        <div className="flex flex-row items-center gap-1 text-green-500 opacity-60">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            className="lucide lucide-circle-check size-4"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="m9 12 2 2 4-4" />
+                          </svg>
+                          <p>Available</p>
+                        </div>
+                      )}
+                      {isTeamNameUnique === "warning" && (
+                        <div className="flex flex-row items-center gap-1 text-red-500 opacity-60">
+                          <RxCrossCircled className="size-6" />
+                          <p>
+                            Length must be less than 10 and no special symbols
+                          </p>
+                        </div>
+                      )}
+                      {isTeamNameUnique === "inuse" && (
+                        <div className="flex flex-row items-center gap-1 text-red-500 opacity-60">
+                          <RxCrossCircled className="" />
+                          <p>Team name already in use</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                disabled={isSubmitting}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  setIsSubmitting(true);
+                  if (isTeamNameUnique === "available") {
+                    await createTeamForm.handleSubmit(onCreateTeamSubmit)();
+                  } else {
+                    if (isTeamNameUnique === "inuse") {
+                      toast.warning("Team name is already in use");
+                    } else if (isTeamNameUnique === "warning") {
+                      toast.warning("Team name not valid");
                     }
-                    toast.promise(
-                      createTeam.mutateAsync({
-                        teamName,
-                      }),
-                      {
-                        loading: "Creating team...",
-                        success: "Team created successfully",
-                        error(error) {
-                          return (error as { message: string }).message;
-                        },
-                      },
-                    );
+                  }
+                  setIsSubmitting(false);
+                }}
+              >
+                Submit
+              </Button>
+            </form>
+          </Form>
+        </TabsContent>
 
-                    // if (res.status === "error") setError(res.message);
-                    // if (res.status === "success") {
-                    //   setMessage(res.message);
-                    // }
-                    setLoading1(false);
-                  }}
-                >
-                  <h1 className="text-xl font-bold">Create a Team</h1>
+        <TabsContent value="join" className="mt-4">
+          <Form {...joinTeamForm}>
+            <form
+              onSubmit={joinTeamForm.handleSubmit(onJoinTeamSubmit)}
+              className="space-y-8"
+            >
+              <FormField
+                control={joinTeamForm.control}
+                name="teamId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Team Id</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter team Id"
+                        {...field}
+                        onInput={getTeamDetails}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-sm">
+                      Get your Team ID from your leader
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                  <Input
-                    onChange={(e) => setTeamName(e.target.value)}
-                    type="text"
-                    placeholder="Team Name"
-                    className={`rounded border p-2 text-center text-white`}
-                    name="teamname"
-                    required
-                  />
-                  <Button type="submit" className={`flex items-center gap-2`}>
-                    {Loading1 ? (
-                      <>
-                        <Loader2Icon size={16} className="animate-spin" />
-                      </>
-                    ) : (
-                      <>
-                        <UserRoundPlus size={16} />
-                        Create Team
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+              {searchTeamId.length > 0 && (
+                <div className="flex justify-center">
+                  <TeamList teamId={joinTeamForm.getValues("teamId")} />
+                </div>
+              )}
 
-            <Card className="w-full p-5">
-              <CardContent>
-                <form
-                  className="flex flex-col gap-2 text-center"
-                  onSubmit={async (e) => {
-                    setLoading2(true);
-                    e.preventDefault();
-                    const formData = new FormData(e.target as HTMLFormElement);
-                    toast.promise(
-                      joinTeam.mutateAsync({
-                        teamId: formData.get("teamid") as string,
-                      }),
-                      {
-                        loading: "Joining team...",
-                        success: "Team joined successfully",
-                        error(error) {
-                          return (error as { message: string }).message;
-                        },
-                      },
-                    );
-                    // if (res.status === "error") setError(res.message);
-                    // if (res.status === "success") setMessage(res.message);
-                    setLoading2(false);
-                  }}
-                >
-                  <h1 className="text-xl font-bold">Join a Team</h1>
-                  <Input
-                    onChange={(e) => setTeamId(e.target.value)}
-                    value={teamId}
-                    type="text"
-                    className="rounded border p-2"
-                    placeholder="Team ID"
-                    name="teamid"
-                    required
-                  />
-                  <Button type="submit" className="flex items-center gap-2">
-                    {Loading2 ? (
-                      <>
-                        <Loader2Icon size={16} className="animate-spin" />
-                      </>
-                    ) : (
-                      <>
-                        <UserRoundPlus size={16} />
-                        Join Team
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+              <Button type="submit">Submit</Button>
+            </form>
+          </Form>
+        </TabsContent>
+      </Tabs>
+    </>
   );
 }

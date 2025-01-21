@@ -94,7 +94,6 @@ const ProfileForm = ({
   const [collegevalue, setCollegevalue] = useState("");
   const [collegeId, setCollegeId] = useState(user?.collegeId ?? "");
 
-  
   const updateProfile = api.user.updateProfile.useMutation({
     onSuccess: () => {
       toast.success("Profile Updated");
@@ -126,12 +125,10 @@ const ProfileForm = ({
       ),
     );
   }, [colleges, collegeSearchQuery]);
-  
+
   if (currentState !== 0 && registerProp) {
     return <></>;
   }
-
-  
 
   const upload = async (file: File) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
@@ -238,6 +235,7 @@ const ProfileForm = ({
         tshirtSize: data.tshirtSize,
         collegeIdUrl: data.collegeIdUrl,
         aadhaarUrl: data.aadhaarUrl,
+        github: data.github,
       })
       .catch((error) => {
         console.log(error);
@@ -245,8 +243,6 @@ const ProfileForm = ({
 
     toast.dismiss("loadingToast");
   };
-
-  
 
   return (
     <div className="max-h-max w-full">
@@ -318,10 +314,10 @@ const ProfileForm = ({
                         >
                           {collegevalue
                             ? collegevalue
-                            : user?.college?.name
-                              ? user?.college?.name +
+                            : user?.College?.name
+                              ? user?.College?.name +
                                 ", " +
-                                user?.college.state
+                                user?.College.state
                                   .replace(/_/g, " ")
                                   .split(" ")
                                   .map(

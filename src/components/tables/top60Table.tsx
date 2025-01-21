@@ -24,7 +24,7 @@ import {
 } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import { IdeaSubmission, Team, TeamProgress } from "@prisma/client";
+import type { IdeaSubmission, Team } from "@prisma/client";
 import { Check, X } from "lucide-react";
 
 interface MembersRow {
@@ -45,7 +45,6 @@ export default function Top60Table({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-
 
   const toggleAttendance = api.team.toggleAttendance.useMutation({
     onSuccess: () => {
@@ -77,9 +76,6 @@ export default function Top60Table({
   if (resetProgress.isLoading) {
     toast.loading("Resetting Progress", { id: "resetProgress" });
   }
-
-
-  const verifyUser = api.user.verifyUser.useMutation();
 
   const columns: ColumnDef<
     unknown,

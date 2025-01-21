@@ -8,15 +8,13 @@ import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import { type Role } from "@prisma/client";
 import { Card, CardContent } from "../ui/card";
-import { api } from "~/utils/api";
 export default function DashboardButton({ role }: { role: Role }) {
   const [dashboards, setDashboards] = useState<string[]>([]);
- 
+
   useEffect(() => {
     if (role) {
       if (role === "ADMIN") {
         setDashboards([
-          "admin",
           "attendance",
           "team",
           "organiser",
@@ -24,8 +22,6 @@ export default function DashboardButton({ role }: { role: Role }) {
         ]);
       } else if (role === "TEAM") {
         setDashboards(["team", "attendance"]);
-      } else if (role === "ORGANISER") {
-        setDashboards(["organiser", "attendance"]);
       } else if (role === "VALIDATOR") {
         setDashboards(["validator"]);
       } else if (role === "JUDGE") {
@@ -57,11 +53,6 @@ export default function DashboardButton({ role }: { role: Role }) {
             </Card>
           </PopoverContent>
         </Popover>
-      )}
-      {dashboards.length === 0 && (
-        <Link href={`/results`}>
-          <Button>Results</Button>
-        </Link>
       )}
       {dashboards.length === 1 && (
         <Link href={`/dashboard/${role?.toLowerCase()}`}>
