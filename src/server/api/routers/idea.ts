@@ -34,55 +34,29 @@ export const ideaRouter = createTRPCRouter({
             message: "Idea already submitted",
           });
 
-        if (input.referralCode === "")
-          await ctx.db.team.update({
-            data: {
-              IdeaSubmission: {
-                create: {
-                  pptUrl: input.pptUrl,
-                  track: input.track,
-                },
-              },
-              Members: {
-                updateMany: {
-                  where: {
-                    teamId: user.team?.id,
-                  },
-                  data: {
-                    profileProgress: "COMPLETE",
-                  },
-                },
+        await ctx.db.team.update({
+          data: {
+            IdeaSubmission: {
+              create: {
+                pptUrl: input.pptUrl,
+                track: input.track,
               },
             },
-            where: {
-              id: user.team?.id,
-            },
-          });
-        else {
-          await ctx.db.team.update({
-            data: {
-              IdeaSubmission: {
-                create: {
-                  pptUrl: input.pptUrl,
-                  track: input.track,
+            Members: {
+              updateMany: {
+                where: {
+                  teamId: user.team?.id,
                 },
-              },
-              Members: {
-                updateMany: {
-                  where: {
-                    teamId: user.team?.id,
-                  },
-                  data: {
-                    profileProgress: "COMPLETE",
-                  },
+                data: {
+                  profileProgress: "COMPLETE",
                 },
               },
             },
-            where: {
-              id: user.team?.id,
-            },
-          });
-        }
+          },
+          where: {
+            id: user.team?.id,
+          },
+        });
         return { status: "success", message: "Idea has been submitted" };
       } catch (error) {
         console.log(error);

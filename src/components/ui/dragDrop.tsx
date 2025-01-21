@@ -18,7 +18,7 @@ export default function DragAndDropFile({
   return (
     <>
       <div
-        className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-dashed bg-[#132b58]/50 p-4"
+        className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 hover:border-white/50 border-dashed bg-[#132b58]/50 p-4"
         onDragOver={(e) => {
           e.preventDefault();
           e.stopPropagation();

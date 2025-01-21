@@ -29,8 +29,10 @@ interface User {
 
 export default function TeamDetails({
   user,
+  order,
 }: {
   user: inferRouterOutputs<typeof userRouter>["getUserDetails"];
+  order: number;
 }) {
   const settings = useContext(settingsCtx);
   const [teamMembers, setTeamMembers] = useState<{
@@ -66,7 +68,10 @@ export default function TeamDetails({
 
   return (
     <>
-      <div className="flex h-full w-full flex-col gap-4 rounded-md border-2 p-2">
+      <div
+        className="flex h-full w-full flex-col gap-4 rounded-md border-2 p-2"
+        style={{ order: order }}
+      >
         <h1 className="text-xl">Team Details</h1>
         {user?.Team ? (
           <div className="flex h-full w-full flex-col">
@@ -123,9 +128,12 @@ function NotInTeam() {
       <div className="absolute left-0 top-0 z-10 h-full w-full bg-gradient-to-r from-transparent via-red-700/80 to-transparent"></div>
       <div className="absolute left-0 top-0 z-0 h-full w-full bg-gradient-to-b from-[#132c5a]/80 via-transparent to-[#132c5a]/80"></div>
       <div className="z-20 flex h-full w-full flex-col justify-center bg-transparent p-4 backdrop-blur-xl">
-        <p className="text-white">You are not in any team</p>
+        <p className="text-base text-white md:text-lg">
+          You are not in any team
+        </p>
         <div className="mt-4 flex flex-row-reverse justify-center gap-4">
           <Button
+            className="text-xs md:text-sm"
             onClick={async () => {
               await router.push("/register?t=join");
             }}
@@ -133,6 +141,7 @@ function NotInTeam() {
             Join Team
           </Button>
           <Button
+            className="text-xs md:text-sm"
             onClick={async () => {
               await router.push("/register?t=create");
             }}
@@ -155,15 +164,12 @@ function TeamSettings({
     members: User[];
   } | null;
 }) {
-  const { update } = useSession();
+  const router = useRouter();
 
   const deleteTeamMutaion = api.team.deleteTeam.useMutation({
     onSuccess: () => {
       toast.success("Team deleted successfully");
-      const timeout = setTimeout(() => {
-        void update();
-      }, 2000);
-      return () => clearTimeout(timeout);
+      router.reload();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -172,10 +178,7 @@ function TeamSettings({
   const updateProfileMutation = api.user.updateProfileProgress.useMutation({
     onSuccess: () => {
       toast.success("Team registered successfully");
-      const timeout = setTimeout(() => {
-        void update();
-      });
-      return () => clearTimeout(timeout);
+      router.reload();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -184,10 +187,7 @@ function TeamSettings({
   const leaveTeamMutation = api.team.leaveTeam.useMutation({
     onSuccess: () => {
       toast.success("Team left successfully");
-      const timeout = setTimeout(() => {
-        void update();
-      });
-      return () => clearTimeout(timeout);
+      router.reload();
     },
     onError: (error) => {
       toast.error(error.message);

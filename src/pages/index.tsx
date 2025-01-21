@@ -10,7 +10,7 @@ export default function Home() {
       <main className="relative mx-auto overflow-y-clip">
         <div className="absolute top-[100vh] z-50 h-40 w-full -translate-y-1/2"></div>
         {/* <Audio /> */}
-        {/* <Hero /> */}
+        <Hero />
         {/* <PrizePool /> */}
         <Timeline />
       </main>

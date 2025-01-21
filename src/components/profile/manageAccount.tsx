@@ -6,7 +6,7 @@ export default function ManageAccount() {
   return (
     <div className="mt-4 flex w-full justify-center gap-4">
       <Button
-        className="flex flex-nowrap items-center justify-center gap-2"
+        className="flex flex-nowrap items-center justify-center gap-2 text-xs md:text-sm"
         onClick={async () => {
           await signIn("google");
         }}
@@ -16,6 +16,7 @@ export default function ManageAccount() {
           width="24"
           height="24"
           viewBox="0 0 24 24"
+          className="size-4 md:size-5"
         >
           <path
             fill="currentColor"
@@ -26,14 +27,14 @@ export default function ManageAccount() {
       </Button>
       <Button
         variant="destructive"
-        className="flex flex-nowrap items-center justify-center gap-2"
+        className="flex flex-nowrap items-center justify-center gap-2 text-xs md:text-sm"
         onClick={async () => {
           await signOut({
-            callbackUrl: "/"
+            callbackUrl: "/",
           });
         }}
       >
-        <LogOut />
+        <LogOut className="size-4 md:size-5" />
         Log Out
       </Button>
     </div>

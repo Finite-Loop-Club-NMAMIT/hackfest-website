@@ -4,7 +4,7 @@ import RegisterTeamForm from "../forms/createTeam";
 
 export default function FormTeam() {
   return (
-    <Card className="w-full max-w-7xl bg-black/50 py-2 md:py-4">
+    <Card className="w-full max-w-7xl bg-black/50 py-2 md:py-4 border border-white/20">
       <CardHeader>
         <CardTitle
           id="form-title"
