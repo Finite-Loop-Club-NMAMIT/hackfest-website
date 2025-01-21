@@ -199,14 +199,15 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
                             <SelectValue placeholder={field.value} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="DAY1">DAY1</SelectItem>
-                            <SelectItem value="DAY2">DAY2</SelectItem>
-                            <SelectItem value="DAY3">DAY3</SelectItem>
+                          <SelectItem value="DAY1">DAY1</SelectItem>
+                          <SelectItem value="DAY2">DAY2</SelectItem>
+                          <SelectItem value="DAY3">DAY3</SelectItem>
 
                             {/* <SelectItem value="VALIDATOR">Validator</SelectItem>
                             <SelectItem value="SUPER_VALIDATOR">
                               Super Validator
                             </SelectItem> */}
+                           
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -265,7 +266,7 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
           </Form>
         </DialogContent>
       </Dialog>
-      {/* <JudgesTable data={judgesData} refetch={judgesRefetch} /> */}
+      <JudgesTable data={judgesData} refetch={judgesRefetch} />
     </>
   );
 };

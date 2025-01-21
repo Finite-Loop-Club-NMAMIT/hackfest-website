@@ -3,22 +3,16 @@ import { SessionProvider } from "next-auth/react";
 import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 import "~/styles/globals.css";
-import { Anton, Caesar_Dressing, Poppins } from "next/font/google";
-
+import { Poppins } from "next/font/google";
+import localFont from "next/font/local";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { siteMetadata } from "~/constants";
 
-export const anton = Anton({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-anton",
-});
-
-export const caesarDressing = Caesar_Dressing({
-  weight: ["400"],
-  subsets: ["latin"],
-  variable: "--font-caesar-dressing",
+const obscura = localFont({
+  src: "../../public/fonts/camera-obscura.otf",
+  display: "swap",
+  variable: "--font-obscura",
 });
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "700"] });
@@ -88,9 +82,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
           content={`${siteMetadata.siteUrl}/opengraph.png`}
         />
       </Head>
-      <main
-        className={`${poppins.className}  ${anton.variable} ${caesarDressing.variable}`}
-      >
+      <main className={`${poppins.className} ${obscura.variable}`}>
         <Component {...pageProps} />
       </main>
     </SessionProvider>

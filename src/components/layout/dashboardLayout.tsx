@@ -1,8 +1,17 @@
 import { Poppins } from "next/font/google";
+import localFont from "next/font/local";
 import { Toaster } from "sonner";
 import NotFound from "../not-found";
+import ProgressBarProvider from "../progressBarProvider";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import DashboardButton from "../navbar/dashboardButton";
+
+const obscura = localFont({
+  src: "../../../public/fonts/camera-obscura.otf",
+  display: "swap",
+  variable: "--font-obscura",
+});
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -24,6 +33,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = useSession();
+  const router = useRouter();
+  const pathname = router.pathname;
 
   if (user !== null) {
     if (user?.data?.user.role !== "PARTICIPANT") {

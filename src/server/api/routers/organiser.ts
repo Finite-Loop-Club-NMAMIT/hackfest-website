@@ -1,20 +1,40 @@
-import { TeamProgress } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { addJudgeZ } from "~/server/schema/zod-schema";
 
 export const organiserRouter = createTRPCRouter({
-  getJudgesList: adminProcedure.query(async ({ ctx }) => {
+  getJudgesList: protectedProcedure.query(async ({ ctx }) => {
+    if (
+      ctx.session.user.role !== "ORGANISER" &&
+      ctx.session.user.role !== "ADMIN"
+    ) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You cannot perform this action",
+      });
+    }
+
     return await ctx.db.judges.findMany({
       include: {
         User: true,
       },
     });
   }),
-  addJudge: adminProcedure
+  addJudge: protectedProcedure
     .input(addJudgeZ)
     .mutation(async ({ input, ctx }) => {
+      try {
+        if (
+          ctx.session.user.role !== "ORGANISER" &&
+          ctx.session.user.role !== "ADMIN"
+        ) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You cannot perform this action",
+          });
+        }
+
         const user = await ctx.db.user.findUnique({
           where: {
             id: input.userId,
@@ -36,37 +56,54 @@ export const organiserRouter = createTRPCRouter({
           await ctx.db.judges.create({
             data: {
               userId: input.userId,
+              track: input.track,
               type: input.type,
             },
           });
-          } else {
-            await ctx.db.user.update({
-              where: {
-                id: input.userId,
-              },
-              data: {
-                role: 'JUDGE',
-              },
-            });
-            await ctx.db.judges.update({
-              where: {
-                userId: input.userId,
-              },
-              data: {
-                type: input.type,
-              },
-            });
-          }
-        } 
-    ),
-  removeJudge: adminProcedure
+        } else {
+          await ctx.db.user.update({
+            where: {
+              id: input.userId,
+            },
+            data: {
+              role: 'JUDGE',
+            },
+          });
+          await ctx.db.judges.update({
+            where: {
+              userId: input.userId,
+            },
+            data: {
+              track: input.track,
+              type: input.type,
+            },
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+        });
+      }
+    }),
+  removeJudge: protectedProcedure
     .input(
       z.object({
         userId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      
+      try {
+        if (
+          ctx.session.user.role !== "ORGANISER" &&
+          ctx.session.user.role !== "ADMIN"
+        ) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You cannot perform this action",
+          });
+        }
 
         await ctx.db.judges.delete({
           where: {
@@ -81,24 +118,48 @@ export const organiserRouter = createTRPCRouter({
             role: "PARTICIPANT",
           },
         });
-      
-    
+      } catch (error) {
+        console.log(error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+        });
+      }
     }),
-  getVolunteerList: adminProcedure.query(async ({ ctx }) => {
+  getVolunteerList: protectedProcedure.query(async ({ ctx }) => {
+    if (
+      ctx.session.user.role !== "ORGANISER" &&
+      ctx.session.user.role !== "ADMIN"
+    ) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You cannot perform this action",
+      });
+    }
+
     return await ctx.db.user.findMany({
       where: {
         role: "TEAM",
       },
     });
   }),
-  addVolunteer: adminProcedure
+  addVolunteer: protectedProcedure
     .input(
       z.object({
         id: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      
+      try {
+        if (
+          ctx.session.user.role !== "ORGANISER" &&
+          ctx.session.user.role !== "ADMIN"
+        ) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You cannot perform this action",
+          });
+        }
         await ctx.db.user.update({
           where: {
             id: input.id,
@@ -107,15 +168,31 @@ export const organiserRouter = createTRPCRouter({
             role: "TEAM",
           },
         });
-      
+      } catch (error) {
+        console.log(error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+        });
+      }
     }),
-  removeVolunteer: adminProcedure
+  removeVolunteer: protectedProcedure
     .input(
       z.object({
         userId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      try {
+        if (
+          ctx.session.user.role !== "ORGANISER" &&
+          ctx.session.user.role !== "ADMIN"
+        ) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You cannot perform this action",
+          });
+        }
         await ctx.db.user.update({
           where: {
             id: input.userId,
@@ -124,39 +201,51 @@ export const organiserRouter = createTRPCRouter({
             role: "PARTICIPANT",
           },
         });
-    }),
-    changeTeamProgress: adminProcedure
-    .input(
-      z.object({
-        teamId: z.string(),
-        progress: z.nativeEnum(TeamProgress),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const user = ctx.session.user;
-      if (user.role !== "JUDGE")
+      } catch (error) {
+        console.log(error);
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You are not authorized to perform this action",
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
         });
-      const team = await ctx.db.team.findUnique({
-        where: {
-          id: input.teamId,
-        },
-      });
-      if (!team)
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Team not found",
-        });
-      const updatedTeam = await ctx.db.team.update({
-        where: {
-          id: input.teamId,
-        },
-        data: {
-          teamProgress: input.progress,
-        },
-      });
-      return updatedTeam;
+      }
     }),
+    // assignTeamNumbers: protectedProcedure.mutation(async ({ ctx }) => {
+    //   try {
+    //     if (
+    //       ctx.session.user.role !== "ORGANISER" &&
+    //       ctx.session.user.role !== "ADMIN"
+    //     ) {
+    //       throw new TRPCError({
+    //         code: "UNAUTHORIZED",
+    //         message: "You cannot perform this action",
+    //       });
+    //     }
+
+    //     const teams = await ctx.db.team.findMany({
+    //       where: {
+    //         teamProgress: 'SELECTED'
+    //       },
+    //       orderBy: {
+    //         name: 'asc'
+    //       }
+    //     })
+
+    //     for (let i = 0; i < teams.length; i++) {
+    //       await ctx.db.team.update({
+    //         where: {
+    //           id: teams[i]?.id
+    //         },
+    //         data: {
+    //           teamNo: i + 1
+    //         }
+    //       })
+    //     }
+    //   } catch (error) {
+    //     console.log(error);
+    //     throw new TRPCError({
+    //       code: "INTERNAL_SERVER_ERROR",
+    //       message: "Something went wrong",
+    //     });
+    //   }
+    // }),
 });

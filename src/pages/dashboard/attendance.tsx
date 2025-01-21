@@ -57,7 +57,12 @@ export default function Attendance() {
       });
   };
 
-  if (!user || (user?.user.role !== "TEAM" && user?.user.role !== "ADMIN")) {
+  if (
+    !user ||
+    (user?.user.role !== "ORGANISER" &&
+      user?.user.role !== "TEAM" &&
+      user?.user.role !== "ADMIN")
+  ) {
     return <NotFound />;
   }
 

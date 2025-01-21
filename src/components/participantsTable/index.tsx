@@ -54,7 +54,7 @@ export default function ParticipantsTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  const moveToTop15 = api.organiser.changeTeamProgress.useMutation({
+  const moveToTop15 = api.judges.changeTeamProgress.useMutation({
     onSuccess: async () => {
       dataRefecth();
       toast.success("Moved to Top 15");
@@ -149,7 +149,7 @@ export default function ParticipantsTable({
                   <span className="font-semibold">College: </span>{" "}
                   {
                     (cell.cell.row.original as Team & { members: members[] })
-                      .members[0]!.College?.name
+                      .members[0]!.college?.name
                   }
                 </div>
                 <div className="flex gap-5">
@@ -262,35 +262,35 @@ export default function ParticipantsTable({
       cell: (cell) => {
         return (
           <>
-            <Button
-              onClick={() =>
-                console.log(
-                  cell.cell.row.original as Team & {
-                    videoSubmission: VideoSubmissions | null;
-                  },
-                )
-              }
-              disabled={
-                (
+              <Button
+			  onClick={()=>console.log(
+(
                   cell.cell.row.original as Team & {
                     videoSubmission: VideoSubmissions | null;
                   }
-                ).videoSubmission?.url === null
-              }
-            >
-              <a
-                href={
+                )
+)}
+                disabled={
                   (
                     cell.cell.row.original as Team & {
                       videoSubmission: VideoSubmissions | null;
                     }
-                  ).videoSubmission?.url?.split(";")[0]
+                  ).videoSubmission?.url === null
                 }
-                target="_blank"
               >
+            <a
+              href={
+                (
+                  cell.cell.row.original as Team & {
+                    videoSubmission: VideoSubmissions | null;
+                  }
+                ).videoSubmission?.url?.split(";")[0]
+              }
+              target="_blank"
+            >
                 View Video{" "}
-              </a>
-            </Button>
+            </a>
+              </Button>
           </>
         );
       },

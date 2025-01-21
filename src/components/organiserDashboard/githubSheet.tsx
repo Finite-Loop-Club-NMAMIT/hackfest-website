@@ -163,6 +163,30 @@ const GithubSheet = () => {
     },
   });
 
+  const enableVideoSubmission = api.video.enableVideoSubmission.useMutation({
+    onSuccess: () => {
+      toast.dismiss();
+      toast.success("Enabled video submission");
+    },
+
+    onError: ({ message }) => {
+      toast.dismiss();
+      toast.error(message);
+    },
+  });
+
+  const disableVideoSubmission = api.video.disableVideoSubmission.useMutation({
+    onSuccess: () => {
+      toast.dismiss();
+      toast.success("Disabled video submission");
+    },
+
+    onError: ({ message }) => {
+      toast.dismiss();
+      toast.error(message);
+    },
+  });
+
   return (
     <Sheet>
       <SheetTrigger>
@@ -473,7 +497,7 @@ const GithubSheet = () => {
             <div className="flex w-full flex-col items-center justify-center gap-3 rounded-sm border p-3">
               <h3 className="text-xl font-bold text-white">Video Submission</h3>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                {/* <Button
+                <Button
                   onClick={() => {
                     toast.loading("Enabling video submission");
                     enableVideoSubmission.mutate();
@@ -488,8 +512,7 @@ const GithubSheet = () => {
                   }}
                 >
                   Disable Submission
-                </Button> */}
-                Submission Buttons
+                </Button>
               </div>
             </div>
           </SheetDescription>

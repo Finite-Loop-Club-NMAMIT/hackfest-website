@@ -6,10 +6,18 @@ import NotFound from "~/components/not-found";
 import DAY1 from "~/components/judge/day1";
 import DAY2 from "~/components/judge/day2";
 import DAY3 from "~/components/judge/day3";
+import { toast } from "sonner";
 
 export default function Judge() {
   const { data, status } = useSession();
+  const teamsQuery = api.judges.getTeams.useQuery();
   const judgeDay = api.judges.getDay.useQuery().data;
+  const teams = teamsQuery.data;
+  const criterias = api.criteria.getCriteria.useQuery({
+    type: "JUDGE",
+  }).data;
+  
+  const updateScore = api.judges.setScore.useMutation();
 
   if (status === "loading")
     return (

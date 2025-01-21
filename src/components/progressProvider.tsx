@@ -1,4 +1,4 @@
-import { type Dispatch, type ReactNode, createContext, useState } from "react";
+import { Dispatch, ReactNode, createContext, useState } from "react";
 
 // const ProgrssContext = createContext({currentStep: 1, maxStep: 1, setMaxStep: () => {}, setCurrentStep: () => {}});
 export const ProgressContext = createContext<{

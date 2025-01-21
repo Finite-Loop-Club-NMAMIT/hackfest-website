@@ -1,4 +1,5 @@
-import { Courses, JudgeType, Tracks, TshirtSize } from "@prisma/client";
+import { Category, Courses, JudgeType, Tracks, TshirtSize } from "@prisma/client";
+import { X } from "lucide-react";
 import { z } from "zod";
 
 const updateUserZ = z.object({
@@ -26,12 +27,6 @@ const updateProfileZ = z.object({
   course: z.custom<Courses>((val) => {
     return Object.values(Courses).includes(val as Courses);
   }),
-  github: z
-    .string()
-    .min(1, { message: "Github usename cannot be empty" })
-    .refine((val) => !val.includes("github.com/"), {
-      message: "Enter only username",
-    }),
   aadhaarUrl: z.string(),
   collegeIdUrl: z.string(),
 });
@@ -69,7 +64,7 @@ const submitIdeaZ = z.object({
   track: z.nativeEnum(Tracks, {
     required_error: "Track is required",
   }),
-  // referralCode: z.string().default(""),
+  referralCode: z.string().default(""),
   pptUrl: z.string(),
 });
 
@@ -100,36 +95,79 @@ const getTeamDetailsByIdZ = z.object({
   teamId: z.string().min(1, { message: "Team ID cannot be empty" }),
 });
 
+const addFaqZ = z.object({
+  question: z
+    .string()
+    .min(1, { message: "Question cannot be empty" })
+    .max(100, { message: "Question cannot exceed 100 characters" }),
+  category: z.nativeEnum(Category, {
+    required_error: "Category is required",
+  }),
+});
+
+const answerFaqZ = z.object({
+  id: z.number(),
+  answer: z
+    .string()
+    .min(1, { message: "Answer cannot be empty" })
+    .max(100, { message: "Answer cannot exceed 100 characters" }),
+});
+
+const deleteFaqZ = z.object({
+  id: z.number(),
+});
+
+const addReferralCodeZ = z.object({
+  code: z
+  .string(),
+  referrer: z
+    .string()
+    .min(1, { message: "Referrer cannot be empty" })
+    .max(50, { message: "Referrer cannot exceed 50 characters" }),
+  collegeId: z
+    .string(
+      {
+        required_error: "College ID is required",
+        invalid_type_error: "Something went wrong",
+      }
+    )
+    .min(1, { message: "College ID cannot be empty" }),
+  name: z
+      .string()
+      .min(1, { message: "Name cannot be empty" })
+      .max(50, { message: "Name cannot exceed 50 characters" }),
+  contact: z
+      .string()
+      .min(10, { message: "Enter valid email or phone number" })
+      .max(10, { message: "Enter valid email or phone number" })
+      .or(z.string().email({message: "Enter valid email or phone number"})),
+})
+
 const addJudgeZ = z.object({
   userId: z.string(),
   type: z.nativeEnum(JudgeType),
-  track: z.enum([
-    "FINTECH",
-    "SUSTAINABLE_DEVELOPMENT",
-    "HEALTHCARE",
-    "LOGISTICS",
-    "OPEN_INNOVATION",
-    "ALL",
-  ]),
-});
+  track: z.enum(['FINTECH',
+  'SUSTAINABLE_DEVELOPMENT',
+  'HEALTHCARE',
+  'METAVERSE',
+  'LOGISTICS',
+  'OPEN_INNOVATION',
+  'ALL'])
+})
+
 
 const finalSubmissionZ = z.object({
-  paymentId: z.string().min(1, { message: "Payment ID cannot be empty" }),
+  paymentId: z.string().min(1,{message:'Payment ID cannot be empty'}),
   paymentProof: z.string(),
   teamId: z.string(),
-});
+})
 
 const resumeSubmissionZ = z.object({
   userId: z.string(),
-  resumeUrl: z.string(),
-});
+  resumeUrl: z.string()
+})
 
-const appSettingsZ = z.object({
-  isRegistrationOpen: z.boolean().optional(),
-  isPaymentOpen: z.boolean().optional(),
-  isVideoSubmissionOpen: z.boolean().optional(),
-  isProfileEditOpen: z.boolean().optional(),
-});
+
 
 export {
   editProfileZ,
@@ -140,8 +178,11 @@ export {
   joinTeamZ,
   createCollegeZ,
   getTeamDetailsByIdZ,
+  addFaqZ,
+  answerFaqZ,
+  deleteFaqZ,
+  addReferralCodeZ,
   addJudgeZ,
   finalSubmissionZ,
-  resumeSubmissionZ,
-  appSettingsZ,
+  resumeSubmissionZ
 };

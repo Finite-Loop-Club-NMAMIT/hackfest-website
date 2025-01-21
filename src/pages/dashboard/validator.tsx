@@ -10,6 +10,7 @@ import { api } from "~/utils/api";
 import DashboardLayout from "~/components/layout/dashboardLayout";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import PDFModal from "~/components/validatorDashboard/pdfModal";
 import Spinner from "~/components/spinner";
 import NotFound from "../404";
 import { Button } from "~/components/ui/button";
@@ -27,7 +28,6 @@ export default function Validator() {
   });
   const teamData = api.team.getTeamsList.useQuery();
   const user = useSession();
-  const { data: criteria } = api.validator.getValidatorCriteria.useQuery();
 
   if (submitScore.isLoading) {
     toast.loading("Submitting score", { id: "submitting-score" });
@@ -46,8 +46,7 @@ export default function Validator() {
   if (
     !data ||
     !data.user ||
-    (data.user.role !== "VALIDATOR" && data.user.role !== "ADMIN") ||
-    !criteria
+    (data.user.role !== "VALIDATOR" && data.user.role !== "ADMIN")
   ) {
     return <NotFound />;
   }
@@ -82,7 +81,7 @@ export default function Validator() {
             </TableHeader>
             <TableBody>
               {teamData.data
-                ?.filter((team) => (team.IdeaSubmission ? true : false))
+                ?.filter((team) => (team.ideaSubmission ? true : false))
                 .map((team, index) => {
                   return (
                     <TableRow key={index}>
@@ -91,7 +90,7 @@ export default function Validator() {
                       <TableCell>
                         {/* <PDFModal team={team}/> */}
                         <a
-                          href={team.IdeaSubmission?.pptUrl.split(";")[0]}
+                          href={team.ideaSubmission?.pptUrl.split(";")[0]}
                           target="_blank"
                         >
                           <Button>View PDF</Button>
@@ -99,12 +98,11 @@ export default function Validator() {
                       </TableCell>
                       <TableCell>
                         <button
-                          className={`${team?.Scores[0]?.judgeId === user?.data?.user.id && team?.Scores[0]?.score === 5 ? "bg-green-700 text-white" : "bg-white text-black"} rounded-lg px-4 py-2`}
+                          className={`${team?.Scores[0]?.userId === user?.data?.user.id && team?.Scores[0]?.score.score === "5" ? "bg-green-700 text-white" : "bg-white text-black"} rounded-lg px-4 py-2`}
                           onClick={async () => {
                             await submitScore.mutateAsync({
-                              criteriaId: criteria.id,
                               teamId: team.id,
-                              score: 5,
+                              score: "5",
                             });
                           }}
                         >
@@ -114,12 +112,11 @@ export default function Validator() {
 
                       <TableCell>
                         <button
-                          className={`${team?.Scores[0]?.judgeId === user?.data?.user.id && team?.Scores[0]?.score === 10 ? "bg-green-700 text-white" : "bg-white text-black"} rounded-lg px-4 py-2`}
+                          className={`${team?.Scores[0]?.userId === user?.data?.user.id && team?.Scores[0]?.score.score === "10" ? "bg-green-700 text-white" : "bg-white text-black"} rounded-lg px-4 py-2`}
                           onClick={async () => {
                             await submitScore.mutateAsync({
-                              criteriaId: criteria.id,
                               teamId: team.id,
-                              score: 10,
+                              score: "10",
                             });
                           }}
                         >
@@ -129,12 +126,11 @@ export default function Validator() {
 
                       <TableCell>
                         <button
-                          className={`${team?.Scores[0]?.judgeId === user?.data?.user.id && team?.Scores[0]?.score === 15 ? "bg-green-700 text-white" : "bg-white text-black"} rounded-lg px-4 py-2`}
+                          className={`${team?.Scores[0]?.userId === user?.data?.user.id && team?.Scores[0]?.score.score === "15" ? "bg-green-700 text-white" : "bg-white text-black"} rounded-lg px-4 py-2`}
                           onClick={async () => {
                             await submitScore.mutateAsync({
-                              criteriaId: criteria.id,
                               teamId: team.id,
-                              score: 15,
+                              score: "15",
                             });
                           }}
                         >

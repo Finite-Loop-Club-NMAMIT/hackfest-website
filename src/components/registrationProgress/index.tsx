@@ -1,204 +1,100 @@
-import React from "react";
-import { type inferRouterOutputs } from "@trpc/server";
-import { type appSettingsRouter } from "~/server/api/routers/app";
-import { type Session } from "next-auth";
+import { useContext } from "react";
+import { ProgressContext } from "../progressProvider";
 
-import * as AppSetting from "../appSettingValidator";
-import FillDetails from "./fillDetails";
-import FormTeam from "./formTeam";
-import InTeam from "../registered/InTeam";
-import { Button } from "../ui/button";
-import { useRouter } from "next/router";
-import IdeaSubmitForm from "../forms/ideaSubmitForm";
+type Props = {
+  status: {
+    sections: ("active" | "pending" | "complete" | "draft")[];
+    // current: 0 | 1 | 2;
+  };
+};
 
-export const templateURL =
-  "https://res.cloudinary.com/dwwno9ngw/raw/upload/v1737346827/Hackathon_Abstract_Submission_-_Goopy_Gophers_mjnwtt.pptx";
+const colors = {
+  active: "#024655",
+  complete: "#024655",
+  pending: "black",
+  draft: "rgb(100, 100, 100)",
+};
 
-export default function RegisterCards({
-  session,
-  progress,
-  settings,
-}: {
-  session: Session;
-  progress: string;
-  settings:
-    | inferRouterOutputs<typeof appSettingsRouter>["getAppSettings"]
-    | null;
-}) {
-  const router = useRouter();
+const Progress = () => {
+  // console.log("progress");
+  const { currentState, maxState, setCurrentState } =
+    useContext(ProgressContext);
 
-  switch (progress) {
-    case "FILL_DETAILS":
-      return (
-        <AppSetting.Provider value={settings?.isRegistrationOpen ?? false}>
-          <AppSetting.Active>
-            <FillDetails />
-          </AppSetting.Active>
-          <AppSetting.FallBack>
-            <RegistrationClosed session={session} />
-          </AppSetting.FallBack>
-        </AppSetting.Provider>
-      );
-
-    case "FORM_TEAM":
-      return (
-        <AppSetting.Provider value={settings?.isRegistrationOpen ?? false}>
-          <AppSetting.Active>
-            {session.user.team?.id ? (
-              <InTeam isLeader={session.user.isLeader} />
-            ) : (
-              <FormTeam />
-            )}
-          </AppSetting.Active>
-          <AppSetting.FallBack>
-            <RegistrationClosed session={session} />
-          </AppSetting.FallBack>
-        </AppSetting.Provider>
-      );
-
-    case "SUBMIT_IDEA":
-      if (session.user.team?.ideaSubmission) {
-        return (
-          <div className="flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg bg-gradient-to-r from-black/50 via-blue-700/50 to-black/50 p-6 shadow-lg transition duration-500 ease-in-out hover:scale-105">
-            <h1 className="gradient-text mt-2 text-center text-3xl font-bold text-white drop-shadow-xl md:text-6xl">
-              Idea Submitted!
-            </h1>
-            <p className="p-4 text-center text-sm text-white md:text-lg">
-              You have already submitted your idea. We wish you to be in the top
-              60 teams.
-            </p>
-            <div className="mt-4">
-              <svg
-                className="h-16 w-16 animate-bounce text-yellow-400"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 15l-3.5 2.1 1-4.2-3.2-2.8 4.3-.4L10 6l1.4 3.7 4.3.4-3.2 2.8 1 4.2z" />
-              </svg>
-            </div>
-            <Button
-              className="mt-4"
-              onClick={async () => {
-                await router.push("/profile");
-              }}
-            >
-              Profile
-            </Button>
-          </div>
-        );
-      } else {
-        return (
-          <AppSetting.Provider value={settings?.isRegistrationOpen ?? false}>
-            <AppSetting.Active>
-              <div className="flex h-full w-full justify-center pt-14 md:pt-8">
-                {session.user.isLeader ? (
-                  <IdeaSubmitForm />
-                ) : (
-                  <div className="flex w-full max-w-3xl flex-col justify-center rounded-md bg-black/50 p-8">
-                    <h1 className="bg-gradient-to-b from-orange-200 via-orange-700 to-orange-500 bg-clip-text text-center text-3xl font-bold text-transparent md:text-5xl">
-                      Not allowed!
-                    </h1>
-                    <p className="mt-4 text-center">
-                      The team leader should submit the idea. Only ideas
-                      submitted using the{" "}
-                      <a
-                        download={"idea_template.pptx"}
-                        href={templateURL}
-                        className="underline"
-                      >
-                        template
-                      </a>{" "}
-                      provided will be considered.
-                    </p>
-                    <Button
-                      className="mx-auto mt-2"
-                      onClick={async () => {
-                        await router.push("/profile");
-                      }}
-                    >
-                      Profile
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </AppSetting.Active>
-            <AppSetting.FallBack>
-              <RegistrationClosed session={session} />
-            </AppSetting.FallBack>
-          </AppSetting.Provider>
-        );
-      }
-
-    case "COMPLETE":
-      return (
-        <div className="mx-4 flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg border border-white/20 bg-black/50 p-4 shadow-lg transition duration-500 ease-in-out hover:scale-105">
-          <h1 className="gradient-text mt-2 text-center text-3xl font-bold text-white drop-shadow-xl md:text-6xl">
-            Idea Submitted!
-          </h1>
-          <p className="p-4 text-center text-sm text-white md:text-lg">
-            You have already submitted your idea. We wish you to be in the top
-            60 teams.
-          </p>
-          <div className="mt-4">
-            <svg
-              className="h-16 w-16 animate-bounce text-yellow-400"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M10 15l-3.5 2.1 1-4.2-3.2-2.8 4.3-.4L10 6l1.4 3.7 4.3.4-3.2 2.8 1 4.2z" />
-            </svg>
-          </div>
-          <Button
-            className="mt-4"
-            onClick={async () => {
-              await router.push("/profile");
-            }}
-          >
-            Profile
-          </Button>
-        </div>
-      );
-
-    case "PAYMENT":
-      return <p>Payment</p>;
-
-    default:
-      return (
-        <AppSetting.Provider value={true}>
-          <AppSetting.Active>
-            <RegistrationClosed session={session} />
-          </AppSetting.Active>
-        </AppSetting.Provider>
-      );
-  }
-}
-
-function RegistrationClosed({ session }: { session: Session }) {
-  const router = useRouter();
-
+  const progress = registrationProgress(currentState, maxState);
   return (
-    <div className="flex h-screen w-screen items-center justify-center">
-      <div className="mx-4 h-fit w-full max-w-[70rem] rounded-xl border border-white/20 bg-black/50 p-10 text-center text-white">
-        <h1 className="bg-gradient-to-b from-red-300 via-red-800 to-red-500 bg-clip-text text-5xl font-bold text-transparent md:text-8xl">
-          Too Late!
-        </h1>
-        <p className="mt-8 md:text-xl">
-          Sorry{" "}
-          <span className="font-semibold">
-            {session.user.name ?? "Tech Enthusiast"}
-          </span>
-          . Registrations are now closed.
-        </p>
-        <Button
-          className="mt-8"
-          variant="outline"
-          onClick={() => {
-            void router.push("/");
-          }}
-        >
-          Home
-        </Button>
-      </div>
+    <div
+      className={`relative mx-auto mb-6 mt-3 h-3 w-[calc(90%-1rem)] rounded-sm border border-white/20 text-lg`}
+    >
+      {progress.map((section, index) => {
+        return (
+          <div key={index}>
+            {index > 0 && (
+              <div
+                className="absolute top-0 z-[0] h-full w-1/2 transition-all duration-300"
+                key={`bar-${index}`}
+                style={{
+                  left: `${(index - 1) * 50}%`,
+                  backgroundColor: colors[`${section}`],
+                }}
+              ></div>
+            )}
+            <div
+              onClick={() => {
+                if (index > maxState) return;
+                setCurrentState(index);
+              }}
+              className={`${
+                index > maxState ? "pointer-events-none cursor-not-allowed" : ""
+              } h-8 w-8 cursor-pointer rounded-full md:h-12 md:w-12 ${
+                section === "complete"
+                  ? "border-white/10"
+                  : section === "active"
+                    ? "border-white/20"
+                    : "border-white/20"
+              } absolute top-1/2 z-[1] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center transition-all duration-300`}
+              style={{
+                left: `${index * 50}%`,
+                backgroundColor: colors[`${section}`],
+                scale: section === "active" ? 1.2 : 1,
+                borderWidth: 1,
+              }}
+              key={`step-${index}`}
+            >
+              {index + 1}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
-}
+};
+
+export default Progress;
+
+const registrationProgress = (
+  currentProgress: number,
+  maxProgress: number,
+): ("active" | "complete" | "pending" | "draft")[] => {
+  switch (maxProgress) {
+    case 1:
+      switch (currentProgress) {
+        case 0:
+          return ["active", "draft", "pending"];
+        default:
+          return ["complete", "active", "pending"];
+      }
+    case 2:
+      switch (currentProgress) {
+        case 0:
+          return ["active", "draft", "draft"];
+        case 1:
+          return ["complete", "active", "draft"];
+        default:
+          return ["complete", "complete", "active"];
+      }
+    case 3:
+      return ["complete", "complete", "complete"];
+    default:
+      return ["active", "pending", "pending"];
+  }
+};
