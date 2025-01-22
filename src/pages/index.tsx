@@ -9,9 +9,10 @@ export default function Home() {
     <RootLayout>
       <main className="relative mx-auto overflow-y-clip">
         <div className="absolute top-[100vh] z-50 h-40 w-full -translate-y-1/2"></div>
+
         {/* <Audio /> */}
         <Hero />
-        {/* <PrizePool /> */}
+        <PrizePool />
         <Timeline />
       </main>
     </RootLayout>

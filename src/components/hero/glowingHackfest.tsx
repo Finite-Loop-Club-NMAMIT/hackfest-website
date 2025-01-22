@@ -1,59 +1,78 @@
 import { Text3D } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { EffectComposer, Bloom, ToneMapping } from "@react-three/postprocessing";
+import {
+  EffectComposer,
+  Bloom,
+  ToneMapping,
+} from "@react-three/postprocessing";
 import * as THREE from "three";
 import React, { useEffect, useRef, useState } from "react";
 
 const GlowingHackfest = () => {
   const [letterSpacing, setLetterSpacing] = useState(0.2);
   const [text, setText] = useState({
-    size: 1, height: 0.1, position: new THREE.Vector3(-3.1, -2.7, 0)
-  })
+    size: 1,
+    height: 0.1,
+    position: new THREE.Vector3(-3.1, -2.7, 0),
+  });
   const [textBorder, setTextBorder] = useState({
-    size: 1.02, position: new THREE.Vector3(-3.15, -2.715, -0.1)
-  })
-  const [spotLights, setSpotLights] = useState([
-    { position: new THREE.Vector3(8, -2, 5), intensity: 200, angle: 20 },
-    { position: new THREE.Vector3(-8, -2, 5), intensity: 200, angle: 20 }
-  ])
+    size: 1.02,
+    position: new THREE.Vector3(-3.15, -2.715, -0.1),
+  });
+  const [lights, setLights] = useState([
+    { position: new THREE.Vector3(8, -2, 5), intensity: 200 },
+    { position: new THREE.Vector3(-8, -2, 5), intensity: 200 },
+  ]);
 
   useEffect(() => {
     if (window.innerWidth <= 768) {
-      setText({ size: 0.4, height: 0.03, position: new THREE.Vector3(-1.28, -2.7, 0) });
-      setTextBorder({ size: 0.405, position: new THREE.Vector3(-1.29, -2.713, -0.1) });
-      setSpotLights([
-        { position: new THREE.Vector3(3, -2, 5), intensity: 20, angle: 8 },
-        { position: new THREE.Vector3(-3, -2, 5), intensity: 20, angle: 8 }
-      ])
+      setText({
+        size: 0.4,
+        height: 0.03,
+        position: new THREE.Vector3(-1.28, -2.7, 0),
+      });
+      setTextBorder({
+        size: 0.405,
+        position: new THREE.Vector3(-1.29, -2.713, -0.1),
+      });
+      setLights([
+        { position: new THREE.Vector3(3, -2, 5), intensity: 20 },
+        { position: new THREE.Vector3(-3, -2, 5), intensity: 20 },
+      ]);
       setLetterSpacing(0.08);
     } else {
-      setText({ size: 1, height: 0.1, position: new THREE.Vector3(-3.1, -2.7, 0) });
-      setTextBorder({ size: 1.02, position: new THREE.Vector3(-3.15, -2.715, -0.1) });
-      setSpotLights([
-        { position: new THREE.Vector3(8, -2, 5), intensity: 200, angle: 20 },
-        { position: new THREE.Vector3(-8, -2, 5), intensity: 200, angle: 20 }
-      ])
+      setText({
+        size: 1,
+        height: 0.1,
+        position: new THREE.Vector3(-3.1, -2.7, 0),
+      });
+      setTextBorder({
+        size: 1.02,
+        position: new THREE.Vector3(-3.15, -2.715, -0.1),
+      });
+      setLights([
+        { position: new THREE.Vector3(8, -2, 5), intensity: 200 },
+        { position: new THREE.Vector3(-8, -2, 5), intensity: 200 },
+      ]);
       setLetterSpacing(0.2);
     }
-  })
+  }, []);
 
   return (
-    <div className="w-screen h-screen">
+    <div className="h-screen w-screen">
       <Canvas
-        className="w-full h-full"
+        className="h-full w-full"
         camera={{ position: [0, -2, 9], fov: 35 }}
       >
-        <spotLight
-          position={spotLights[0]?.position}
-          intensity={spotLights[0]?.intensity}
-          angle={spotLights[0]?.angle}
-          color={'#4aa8ff'}
+        <pointLight
+          position={lights[0]?.position}
+          intensity={lights[0]?.intensity}
+          color={"#4aa8ff"}
         />
-        <spotLight
-          position={spotLights[1]?.position}
-          intensity={spotLights[1]?.intensity}
-          angle={spotLights[1]?.angle}
-          color={'#4aa8ff'}
+        <pointLight
+          position={lights[1]?.position}
+          intensity={lights[1]?.intensity}
+          color={"#4aa8ff"}
         />
         <DynamicLights />
 

@@ -44,7 +44,7 @@ const Timeline: React.FC = () => {
   return (
     <div className="relative" ref={ref}>
       {/* Wrapper for the entire section */}
-      <div className="sticky top-0 h-screen bg-gradient-to-b from-[#392f5f] to-blue-700 pt-5 ">
+      <div className="sticky top-0 h-screen bg-blue-950 pt-5 ">
         {/* Higher than Canvas z-index */}
         <button
           onClick={scrollToPreviousElement}

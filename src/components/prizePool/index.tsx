@@ -75,7 +75,7 @@ export default function PrizePool() {
   return (
     <div
       ref={componentRef}
-      className="flex h-[150vh] min-h-screen w-full items-center justify-center"
+      className="flex h-[150vh] min-h-screen w-full items-center justify-center bg-blue-950"
     >
       <Canvas camera={{ position: [0, 2, 10] }}>
         <Suspense fallback={null}>
