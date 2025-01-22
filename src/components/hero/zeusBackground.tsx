@@ -1,196 +1,162 @@
-import * as THREE from "three";
-import React, { useEffect, useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import {
+  DoubleSide,
+  Vector3,
+  PointLight,
+  BufferGeometry,
+  LineBasicMaterial,
+  Line,
+} from "three";
+import { Point, Points, useTexture } from "@react-three/drei";
 
-export const ZeusBackground: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const cloudsRef = useRef<THREE.Mesh[]>([]);
-  const flashRef = useRef<THREE.PointLight | null>(null);
-  const boltsRef = useRef<THREE.Line[]>([]);
+interface CloudProps {
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: number;
+}
+
+interface BoltProps {
+  points: Vector3[];
+  opacity: number;
+  id: number;
+}
+
+function Scene() {
+  const width =
+    typeof window !== "undefined" ? window.innerWidth <= 768 : false;
+  const cloudTexture = useTexture("/textures/cloudTexture.png");
+  const flashRef = useRef<PointLight>(null);
+  const [clouds, setClouds] = useState<CloudProps[]>([]);
+  const [bolts, setBolts] = useState<BoltProps[]>([]);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !containerRef.current) return;
-    const width = window.innerWidth <= 768;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000,
+    const newClouds: CloudProps[] = Array.from(
+      { length: width ? 20 : 60 },
+      () => ({
+        position: [
+          Math.random() * 70 - 35,
+          Math.random() * 15 + 11,
+          Math.random() * -2 - 8,
+        ],
+        rotation: [0.8, -0.12, Math.random() * 2 * Math.PI],
+        scale: 0.025 + Math.random() * 0.015,
+      }),
     );
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    setClouds(newClouds);
+  }, [width]);
 
-    sceneRef.current = scene;
-    cameraRef.current = camera;
-    rendererRef.current = renderer;
+  const createLightningBolt = (): BoltProps => {
+    const points: Vector3[] = [];
+    let x = Math.random() * (width ? 125 : 50) - (width ? 12.5 : 25);
+    let y = Math.random() * 5 + 5;
+    let z = Math.random() * -2 - 8;
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(new THREE.Color(0x172554), 1);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    containerRef.current.appendChild(renderer.domElement);
+    for (let i = 0; i < (width ? 20 : 30); i++) {
+      points.push(new Vector3(x, y, z));
+      x += Math.random() * 0.4 - 0.2;
+      y -= Math.random() * 0.6;
+      z += Math.random() * 0.4 - 0.2;
+    }
 
-    camera.position.z = 5;
+    return { points, opacity: 0.8, id: Math.random() };
+  };
 
-    const ambientLight = new THREE.AmbientLight(0x444444, 0.8);
-    scene.add(ambientLight);
+  const triggerFlash = (): void => {
+    if (!flashRef.current) return;
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(1, 2, 1);
-    scene.add(directionalLight);
+    flashRef.current.intensity = 200;
+    const newBolts = Array.from({ length: width ? 1 : 2 }, () =>
+      createLightningBolt(),
+    );
+    setBolts((prev) => [...prev, ...newBolts]);
 
-    const flash = new THREE.PointLight(0xb5eef9, 0, 30, 1);
-    scene.add(flash);
-    flashRef.current = flash;
+    setTimeout(() => {
+      setBolts((prev) => prev.filter((bolt) => bolt.opacity > 0.05));
+    }, 500);
+  };
 
-    scene.fog = new THREE.FogExp2(0x777777, 0.001);
-
-    const handleResize = () => {
-      if (!camera || !renderer) return;
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    const loader = new THREE.TextureLoader();
-    loader.load(
-      "/textures/cloudTexture.png",
-      (texture) => {
-        const cloudGeo = new THREE.PlaneGeometry(600, 800);
-        const cloudMaterial = new THREE.MeshPhongMaterial({
-          map: texture,
-          transparent: true,
-          alphaTest: 0.2,
-          depthWrite: false,
-          side: THREE.DoubleSide,
-          shininess: 2,
-          emissive: new THREE.Color(0x222222),
-          emissiveIntensity: 0.1,
-        });
-
-        for (let p = 0; p < (width ? 20 : 60); p++) {
-          const cloud = new THREE.Mesh(cloudGeo, cloudMaterial);
-
-          cloud.position.set(
-            Math.random() * 70 - 35,
-            Math.random() * 15 + 11,
-            Math.random() * -2 - 8,
-          );
-
-          const scale = 0.025 + Math.random() * 0.015;
-          cloud.scale.set(scale, scale, 1);
-
-          cloud.rotation.x = 0.8;
-          cloud.rotation.y = -0.12;
-          cloud.rotation.z = Math.random() * 2 * Math.PI;
-          cloud.material.opacity = 0.6;
-
-          cloudsRef.current.push(cloud);
-          scene.add(cloud);
-        }
+  useEffect(() => {
+    const interval = setInterval(
+      () => {
+        triggerFlash();
       },
-      undefined,
-      (error) => console.error("Error loading cloud texture:", error),
+      Math.random() * 1000 + 2000,
     );
 
-    const createLightningBolt = () => {
-      const points = [];
-      let x = Math.random() * (width ? 125 : 50) - (width ? 12.5 : 25);
-      let y = Math.random() * 5 + 5;
-      let z = Math.random() * -2 - 8;
-      points.push(new THREE.Vector3(x, y, z));
-
-      for (let i = 0; i < (width ? 20 : 30); i++) {
-        x += Math.random() * 0.4 - 0.2;
-        y -= Math.random() * 0.6;
-        z += Math.random() * 0.4 - 0.2;
-        points.push(new THREE.Vector3(x, y, z));
-      }
-
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const material = new THREE.LineBasicMaterial({
-        color: 0xb5eef9,
-        opacity: 0.7,
-        transparent: true,
-      });
-
-      return { geometry, points, line: new THREE.Line(geometry, material) };
-    };
-
-    const triggerFlash = () => {
-      if (!flashRef.current) return;
-
-      flashRef.current.position.set(
-        Math.random() * 30 - 15,
-        Math.random() * 1.5 + 1.5,
-        -9,
-      );
-
-      flashRef.current.intensity = 200;
-
-      const fadeOut = () => {
-        if (!flashRef.current) return;
-        flashRef.current.intensity *= 0.9;
-        if (flashRef.current.intensity > 1) requestAnimationFrame(fadeOut);
-        else flashRef.current.intensity = 0;
-      };
-
-      requestAnimationFrame(fadeOut);
-
-      for (let i = 0; i < (width ? 1 : 2); i++) {
-        const bolt = createLightningBolt().line;
-        if (bolt) {
-          boltsRef.current.push(bolt);
-          scene.add(bolt);
-
-          let opacity = 0.8;
-          const fadeBolt = () => {
-            opacity *= 0.85; // Faster fade
-            bolt.material.opacity = opacity;
-            if (opacity > 0.05) {
-              requestAnimationFrame(fadeBolt);
-            } else {
-              scene.remove(bolt);
-              boltsRef.current = boltsRef.current.filter((b) => b !== bolt);
-            }
-          };
-          setTimeout(fadeBolt, 50);
-        }
-      }
-    };
-
-    const createFlash = () => {
-      triggerFlash();
-      setTimeout(createFlash, Math.random() * 1000 + 2000);
-    };
-    createFlash();
-
-    const animate = () => {
-      if (!scene || !camera || !renderer) return;
-      cloudsRef.current.forEach((cloud) => (cloud.rotation.z -= 0.001));
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-    };
-    animate();
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      if (renderer && containerRef.current) {
-        containerRef.current.removeChild(renderer.domElement);
-        renderer.dispose();
-      }
-      cloudsRef.current = [];
-      boltsRef.current.forEach((bolt) => scene.remove(bolt));
-      boltsRef.current = [];
-      flashRef.current = null;
-    };
+    return () => clearInterval(interval);
   }, []);
 
-  return <div ref={containerRef} className="z-0 h-screen w-screen" />;
+  useFrame((state, delta) => {
+    if (flashRef.current) {
+      flashRef.current.intensity *= 0.9;
+    }
+
+    setBolts((prev) =>
+      prev.map((bolt) => ({
+        ...bolt,
+        opacity: bolt.opacity * 0.85,
+      })),
+    );
+  });
+
+  return (
+    <>
+      <fog attach="fog" args={[0x777777, 0.001]} />
+      <ambientLight intensity={0.8} color={0x444444} />
+      <directionalLight position={[1, 2, 1]} intensity={1} />
+      <pointLight
+        ref={flashRef}
+        color={0xb5eef9}
+        intensity={0}
+        distance={30}
+        decay={1}
+        position={[Math.random() * 30 - 15, Math.random() * 1.5 + 1.5, -9]}
+      />
+
+      {clouds.map((cloud, i) => (
+        <mesh
+          key={i}
+          position={cloud.position}
+          rotation={cloud.rotation}
+          scale={cloud.scale}
+        >
+          <planeGeometry args={[600, 800]} />
+          <meshPhongMaterial
+            map={cloudTexture}
+            transparent
+            opacity={0.6}
+            alphaTest={0.2}
+            depthWrite={false}
+            side={DoubleSide}
+            shininess={2}
+            emissive={0x222222}
+            emissiveIntensity={0.1}
+          />
+        </mesh>
+      ))}
+
+      {bolts.map((bolt) => {
+        const geometry = new BufferGeometry().setFromPoints(bolt.points);
+        const material = new LineBasicMaterial({
+          color: 0xb5eef9,
+          opacity: bolt.opacity,
+          transparent: true,
+        });
+        return (
+          <primitive key={bolt.id} object={new Line(geometry, material)} />
+        );
+      })}
+    </>
+  );
+}
+
+const ZeusBackground = () => {
+  return (
+    <>
+      <Scene />
+    </>
+  );
 };
+
+export default ZeusBackground;

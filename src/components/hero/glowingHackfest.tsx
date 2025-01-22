@@ -59,82 +59,84 @@ const GlowingHackfest = () => {
   }, []);
 
   return (
-    <div className="h-screen w-screen">
-      <Canvas
+    <>
+      {/* <div className="h-screen w-screen"> */}
+      {/* <Canvas
         className="h-full w-full"
         camera={{ position: [0, -2, 9], fov: 35 }}
+      > */}
+      <pointLight
+        position={lights[0]?.position}
+        intensity={lights[0]?.intensity}
+        color={"#4aa8ff"}
+      />
+      <pointLight
+        position={lights[1]?.position}
+        intensity={lights[1]?.intensity}
+        color={"#4aa8ff"}
+      />
+      <DynamicLights />
+
+      <EffectComposer>
+        <Bloom
+          mipmapBlur
+          luminanceThreshold={0.7}
+          luminanceSmoothing={2}
+          intensity={2.5}
+        />
+        <ToneMapping />
+      </EffectComposer>
+
+      <Text3D
+        size={text.size}
+        position={text.position}
+        font="/fonts/anton.json"
+        bevelEnabled
+        bevelSize={0.05}
+        bevelThickness={0.05}
+        bevelSegments={8}
+        height={text.height}
+        letterSpacing={letterSpacing}
       >
-        <pointLight
-          position={lights[0]?.position}
-          intensity={lights[0]?.intensity}
-          color={"#4aa8ff"}
+        {"HACKFEST"}
+        <meshPhysicalMaterial
+          color="#0f172a"
+          metalness={0.8}
+          roughness={0.2}
+          emissive="#0f175a"
+          emissiveIntensity={1}
+          clearcoat={2}
+          clearcoatRoughness={1}
+          reflectivity={2}
         />
-        <pointLight
-          position={lights[1]?.position}
-          intensity={lights[1]?.intensity}
-          color={"#4aa8ff"}
+      </Text3D>
+
+      <Text3D
+        size={textBorder.size}
+        position={textBorder.position}
+        font="/fonts/anton.json"
+        bevelEnabled
+        bevelSize={0.06}
+        bevelThickness={0.1}
+        bevelSegments={8}
+        height={0.03}
+        letterSpacing={letterSpacing}
+      >
+        {"HACKFEST"}
+        <meshPhysicalMaterial
+          color="#4aa8ff"
+          metalness={1}
+          roughness={0}
+          emissive="#b6f1f7"
+          emissiveIntensity={2}
+          transparent={true}
+          opacity={1}
+          side={THREE.BackSide}
         />
-        <DynamicLights />
-
-        <EffectComposer>
-          <Bloom
-            mipmapBlur
-            luminanceThreshold={0.7}
-            luminanceSmoothing={2}
-            intensity={2.5}
-          />
-          <ToneMapping />
-        </EffectComposer>
-
-        <Text3D
-          size={text.size}
-          position={text.position}
-          font="/fonts/anton.json"
-          bevelEnabled
-          bevelSize={0.05}
-          bevelThickness={0.05}
-          bevelSegments={8}
-          height={text.height}
-          letterSpacing={letterSpacing}
-        >
-          {"HACKFEST"}
-          <meshPhysicalMaterial
-            color="#0f172a"
-            metalness={0.8}
-            roughness={0.2}
-            emissive="#0f175a"
-            emissiveIntensity={1}
-            clearcoat={2}
-            clearcoatRoughness={1}
-            reflectivity={2}
-          />
-        </Text3D>
-
-        <Text3D
-          size={textBorder.size}
-          position={textBorder.position}
-          font="/fonts/anton.json"
-          bevelEnabled
-          bevelSize={0.06}
-          bevelThickness={0.1}
-          bevelSegments={8}
-          height={0.03}
-          letterSpacing={letterSpacing}
-        >
-          {"HACKFEST"}
-          <meshPhysicalMaterial
-            color="#4aa8ff"
-            metalness={1}
-            roughness={0}
-            emissive="#b6f1f7"
-            emissiveIntensity={2}
-            transparent={true}
-            opacity={1}
-            side={THREE.BackSide}
-          />
-        </Text3D>
-      </Canvas>
-    </div>
+      </Text3D>
+    </>
+    // </Canvas>
+    // </div>
   );
 };
 

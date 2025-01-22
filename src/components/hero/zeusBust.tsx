@@ -8,17 +8,13 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
 export default function ZeusBust() {
   return (
-    <div className="absolute z-30 h-full w-full">
-      <Canvas className="flex  items-center justify-center">
-        <ambientLight intensity={2} position={[0, 1, 5]} />
+    <>
+      <ambientLight intensity={2} position={[0, 1, 5]} />
 
-        <Suspense fallback={<>Hello</>}>
-          <Float rotationIntensity={2}>
-            <Model />
-          </Float>
-        </Suspense>
-      </Canvas>
-    </div>
+      <Float rotationIntensity={2}>
+        <Model />
+      </Float>
+    </>
   );
 }
 

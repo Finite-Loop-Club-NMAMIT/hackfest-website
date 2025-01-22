@@ -99,7 +99,7 @@ export default function Scene() {
         fov={30}
       />
 
-      <Stars
+      {/* <Stars
         radius={100}
         depth={50}
         count={5000}
@@ -107,7 +107,7 @@ export default function Scene() {
         saturation={0}
         fade
         speed={1}
-      />
+      /> */}
 
       <Model
         scale={[11, 11, 11]}

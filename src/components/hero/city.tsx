@@ -24,32 +24,23 @@ export default function City() {
   }, []);
 
   return (
-    <div className="absolute z-20 h-full w-full">
-      <Canvas
-        className="flex  items-center justify-center"
-        camera={{
-          position: [0, 0, 5],
-        }}
-      >
-        <ambientLight intensity={10} position={[0, -3, 5]} />
-        <spotLight
-          intensity={spotLights[0]?.intensity}
-          position={spotLights[0]?.position}
-          castShadow={true}
-          penumbra={0.6}
-        />
-        <spotLight
-          intensity={spotLights[1]?.intensity}
-          position={spotLights[1]?.position}
-          castShadow={true}
-          penumbra={0.6}
-        />
+    <>
+      <ambientLight intensity={10} position={[0, -3, 5]} />
+      <spotLight
+        intensity={spotLights[0]?.intensity}
+        position={spotLights[0]?.position}
+        castShadow={true}
+        penumbra={0.6}
+      />
+      <spotLight
+        intensity={spotLights[1]?.intensity}
+        position={spotLights[1]?.position}
+        castShadow={true}
+        penumbra={0.6}
+      />
 
-        <Suspense fallback={<>Hello</>}>
-          <Model />
-        </Suspense>
-      </Canvas>
-    </div>
+      <Model />
+    </>
   );
 }
 
