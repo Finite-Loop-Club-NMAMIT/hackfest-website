@@ -1,10 +1,29 @@
 import { Canvas } from "@react-three/fiber";
 import React, { Suspense, useEffect, useRef } from "react";
-import { ScrollControls } from "@react-three/drei";
+import { ScrollControls, useProgress } from "@react-three/drei";
 import Scene from "./scene";
 
-const Timeline: React.FC = () => {
+const Timeline = ({onLoaded}:{onLoaded: ()=> void}) => {
   const ref = useRef<HTMLDivElement | null>(null);
+  const { progress, loaded, total, errors } = useProgress();
+
+  // Debug progress states
+  useEffect(() => {
+    console.log('Timeline Loading Progress:', {
+      progress,
+      loaded,
+      total,
+      errors
+    });
+  }, [progress, loaded, total, errors]);
+
+  // Only call onLoaded when everything is truly loaded
+  useEffect(() => {
+    if (progress === 100 && loaded === total && errors.length === 0) {
+      console.log('Timeline fully loaded');
+      onLoaded();
+    }
+  }, [progress, loaded, total, errors, onLoaded]);
 
   const scrollToPreviousElement = () => {
     if (ref.current) {
@@ -41,11 +60,12 @@ const Timeline: React.FC = () => {
       observer.disconnect();
     };
   }, []);
+
   return (
-    <div className="relative" ref={ref}>
-      {/* Wrapper for the entire section */}
+    <div className="relative py-4" ref={ref} >
+    
       <div className="sticky top-0 h-screen pt-5 ">
-        {/* Higher than Canvas z-index */}
+       
         <button
           onClick={scrollToPreviousElement}
           className="absolute bottom-1/2 right-4 z-[51] mb-1 cursor-pointer rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm transition-colors hover:bg-gray-500/40"
@@ -59,7 +79,7 @@ const Timeline: React.FC = () => {
           ↓
         </button>
 
-        {/* Container for the Canvas */}
+        
         <div className="relative h-full w-full">
           <Canvas
             id="three-canvas-container"

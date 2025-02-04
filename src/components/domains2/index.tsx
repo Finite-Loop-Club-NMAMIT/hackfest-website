@@ -3,14 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import {
   useCursor,
-  MeshReflectorMaterial,
-  Text,
   Environment,
-  RenderTexture,
-  PerspectiveCamera,
-  Decal,
   useTexture,
-  OrbitControls,
+  useProgress,
 } from "@react-three/drei";
 import { easing } from "maath";
 import healthcare from "public/images/tracks/Healthcare.png";
@@ -28,6 +23,9 @@ type Domain = {
     p2: string;
   };
   prize?: number | null;
+  position?: [number, number, number]; 
+  rotation?: [number, number, number]; 
+  scale?: [number, number, number]; 
 };
 
 export const domains = [
@@ -39,8 +37,8 @@ export const domains = [
       p2: "Tackle challenges related to digital payments, financial inclusion, or innovative solutions for managing and investing money.",
     },
     prize: 10000,
-    position: [-3.3, 0, 1.1],
-    rotation: [0, Math.PI * 0.2, 0],
+    position: [-3.3, 0, 1.1] as [number, number, number],
+    rotation: [0, Math.PI * 0.2, 0] as [number, number, number],
   },
   {
     name: "Sustainable Development",
@@ -88,8 +86,6 @@ export const domains = [
   },
 ];
 
-// { position: [2.15, 0, 1.5], rotation: [0, -Math.PI / 2.5, 0], url: pexel(911738) },
-// { position: [2, 0, 2.75], rotation: [0, -Math.PI / 2.5, 0], url: pexel(1738986) }
 
 const GOLDENRATIO = 1.61803398875;
 
@@ -113,7 +109,6 @@ const Floor = () => {
       <meshStandardMaterial
         {...props}
         displacementScale={0.1}
-        // normalScale={[0.1, 0.1]}
         roughness={0.5}
         metalness={0.7}
         envMapIntensity={1}
@@ -122,12 +117,33 @@ const Floor = () => {
   );
 };
 
-export const Domains = () => {
+export const Domains = ({onLoaded}:{onLoaded: ()=> void}) => {
+  const { progress, loaded, total, errors } = useProgress();
+
+  
+  useEffect(() => {
+    console.log('Domains Loading Progress:', {
+      progress,
+      loaded,
+      total,
+      errors
+    });
+  }, [progress, loaded, total, errors]);
+
+ 
+  useEffect(() => {
+    if (progress === 100 && loaded === total && errors.length === 0) {
+      console.log('Domains fully loaded');
+      onLoaded();
+    }
+  }, [progress, loaded, total, errors, onLoaded]);
+
   return (
     <div className="h-screen w-screen">
       <Canvas camera={{ fov: 70, position: [0, 1, 4] }}>
         <color attach="background" args={["#191920"]} />
         <fog attach="fog" args={["#191920", 0, 45]} />
+        <ambientLight intensity={1} />
         <group position={[0, -0.5, 0]}>
           <Frames />
 
@@ -143,47 +159,87 @@ function Frames({ q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
   const ref = useRef<THREE.Group>(null);
   const clicked = useRef<THREE.Object3D | null>(null);
   const [active, setActive] = useState<Domain | null>(null);
+  const [viewport, setViewport] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+    height: typeof window !== 'undefined' ? window.innerHeight : 1080
+  });
 
-  function onClick(domain: Domain) {
-    if (!active || active.name != domain.name) {
-      setActive(domain);
-    } else {
-      setActive(null);
-    }
-  }
-
+  
   useEffect(() => {
-    p.set(0, 0.6, 6.6);
-    q.identity();
-    if (!ref.current || !active) return;
+    const handleResize = () => {
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+
+  const isMobile = viewport.width <= 768;
+  const isTablet = viewport.width > 768 && viewport.width <= 1024;
+
+ 
+  const cameraDistance = isMobile ? 7.3 : isTablet ? 5 : 4;
+  const frameSpacing = isMobile ? 1.2 : isTablet ? 1.5 : 2;
+  const frameScale = isMobile ? 0.8 : isTablet ? 0.9 : 1;
+  
+  useEffect(() => {
+    if (!active) {
+
+      p.set(0, 0.6, cameraDistance);
+      q.identity();
+      return;
+    }
+
+    if (!ref.current) return;
     const object = ref.current.getObjectByName(active.name);
-    clicked.current = object || null;
+    clicked.current = object ?? null;
 
     if (clicked.current) {
-      clicked.current?.updateWorldMatrix(true, true);
-      clicked.current?.localToWorld(p.set(0, GOLDENRATIO / 2, 1.25));
-      clicked.current?.getWorldQuaternion(q);
+      clicked.current.updateWorldMatrix(true, true);
+      clicked.current.localToWorld(p.set(
+        0, 
+        GOLDENRATIO / 2,
+        isMobile ? 2.5 : 1.25
+      ));
+      clicked.current.getWorldQuaternion(q);
     }
-  }, [active]);
+  }, [active, p, q, cameraDistance, isMobile]);
 
   useFrame((state, dt) => {
-    easing.damp3(state.camera.position, p, 0.4, dt);
-    easing.dampQ(state.camera.quaternion, q, 0.4, dt);
+    const dampFactor = isMobile ? 0.15 : 0.25;
+    easing.damp3(state.camera.position, p, dampFactor, dt);
+    easing.dampQ(state.camera.quaternion, q, dampFactor, dt);
   });
 
   return (
     <group
       ref={ref}
       onClick={(e) => e.stopPropagation()}
-      onPointerMissed={() => {}}
+      onPointerMissed={() => setActive(null)}
+      scale={frameScale}
     >
-      {domains.map((domain) => (
+      {domains.map((domain, index) => (
         <Frame
           key={domain.name}
           isActive={active?.name === domain.name}
-          {...domain}
-          onClick={onClick}
-          image={domain.image}
+          {...{...domain, rotation: domain.rotation as [number, number, number]}}
+          onClick={(d) => {
+            if (!active || active.name !== d.name) {
+              setActive(d);
+            } else {
+              setActive(null);
+            }
+          }}
+          position={[
+            (index - (domains.length - 1) / 2) * frameSpacing,
+            0,
+            0
+          ]}
+          scale={[frameScale, frameScale, frameScale]}
         />
       ))}
     </group>
@@ -221,12 +277,7 @@ function Frame({ isActive, onClick, ...domain }: FrameProps) {
           toneMapped={false}
         />
 
-        {/* <mesh ref={frame} raycast={() => null} scale={[0.9, 0.93, 0.9]} position={[0, 0, 0.2]}>
-                    <boxGeometry />
-                    <meshBasicMaterial toneMapped={false} fog={false} />
-
-
-                </mesh> */}
+    
 
         <mesh position={[0, 0, 1]} scale={[0.9, 0.93, 0.9]}>
           <planeGeometry />
@@ -238,33 +289,7 @@ function Frame({ isActive, onClick, ...domain }: FrameProps) {
             map={texture}
           />
         </mesh>
-
-        {/* <Decall rotation={[0, Math.PI, 0]}>
-                    <meshStandardMaterial roughness={1} transparent polygonOffset polygonOffsetFactor={-1}>
-                        <RenderTexture attach="map" >
-                            <PerspectiveCamera makeDefault manual aspect={0.9 / 0.25} position={[0, 0, 5]} />
-                            <color attach="background" args={['#af2040']} />
-                            <ambientLight intensity={Math.PI} />
-                            <directionalLight position={[10, 10, 5]} />
-                            <Text rotation={[0, Math.PI, 0]} fontSize={2} color="white">
-                                hello from drei
-                            </Text>
-                        </RenderTexture>
-                    </meshStandardMaterial>
-                </Decall> */}
-
-        {/* <Image raycast={() => null} ref={image} position={[0, 0, 0.7]} url={domain.image} /> */}
       </mesh>
-
-      {/* <Text
-        maxWidth={0.1}
-        anchorX="left"
-        anchorY="top"
-        position={[0, 0, 0.4]}
-        fontSize={0.025}
-      >
-        {domain.name.split("-").join(" ")}
-      </Text> */}
     </group>
   );
 }

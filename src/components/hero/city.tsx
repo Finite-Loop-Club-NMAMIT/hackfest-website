@@ -1,7 +1,9 @@
 import { Canvas, useLoader } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { DRACOLoader, GLTFLoader } from "three-stdlib";
+
 import * as THREE from "three";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export default function City() {
   const [spotLights, setSpotLights] = useState([
@@ -45,7 +47,9 @@ export default function City() {
 }
 
 const Model = () => {
+  
   const gltf = useLoader(GLTFLoader, "/3D/land.glb", (loader) => {
+
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath(
       "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",

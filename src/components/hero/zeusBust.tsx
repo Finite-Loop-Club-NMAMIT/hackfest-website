@@ -1,31 +1,26 @@
 import React, { Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, ObjectMap } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { GLTF, GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { useLoader } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
+
+
 export default function ZeusBust() {
-  return (
-    <>
-      <ambientLight intensity={2} position={[0, 1, 5]} />
-
-      <Float rotationIntensity={2}>
-        <Model />
-      </Float>
-    </>
+  const gltf = useLoader(
+    GLTFLoader, 
+   '/3D/zeusHF.glb',
+    (loader) => {
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath(
+        "https://www.gstatic.com/draco/versioned/decoders/1.5.7/"
+      );
+      loader.setDRACOLoader(dracoLoader);
+    }
   );
-}
-
-const Model = () => {
-  const gltf = useLoader(GLTFLoader, "/3D/zeusHF.glb", (loader) => {
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath(
-      "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
-    );
-    loader.setDRACOLoader(dracoLoader);
-  });
+  
   const [scale, setScale] = useState([2.5, 2.5, 2.5]);
   const [rotation, setRotation] = useState([0, 0, 0]);
 
@@ -54,13 +49,20 @@ const Model = () => {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
-
   return (
-    <primitive
+    <>
+      <ambientLight intensity={2} position={[0, 1, 5]} />
+
+      <Float rotationIntensity={2}>
+      <primitive
       object={gltf.scene}
       scale={scale}
       position={[0, 0, 0]}
       rotation={rotation}
     />
+      </Float>
+    </>
   );
-};
+}
+
+
