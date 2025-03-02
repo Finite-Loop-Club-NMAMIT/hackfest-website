@@ -4,6 +4,7 @@ import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import { Anton, Caesar_Dressing, Poppins,  } from "next/font/google";
+import LocalFont from "next/font/local";
 
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -21,8 +22,12 @@ export const caesarDressing = Caesar_Dressing({
   variable: "--font-caesar-dressing",
 });
 
-
-
+export const herkules = LocalFont({
+  src: "../../public/fonts/Herkules.ttf",
+  display: "swap",
+  variable: "--font-herkules",
+  style: "normal"
+})
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -92,7 +97,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         />
       </Head>
       <main
-        className={`${poppins.className}  ${anton.variable} ${caesarDressing.variable}`}
+        className={`${poppins.className}  ${anton.variable} ${caesarDressing.variable} ${herkules.variable}`}
       >
         <Component {...pageProps} />
       </main>
