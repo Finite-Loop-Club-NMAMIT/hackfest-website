@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import Domains from "~/components/domains2";
+import Domains from "~/components/domains";
 import Hero from "~/components/hero";
 import RootLayout from "~/components/layout";
 import PrizePool from "~/components/prizePool";
