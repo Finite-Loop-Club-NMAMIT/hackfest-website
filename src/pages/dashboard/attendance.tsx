@@ -63,7 +63,7 @@ export default function Attendance() {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-slate-950">
+      {/* <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-slate-950">
         <video className="w-full rounded-lg border border-gray-400" ref={ref} />
         {!result && (
           <div className="mt-2 text-center text-sm text-gray-400">
@@ -111,7 +111,7 @@ export default function Attendance() {
             </CardContent>
           </Card>
         )}
-      </div>
+      </div> */}
     </>
   );
 }
