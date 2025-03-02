@@ -1,5 +1,3 @@
-import { caesarDressing } from "~/pages/_app";
-import DustOverlay from "./dustOverlay";
 import dynamic from "next/dynamic";
 import ZeusBackground from "./zeusBackground";
 import { Canvas, useLoader } from "@react-three/fiber";
@@ -58,6 +56,20 @@ const Hero = ({
           Error loading assets
         </div>
       )}
+      <div className="absolute md:top-[55%] top-[65%] text-center select-none">
+        <p
+          style={{ textShadow: "0 0 40px #22a3ff" }}
+          className="lg:text-[12rem] md:text-[10rem] sm:text-[8rem] text-[5rem] text-[#ffffff] font-herkules leading-none"
+        >
+          {"HACKFEST"}
+        </p>
+        <p
+          style={{ textShadow: "0 0 15px #1df3fb" }}
+          className="bg-[#ffffff] font-ceasar-dressing bg-clip-text text-3xl font-extrabold text-transparent leading-none sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
+        >
+          TECH OLYMPUS
+        </p>
+      </div>
     </main>
   );
 };

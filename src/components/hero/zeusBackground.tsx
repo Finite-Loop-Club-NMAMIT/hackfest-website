@@ -98,6 +98,17 @@ function Scene() {
         opacity: bolt.opacity * 0.85,
       })),
     );
+
+    // setClouds((prev) =>
+    //   prev.map((cloud) => ({
+    //     ...cloud,
+    //     rotation: [
+    //       cloud.rotation[0],
+    //       cloud.rotation[1],
+    //       cloud.rotation[2] + delta * 0.05,
+    //     ],
+    //   }))
+    // );
   });
 
   return (
@@ -125,13 +136,11 @@ function Scene() {
           <meshPhongMaterial
             map={cloudTexture}
             transparent
-            opacity={0.6}
-            alphaTest={0.2}
+            opacity={0.7}
+            color={0x888888}
+            alphaTest={0.1}
             depthWrite={false}
             side={DoubleSide}
-            shininess={2}
-            emissive={0x222222}
-            emissiveIntensity={0.1}
           />
         </mesh>
       ))}
