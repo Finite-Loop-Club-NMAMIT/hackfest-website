@@ -23,9 +23,9 @@ type Domain = {
     p2: string;
   };
   prize?: number | null;
-  position?: [number, number, number]; 
-  rotation?: [number, number, number]; 
-  scale?: [number, number, number]; 
+  position?: [number, number, number];
+  rotation?: [number, number, number];
+  scale?: [number, number, number];
 };
 
 export const domains = [
@@ -86,7 +86,6 @@ export const domains = [
   },
 ];
 
-
 const GOLDENRATIO = 1.61803398875;
 
 const Floor = () => {
@@ -117,26 +116,38 @@ const Floor = () => {
   );
 };
 
-export const Domains = ({onLoaded}:{onLoaded: ()=> void}) => {
-  const { progress, loaded, total, errors } = useProgress();
+export const Domains = ({
+  onLoaded,
+  onProgress,
+}: {
+  onLoaded: () => void;
+  onProgress: (progress: number, component: string) => void;
+}) => {
+  const [maxProgress, setMaxProgress] = useState(0);
+  const { progress } = useProgress();
 
-  
   useEffect(() => {
-    console.log('Domains Loading Progress:', {
-      progress,
-      loaded,
-      total,
-      errors
-    });
-  }, [progress, loaded, total, errors]);
-
- 
-  useEffect(() => {
-    if (progress === 100 && loaded === total && errors.length === 0) {
-      console.log('Domains fully loaded');
-      onLoaded();
+    // Only update if the new progress is higher than previous max
+    if (progress > maxProgress) {
+      setMaxProgress(progress);
     }
-  }, [progress, loaded, total, errors, onLoaded]);
+  }, [progress, maxProgress]);
+
+  const hasLoaded = useRef(false);
+
+  useEffect(() => {
+    // Only track progress if we haven't reached 100% before
+    console.log("progress from domains", progress);
+
+    if (!hasLoaded.current) {
+      onProgress(maxProgress, "domain");
+
+      if (maxProgress === 100) {
+        hasLoaded.current = true;
+        onLoaded();
+      }
+    }
+  }, [maxProgress, onProgress, onLoaded]);
 
   return (
     <div className="h-screen w-screen">
@@ -160,35 +171,31 @@ function Frames({ q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
   const clicked = useRef<THREE.Object3D | null>(null);
   const [active, setActive] = useState<Domain | null>(null);
   const [viewport, setViewport] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
-    height: typeof window !== 'undefined' ? window.innerHeight : 1080
+    width: typeof window !== "undefined" ? window.innerWidth : 1920,
+    height: typeof window !== "undefined" ? window.innerHeight : 1080,
   });
 
-  
   useEffect(() => {
     const handleResize = () => {
       setViewport({
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
       });
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
-
 
   const isMobile = viewport.width <= 768;
   const isTablet = viewport.width > 768 && viewport.width <= 1024;
 
- 
   const cameraDistance = isMobile ? 7.3 : isTablet ? 5 : 4;
   const frameSpacing = isMobile ? 1.2 : isTablet ? 1.5 : 2;
   const frameScale = isMobile ? 0.8 : isTablet ? 0.9 : 1;
-  
+
   useEffect(() => {
     if (!active) {
-
       p.set(0, 0.6, cameraDistance);
       q.identity();
       return;
@@ -200,11 +207,9 @@ function Frames({ q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
 
     if (clicked.current) {
       clicked.current.updateWorldMatrix(true, true);
-      clicked.current.localToWorld(p.set(
-        0, 
-        GOLDENRATIO / 2,
-        isMobile ? 2.5 : 1.25
-      ));
+      clicked.current.localToWorld(
+        p.set(0, GOLDENRATIO / 2, isMobile ? 2.5 : 1.25),
+      );
       clicked.current.getWorldQuaternion(q);
     }
   }, [active, p, q, cameraDistance, isMobile]);
@@ -226,7 +231,10 @@ function Frames({ q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
         <Frame
           key={domain.name}
           isActive={active?.name === domain.name}
-          {...{...domain, rotation: domain.rotation as [number, number, number]}}
+          {...{
+            ...domain,
+            rotation: domain.rotation as [number, number, number],
+          }}
           onClick={(d) => {
             if (!active || active.name !== d.name) {
               setActive(d);
@@ -234,11 +242,7 @@ function Frames({ q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
               setActive(null);
             }
           }}
-          position={[
-            (index - (domains.length - 1) / 2) * frameSpacing,
-            0,
-            0
-          ]}
+          position={[(index - (domains.length - 1) / 2) * frameSpacing, 0, 0]}
           scale={[frameScale, frameScale, frameScale]}
         />
       ))}
@@ -276,8 +280,6 @@ function Frame({ isActive, onClick, ...domain }: FrameProps) {
           envMapIntensity={2}
           toneMapped={false}
         />
-
-    
 
         <mesh position={[0, 0, 1]} scale={[0.9, 0.93, 0.9]}>
           <planeGeometry />

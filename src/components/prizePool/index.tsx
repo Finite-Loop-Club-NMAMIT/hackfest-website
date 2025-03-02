@@ -30,7 +30,7 @@ const models: ModelProps[] = [
     rotation: [0, 5, 0] as const,
     textY: 0.1,
     textSize: 0.8,
-    textPosition:[-4 - 1.5, -1 + 2.7, -5],
+    textPosition: [-4 - 1.5, -1 + 2.7, -5],
     amount: "₹50k",
     index: 1,
   },
@@ -50,7 +50,7 @@ const models: ModelProps[] = [
     rotation: [0, 3, 0] as const,
     textY: -0.2,
     textSize: 0.8,
-   textPosition: [4.5 - 1.5, -2 + 2.7, -5],
+    textPosition: [4.5 - 1.5, -2 + 2.7, -5],
     amount: "₹30k",
     index: 2,
   },
@@ -58,18 +58,19 @@ const models: ModelProps[] = [
 
 const getResponsiveModels = () => {
   if (typeof window === "undefined") return models;
-  
+
   const screenWidth = window.innerWidth;
   const isMobile = screenWidth <= 768;
   const isTablet = screenWidth > 768 && screenWidth <= 1024;
 
   return models.map((model) => {
     const scaleFactor = isMobile ? 0.5 : isTablet ? 0.75 : 1;
-    
+
     const responsivePosition = [
       model.position[0] * scaleFactor,
-      model.position[1] +(model.index == 2 && (isMobile || isTablet)? 0.5:0),
-      model.position[2] * scaleFactor
+      model.position[1] +
+        (model.index == 2 && (isMobile || isTablet) ? 0.5 : 0),
+      model.position[2] * scaleFactor,
     ] as const;
 
     const responsiveTextPosition = [
@@ -78,30 +79,45 @@ const getResponsiveModels = () => {
       // Keep existing Y offset
       responsivePosition[1] + (isMobile ? 1.5 : isTablet ? 2 : 2.7),
       // Keep existing Z offset
-      responsivePosition[2] + (isMobile ? -2 : isTablet ? -3.5 : -5)
+      responsivePosition[2] + (isMobile ? -2 : isTablet ? -3.5 : -5),
     ] as const;
 
     return {
       ...model,
-      scale: isMobile ? ([1.5, 1.5, 1.5] as const) : 
-             isTablet ? ([1.8, 1.8, 1.8] as const) : 
-             model.scale,
+      scale: isMobile
+        ? ([1.5, 1.5, 1.5] as const)
+        : isTablet
+          ? ([1.8, 1.8, 1.8] as const)
+          : model.scale,
       position: responsivePosition,
-      textSize: isMobile ? 0.5 : 
-                isTablet ? 0.6 : 
-                model.textSize,
-      textPosition: responsiveTextPosition
+      textSize: isMobile ? 0.5 : isTablet ? 0.6 : model.textSize,
+      textPosition: responsiveTextPosition,
     };
   });
 };
 
-export default function PrizePool({onLoaded}:{onLoaded: ()=> void}) {
+export default function PrizePool({
+  onLoaded,
+  onProgress,
+}: {
+  onLoaded: () => void;
+  onProgress: (progress: number, component: string) => void;
+}) {
   const [scrollPosition, setScrollPosition] = useState(0);
   const componentRef = useRef<HTMLDivElement>(null);
-  const [responsiveModels, setResponsiveModels] = useState(getResponsiveModels());
+  const [responsiveModels, setResponsiveModels] = useState(
+    getResponsiveModels(),
+  );
 
-  const {progress} = useProgress()
-  
+  const [maxProgress, setMaxProgress] = useState(0);
+  const { progress } = useProgress();
+
+  useEffect(() => {
+    // Only update if the new progress is higher than previous max
+    if (progress > maxProgress) {
+      setMaxProgress(progress);
+    }
+  }, [progress, maxProgress]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -132,15 +148,23 @@ export default function PrizePool({onLoaded}:{onLoaded: ()=> void}) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(()=>{
-    if(progress == 100) onLoaded();
-   },[progress])
+  useEffect(() => {
+    console.log("progress from prizepool", maxProgress);
+    onProgress(maxProgress, "prizePool");
+    if (maxProgress === 100) {
+      console.log("Hero fully loaded");
+      onLoaded();
+    }
+  }, [maxProgress]);
 
   return (
     <div
       ref={componentRef}
-      className="flex sm:h-[150vh] min-h-screen w-full items-center justify-center h-[120vh]"
+      className="relative flex h-[160vh] min-h-screen w-full items-center justify-center sm:h-[150vh]"
     >
+      <h1 className="absolute top-[10%] z-[60] font-anton text-6xl ">
+        2L+ PrizePool
+      </h1>
       <Canvas camera={{ position: [0, 2, 10] }}>
         <Suspense fallback={null}>
           <ambientLight intensity={2} position={[0, 1, 5]} />
@@ -149,59 +173,56 @@ export default function PrizePool({onLoaded}:{onLoaded: ()=> void}) {
               key={modelProps.index}
               {...modelProps}
               scrollPosition={scrollPosition}
-              
             />
           ))}
           <Clouds material={THREE.MeshBasicMaterial} frustumCulled={false}>
-  <Float 
-    speed={ 3} 
-    floatIntensity={ 3} 
-    rotationIntensity={0}
-  >
-    {Array.from({ length: 4 }).map((_, ring) => {
-      if (typeof window === "undefined") return;
-      const screenWidth = window.innerWidth;
-      const isMobile = screenWidth <= 768;
-      const isTablet = screenWidth > 768 && screenWidth <= 1024;
-      
-      // Adjusted scale factors
-      const scaleFactor = isMobile ? 0.4 : isTablet ? 0.6 : 1;
-      const ringRadius = (ring + 0.5) * (isMobile ? 1.5 : 2) * scaleFactor;
-      
-      // Reduce cloud density on mobile
-      const cloudsInRing = ring === 0 
-        ? 1 
-        : isMobile 
-          ? clouds * ring 
-          : clouds * (ring + 1);
+            <Float speed={3} floatIntensity={3} rotationIntensity={0}>
+              {Array.from({ length: 4 }).map((_, ring) => {
+                if (typeof window === "undefined") return;
+                const screenWidth = window.innerWidth;
+                const isMobile = screenWidth <= 768;
+                const isTablet = screenWidth > 768 && screenWidth <= 1024;
 
-      return Array.from({ length: cloudsInRing }).map((_, index) => {
-        const angle = (index / cloudsInRing) * Math.PI * 2;
-        const x = Math.cos(angle) * ringRadius;
-        const y = isMobile ? -2.5 : isTablet ? -2.5 : -3;
-        const z = Math.sin(angle) * ringRadius - (isMobile ? 2 : 4);
+                // Adjusted scale factors
+                const scaleFactor = isMobile ? 0.4 : isTablet ? 0.6 : 1;
+                const ringRadius =
+                  (ring + 0.5) * (isMobile ? 1.5 : 2) * scaleFactor;
 
-        return (
-          <Cloud
-            key={`${ring}-${index}`}
-            position={[x, y, z]}
-            bounds={[
-              isMobile ? 2 : 4,
-              isMobile ? 1 : 2,
-              isMobile ? 1 : 2
-            ]}
-            segments={1}
-            volume={isMobile ? 2 : 3}
-            opacity={0.6}
-            color={"white"}
-            fade={isMobile ? 8 : 10}
-            rotation={[0, -angle, 0]}
-          />
-        );
-      });
-    })}
-  </Float>
-</Clouds>
+                // Reduce cloud density on mobile
+                const cloudsInRing =
+                  ring === 0
+                    ? 1
+                    : isMobile
+                      ? clouds * ring
+                      : clouds * (ring + 1);
+
+                return Array.from({ length: cloudsInRing }).map((_, index) => {
+                  const angle = (index / cloudsInRing) * Math.PI * 2;
+                  const x = Math.cos(angle) * ringRadius;
+                  const y = isMobile ? -2.5 : isTablet ? -2.5 : -3;
+                  const z = Math.sin(angle) * ringRadius - (isMobile ? 2 : 4);
+
+                  return (
+                    <Cloud
+                      key={`${ring}-${index}`}
+                      position={[x, y, z]}
+                      bounds={[
+                        isMobile ? 2 : 4,
+                        isMobile ? 1 : 2,
+                        isMobile ? 1 : 2,
+                      ]}
+                      segments={1}
+                      volume={isMobile ? 2 : 3}
+                      opacity={0.6}
+                      color={"white"}
+                      fade={isMobile ? 8 : 10}
+                      rotation={[0, -angle, 0]}
+                    />
+                  );
+                });
+              })}
+            </Float>
+          </Clouds>
         </Suspense>
       </Canvas>
     </div>
@@ -217,7 +238,7 @@ const Model = ({
   index,
   scrollPosition,
   textSize,
-  textPosition
+  textPosition,
 }: Model) => {
   const modelRef = useRef<THREE.Group>(null);
   const textRef = useRef<THREE.Mesh>(null);

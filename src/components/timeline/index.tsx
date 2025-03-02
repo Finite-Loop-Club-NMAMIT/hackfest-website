@@ -1,29 +1,35 @@
 import { Canvas } from "@react-three/fiber";
-import React, { Suspense, useEffect, useRef } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { ScrollControls, useProgress } from "@react-three/drei";
 import Scene from "./scene";
+import { log } from "three/src/nodes/TSL.js";
 
-const Timeline = ({onLoaded}:{onLoaded: ()=> void}) => {
+const Timeline = ({
+  onLoaded,
+  onProgress,
+}: {
+  onLoaded: () => void;
+  onProgress: (progress: number, component: string) => void;
+}) => {
   const ref = useRef<HTMLDivElement | null>(null);
-  const { progress, loaded, total, errors } = useProgress();
+  const [maxProgress, setMaxProgress] = useState(0);
+  const { progress } = useProgress();
 
-  // Debug progress states
   useEffect(() => {
-    console.log('Timeline Loading Progress:', {
-      progress,
-      loaded,
-      total,
-      errors
-    });
-  }, [progress, loaded, total, errors]);
+    // Only update if the new progress is higher than previous max
+    if (progress > maxProgress) {
+      setMaxProgress(progress);
+    }
+  }, [progress, maxProgress]);
 
-  // Only call onLoaded when everything is truly loaded
   useEffect(() => {
-    if (progress === 100 && loaded === total && errors.length === 0) {
-      console.log('Timeline fully loaded');
+    console.log("progress from timeline", maxProgress);
+    onProgress(maxProgress, "timeline");
+    if (maxProgress === 100) {
+      console.log("Hero fully loaded");
       onLoaded();
     }
-  }, [progress, loaded, total, errors, onLoaded]);
+  }, [maxProgress]);
 
   const scrollToPreviousElement = () => {
     if (ref.current) {
@@ -62,10 +68,15 @@ const Timeline = ({onLoaded}:{onLoaded: ()=> void}) => {
   }, []);
 
   return (
-    <div className="relative py-4" ref={ref} >
-    
+    <div className="relative py-4 " ref={ref}>
+      <div className="relative flex w-full justify-center">
+        {" "}
+        <h1 className="absolute top-[10%] z-[60] font-anton text-6xl ">
+          Timeline
+        </h1>
+      </div>
+
       <div className="sticky top-0 h-screen pt-5 ">
-       
         <button
           onClick={scrollToPreviousElement}
           className="absolute bottom-1/2 right-4 z-[51] mb-1 cursor-pointer rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm transition-colors hover:bg-gray-500/40"
@@ -79,7 +90,6 @@ const Timeline = ({onLoaded}:{onLoaded: ()=> void}) => {
           ↓
         </button>
 
-        
         <div className="relative h-full w-full">
           <Canvas
             id="three-canvas-container"

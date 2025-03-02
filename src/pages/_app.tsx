@@ -3,7 +3,7 @@ import { SessionProvider } from "next-auth/react";
 import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 import "~/styles/globals.css";
-import { Anton, Caesar_Dressing, Poppins } from "next/font/google";
+import { Anton, Caesar_Dressing, Poppins,  } from "next/font/google";
 
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -20,6 +20,9 @@ export const caesarDressing = Caesar_Dressing({
   subsets: ["latin"],
   variable: "--font-caesar-dressing",
 });
+
+
+
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "700"] });
 

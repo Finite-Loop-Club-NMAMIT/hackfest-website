@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,6 +18,36 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-tertiary-200;
 } */
+
+@font-face {
+  font-family: 'Religath';
+  src: url('/fonts/RELIGATH-Demo.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal
+  ;
+}
+
+@font-face {
+  font-family: 'NCLNeovibes';
+  src: url('/fonts/NCLNeovibes-Demo.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Geraldine';
+  src: url('/fonts/geraldine.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Valty';
+  src: url('/fonts/valty.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {

@@ -26,6 +26,12 @@ const config = {
     extend: {
       fontFamily: {
         obscura: ["var(--font-obscura)", "Poppins", "sans-serif"],
+        religath: ['Religath', 'sans-serif'],
+        neo: ['NCLNeovibes','sans-serif'],
+       metal: ['Aboreto','sans-serif'],
+       geraldine: ['Geraldine','sans-serif'],
+       valty:  ['Valty','sans-serif'],
+       anton: ["Anton", 'serif'],
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
