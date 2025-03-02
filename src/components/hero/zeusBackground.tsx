@@ -99,16 +99,16 @@ function Scene() {
       })),
     );
 
-    // setClouds((prev) =>
-    //   prev.map((cloud) => ({
-    //     ...cloud,
-    //     rotation: [
-    //       cloud.rotation[0],
-    //       cloud.rotation[1],
-    //       cloud.rotation[2] + delta * 0.05,
-    //     ],
-    //   }))
-    // );
+    setClouds((prev) =>
+      prev.map((cloud) => ({
+        ...cloud,
+        rotation: [
+          cloud.rotation[0],
+          cloud.rotation[1],
+          cloud.rotation[2] + delta * 0.05,
+        ],
+      })),
+    );
   });
 
   return (
