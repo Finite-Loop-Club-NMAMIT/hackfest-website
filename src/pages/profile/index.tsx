@@ -37,7 +37,7 @@ export default function ProfilePage() {
           <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328] px-2">
             <div className="mx-auto flex w-full max-w-7xl flex-col justify-center py-40">
               {data?.user && (
-                <Card className="bg-black/50 rounded-md border border-white/20">
+                <Card className="rounded-md border border-white/20 bg-black/50">
                   <CardHeader>
                     <CardTitle className="gradient-text my-4 text-center text-3xl font-bold md:text-4xl">
                       Your Profile
@@ -103,7 +103,7 @@ function Content({
       return <ProfileCard user={user} order={[2, 3, 4, 0, 5]} />;
     case "SUBMIT_IDEA":
       return <ProfileCard user={user} order={[2, 3, 5, 4, 5]} />;
-      case "COMPLETE":
+    case "COMPLETE":
       return <ProfileCard user={user} order={[2, 3, 5, 4, 5]} />;
   }
 }

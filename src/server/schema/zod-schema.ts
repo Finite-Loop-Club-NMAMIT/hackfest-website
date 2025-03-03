@@ -73,7 +73,7 @@ const createTeamZ = z.object({
   teamName: z
     .string()
     .min(1, { message: "Team name cannot be empty" })
-    .max(10, { message: "Team name cannot exceed 10 characters" })
+    .max(30, { message: "Team name cannot exceed 10 characters" })
     .refine((value) => !value.startsWith(" ") && !value.endsWith(" "), {
       message: "Team name cannot start or end with a space",
     }),

@@ -1,9 +1,4 @@
-// create and join team tabs
-import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { type z } from "zod";
-import { createTeamZ, joinTeamZ } from "~/server/schema/zod-schema";
 import { useSearchParams } from "next/navigation";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
@@ -11,17 +6,7 @@ import { toast } from "sonner";
 import gsap from "gsap";
 import { useSession } from "next-auth/react";
 import { Team } from "@prisma/client";
-
 import { Button } from "~/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "~/components/ui/form";
 import {
   Dialog,
   DialogContent,
@@ -30,16 +15,15 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { RxCrossCircled } from "react-icons/rx";
-import { ClipboardCopy } from "lucide-react";
+import { ClipboardCopy, RefreshCcw } from "lucide-react";
 import TeamList from "~/components/team/teamList";
+// Removed react-hook-form and related component imports
 
 export default function RegisterTeamForm() {
   const { data, update } = useSession();
   const params = useSearchParams();
   const router = useRouter();
-  const utils = api.useUtils();
 
   const createTeamMutation = api.team.createTeam.useMutation({
     onSuccess: (data) => {
@@ -62,85 +46,31 @@ export default function RegisterTeamForm() {
     },
   });
 
-  const createTeamForm = useForm<z.infer<typeof createTeamZ>>({
-    resolver: zodResolver(createTeamZ),
-    defaultValues: {
-      teamName: "",
-    },
-  });
-  const joinTeamForm = useForm<z.infer<typeof joinTeamZ>>({
-    resolver: zodResolver(joinTeamZ),
-    defaultValues: {
-      teamId: "",
-    },
-  });
+  // New useState variables replacing react-hook-form controls
+  const [createTeamName, setCreateTeamName] = useState<string>("");
+  const [joinTeamId, setJoinTeamId] = useState<string>("");
 
-  const [teamTimeout, setTeamTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTeamId, setSearchTeamId] = useState<string>("");
   const [isJoined, setIsJoined] = useState<boolean>(false);
   const [teamDetailsTimeout, setTeamDetailsTimeout] =
     useState<NodeJS.Timeout>();
-  const [isTeamNameUnique, setIsTeamNameUnique] = useState<
-    "loading" | "inuse" | "available" | "warning" | null
-  >(null);
   const [teamDetails, setTeamDetails] = useState<Team | null>(null);
+  const getTeamNames = api.team.fetchTeamNames.useQuery();
 
-  function onCreateTeamSubmit(values: z.infer<typeof createTeamZ>) {
-    createTeamMutation.mutate(values);
+  function onCreateTeamSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    createTeamMutation.mutate({ teamName: createTeamName });
   }
-  function onJoinTeamSubmit(values: z.infer<typeof joinTeamZ>) {
-    joinTeamMutation.mutate(values);
-  }
-
-  function checkIsTeamNameUnique(event: React.ChangeEvent<HTMLInputElement>) {
-    const teamName = event.currentTarget.value;
-    const length = createTeamForm.getValues("teamName").length;
-    const isSpecialChar = /[^a-zA-Z0-9]/.test(teamName);
-
-    if (length > 10 || isSpecialChar) {
-      setIsTeamNameUnique("warning");
-      if (teamTimeout) {
-        clearTimeout(teamTimeout);
-      }
-      return;
-    }
-
-    if (teamName.length > 0) {
-      setIsTeamNameUnique("loading");
-      if (teamTimeout) {
-        clearTimeout(teamTimeout);
-      }
-
-      if (teamName.length > 10) {
-        setIsTeamNameUnique("warning");
-        return;
-      }
-
-      const timeout = setTimeout(() => {
-        void utils.team.checkName
-          .fetch({ teamName: teamName })
-          .then((response) => {
-            setIsTeamNameUnique(response.message ? "available" : "inuse");
-          })
-          .catch((error: { message: string }) => {
-            console.log(error.message);
-          });
-      }, 500);
-
-      setTeamTimeout(timeout);
-    } else {
-      setIsTeamNameUnique(null);
-      if (teamTimeout) {
-        clearTimeout(teamTimeout);
-      }
-    }
+  function onJoinTeamSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    joinTeamMutation.mutate({ teamId: joinTeamId });
   }
 
-  function getTeamDetails(event: React.ChangeEvent<HTMLInputElement>) {
+  function getTeamDetailsHandler(event: React.ChangeEvent<HTMLInputElement>) {
     const value = event.currentTarget.value;
-
+    setJoinTeamId(value);
     if (value) {
       if (teamDetailsTimeout) {
         clearTimeout(teamDetailsTimeout);
@@ -148,7 +78,6 @@ export default function RegisterTeamForm() {
       const timeout = setTimeout(() => {
         setSearchTeamId(value);
       }, 500);
-
       setTeamDetailsTimeout(timeout);
     } else {
       setSearchTeamId("");
@@ -176,7 +105,7 @@ export default function RegisterTeamForm() {
               Team Created
             </DialogTitle>
             <DialogDescription className="mt-4">
-              <p className="md:text-lg text-center">
+              <p className="text-center md:text-lg">
                 Your team,{" "}
                 <span className="font-extrabold">
                   {teamDetails?.name ?? "New Team"}
@@ -198,10 +127,7 @@ export default function RegisterTeamForm() {
                 }}
               >
                 <Input
-                  value={
-                    teamDetails?.id ??
-                    "code not available"
-                  }
+                  value={teamDetails?.id ?? "code not available"}
                   className="cursor-pointer truncate pr-10 text-left"
                   readOnly
                 />
@@ -211,7 +137,6 @@ export default function RegisterTeamForm() {
           </DialogHeader>
         </DialogContent>
       </Dialog>
-
       <Dialog
         open={isJoined}
         onOpenChange={(value) => {
@@ -228,8 +153,8 @@ export default function RegisterTeamForm() {
               Team Joined
             </DialogTitle>
             <DialogDescription className="mt-4">
-              <p className="md:text-lg text-center">
-                Congragulations{" "}
+              <p className="text-center md:text-lg">
+                Congratulations{" "}
                 <span>{data?.user.name ?? "Tech Enthusiast"}</span> 🥳! You have
                 successfully joined {teamDetails?.name ?? "your team"}
               </p>
@@ -238,150 +163,70 @@ export default function RegisterTeamForm() {
         </DialogContent>
       </Dialog>
 
-      <Tabs
-        defaultValue={params.get("t") ?? "create"}
-        onValueChange={async (value) => {
-          await router.push("/register", { query: { t: value } });
-        }}
-        className="mx-auto flex w-full max-w-3xl flex-col justify-center"
-      >
-        <TabsList className="mx-auto mt-8 w-full max-w-lg">
-          <TabsTrigger value="create" className="w-full">
-            Create
-          </TabsTrigger>
-          <TabsTrigger value="join" className="w-full">
-            Join
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="create" className="mt-4">
-          <Form {...createTeamForm}>
-            <form
-              onSubmit={createTeamForm.handleSubmit(onCreateTeamSubmit)}
-              className="space-y-8"
-            >
-              <FormField
-                control={createTeamForm.control}
-                name="teamName"
-                render={({ field }) => (
-                  <FormItem className="min-h-24">
-                    <FormLabel>Team Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter team name"
-                        {...field}
-                        onInput={checkIsTeamNameUnique}
-                      />
-                    </FormControl>
-                    <div className="left-2 text-xs md:text-sm">
-                      {isTeamNameUnique === "loading" && (
-                        <div className="flex flex-row items-center gap-2 opacity-60">
-                          <span className="loader size-4 text-[1px]"></span>{" "}
-                          <p>Checking availability</p>
-                        </div>
-                      )}
-                      {isTeamNameUnique === "available" && (
-                        <div className="flex flex-row items-center gap-1 text-green-500 opacity-60">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            className="lucide lucide-circle-check size-4"
-                          >
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="m9 12 2 2 4-4" />
-                          </svg>
-                          <p>Available</p>
-                        </div>
-                      )}
-                      {isTeamNameUnique === "warning" && (
-                        <div className="flex flex-row items-center gap-1 text-red-500 opacity-60">
-                          <RxCrossCircled className="size-6" />
-                          <p>
-                            Length must be less than 10 and no special symbols
-                          </p>
-                        </div>
-                      )}
-                      {isTeamNameUnique === "inuse" && (
-                        <div className="flex flex-row items-center gap-1 text-red-500 opacity-60">
-                          <RxCrossCircled className="" />
-                          <p>Team name already in use</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button
-                disabled={isSubmitting}
-                onClick={async (e) => {
-                  e.preventDefault();
-                  setIsSubmitting(true);
-                  if (isTeamNameUnique === "available") {
-                    await createTeamForm.handleSubmit(onCreateTeamSubmit)();
-                  } else {
-                    if (isTeamNameUnique === "inuse") {
-                      toast.warning("Team name is already in use");
-                    } else if (isTeamNameUnique === "warning") {
-                      toast.warning("Team name not valid");
-                    }
-                  }
-                  setIsSubmitting(false);
-                }}
-              >
-                Submit
-              </Button>
-            </form>
-          </Form>
-        </TabsContent>
-
-        <TabsContent value="join" className="mt-4">
-          <Form {...joinTeamForm}>
-            <form
-              onSubmit={joinTeamForm.handleSubmit(onJoinTeamSubmit)}
-              className="space-y-8"
-            >
-              <FormField
-                control={joinTeamForm.control}
-                name="teamId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Team Id</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter team Id"
-                        {...field}
-                        onInput={getTeamDetails}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-sm">
-                      Get your Team ID from your leader
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {searchTeamId.length > 0 && (
-                <div className="flex justify-center">
-                  <TeamList teamId={joinTeamForm.getValues("teamId")} />
+      <div className="mx-auto mt-8 flex w-full max-w-4xl flex-col md:flex-row md:space-x-8">
+        <div className="flex-1 rounded-lg border p-6 shadow-lg">
+          <h2 className="mb-4 text-center text-2xl font-bold">Create Team</h2>
+          <form
+            onSubmit={onCreateTeamSubmit}
+            className="flex flex-col items-center justify-center gap-2 space-y-8"
+          >
+            <div className="flex flex-col items-center">
+              <p className="pb-3">Pick a Team Name</p>
+              <div className="flex flex-col items-center justify-center gap-2">
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {getTeamNames.data?.map((item) => (
+                    <button
+                      key={item.name}
+                      type="button"
+                      className={`rounded-lg px-4 py-2 backdrop-blur-xl ${
+                        createTeamName === item.name
+                          ? "border-green-500 bg-green-500/50"
+                          : "border-white bg-white/50"
+                      }`}
+                      onClick={() => setCreateTeamName(item.name)}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
                 </div>
-              )}
 
-              <Button type="submit">Submit</Button>
-            </form>
-          </Form>
-        </TabsContent>
-      </Tabs>
+                <button
+                  type="button"
+                  className="w-fit rounded-lg border bg-blue-500/50 px-4 py-2"
+                  onClick={async () => await getTeamNames.refetch()}
+                >
+                  <RefreshCcw className="size-6" />
+                </button>
+              </div>
+            </div>
+            <Button disabled={isSubmitting} type="submit">
+              Submit
+            </Button>
+          </form>
+        </div>
+
+        {/* Join Team Card */}
+        <div className="mt-8 flex-1 rounded-lg border p-6 shadow-lg md:mt-0">
+          <h2 className="mb-4 text-center text-2xl font-bold">Join Team</h2>
+          <form onSubmit={onJoinTeamSubmit} className="space-y-8">
+            <div>
+              <label className="block pb-2">Team Id</label>
+              <Input
+                placeholder="Enter team Id"
+                value={joinTeamId}
+                onChange={getTeamDetailsHandler}
+              />
+              <p className="text-sm">Get your Team ID from your leader</p>
+            </div>
+            {searchTeamId.length > 0 && (
+              <div className="flex justify-center">
+                <TeamList teamId={joinTeamId} />
+              </div>
+            )}
+            <Button type="submit">Submit</Button>
+          </form>
+        </div>
+      </div>
     </>
   );
 }
