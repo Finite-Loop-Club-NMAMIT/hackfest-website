@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, useProgress } from "@react-three/drei";
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
@@ -125,7 +125,31 @@ function Model({ url }: ModelProps) {
   );
 }
 
-export default function Slab() {
+export const Slab = ({
+  onLoaded,
+  onProgress,
+}: {
+  onLoaded: () => void;
+  onProgress: (progress: number, component: string) => void;
+}) => {
+  const { progress, loaded, total, errors } = useProgress();
+
+  const [maxProgress, setMaxProgress] = useState(0);
+
+  useEffect(() => {
+    if (progress > maxProgress) {
+      setMaxProgress(progress);
+    }
+  }, [progress, maxProgress]);
+
+  useEffect(() => {
+    console.log("progress from about", maxProgress);
+    onProgress(maxProgress, "about");
+    if (maxProgress === 100 && loaded == total) {
+      console.log("about fully loaded");
+      onLoaded();
+    }
+  }, [maxProgress]);
   return (
     <div className="relative h-screen w-screen pt-5">
       <Canvas
@@ -141,4 +165,4 @@ export default function Slab() {
       </Canvas>
     </div>
   );
-}
+};
