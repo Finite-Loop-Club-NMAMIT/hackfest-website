@@ -13,10 +13,9 @@ const Timeline = ({
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [maxProgress, setMaxProgress] = useState(0);
-  const { progress } = useProgress();
+  const { progress, loaded, total } = useProgress();
 
   useEffect(() => {
-    // Only update if the new progress is higher than previous max
     if (progress > maxProgress) {
       setMaxProgress(progress);
     }
@@ -25,8 +24,8 @@ const Timeline = ({
   useEffect(() => {
     console.log("progress from timeline", maxProgress);
     onProgress(maxProgress, "timeline");
-    if (maxProgress === 100) {
-      console.log("Hero fully loaded");
+    if (maxProgress === 100 && loaded == total) {
+      console.log("timeline fully loaded");
       onLoaded();
     }
   }, [maxProgress]);

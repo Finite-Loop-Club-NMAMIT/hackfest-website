@@ -110,10 +110,9 @@ export default function PrizePool({
   );
 
   const [maxProgress, setMaxProgress] = useState(0);
-  const { progress } = useProgress();
+  const { progress, loaded, total } = useProgress();
 
   useEffect(() => {
-    // Only update if the new progress is higher than previous max
     if (progress > maxProgress) {
       setMaxProgress(progress);
     }
@@ -151,8 +150,8 @@ export default function PrizePool({
   useEffect(() => {
     console.log("progress from prizepool", maxProgress);
     onProgress(maxProgress, "prizePool");
-    if (maxProgress === 100) {
-      console.log("Hero fully loaded");
+    if (maxProgress === 100 && loaded == total) {
+      console.log("prizepool fully loaded");
       onLoaded();
     }
   }, [maxProgress]);

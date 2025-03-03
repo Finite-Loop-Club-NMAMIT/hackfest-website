@@ -16,7 +16,7 @@ const Hero = ({
   onProgress: (progress: number, component: string) => void;
 }) => {
   const [maxProgress, setMaxProgress] = useState(0);
-  const { progress, errors } = useProgress();
+  const { progress, errors, loaded, total } = useProgress();
 
   useEffect(() => {
     // Only update if the new progress is higher than previous max
@@ -28,7 +28,7 @@ const Hero = ({
   useEffect(() => {
     console.log("progress from hero", maxProgress);
     onProgress(maxProgress, "hero");
-    if (maxProgress === 100) {
+    if (maxProgress === 100 && loaded == total) {
       console.log("Hero fully loaded");
       onLoaded();
     }
@@ -56,16 +56,16 @@ const Hero = ({
           Error loading assets
         </div>
       )}
-      <div className="absolute md:top-[55%] top-[65%] text-center select-none">
+      <div className="absolute top-[65%] select-none text-center md:top-[55%]">
         <p
           style={{ textShadow: "0 0 40px #22a3ff" }}
-          className="lg:text-[12rem] md:text-[10rem] sm:text-[8rem] text-[5rem] text-[#ffffff] font-herkules leading-none"
+          className="font-herkules text-[5rem] leading-none text-[#ffffff] sm:text-[8rem] md:text-[10rem] lg:text-[12rem]"
         >
           {"HACKFEST"}
         </p>
         <p
           style={{ textShadow: "0 0 15px #1df3fb" }}
-          className="bg-[#ffffff] font-ceasar-dressing bg-clip-text text-3xl font-extrabold text-transparent leading-none sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
+          className="font-ceasar-dressing bg-[#ffffff] bg-clip-text text-3xl font-extrabold leading-none text-transparent sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
         >
           TECH OLYMPUS
         </p>
