@@ -44,7 +44,7 @@ export default function ProfilePage() {
                     </CardTitle>
                   </CardHeader>
                   {/* TODO: fix profile UI after registration */}
-                  <CardContent className="flex md:flex-row justify-evenly flex-col gap-2 h-fit">
+                  <CardContent className="h-fit md:grid flex flex-col justify-evenly gap-2 grid-cols-2">
                     <ProfilePhoto
                       progress={data.user.profileProgress}
                       isLeader={data.user.isLeader}
