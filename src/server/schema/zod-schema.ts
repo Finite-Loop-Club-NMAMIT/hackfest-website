@@ -20,12 +20,8 @@ const updateProfileZ = z.object({
       invalid_type_error: "Something went wrong",
     })
     .min(1, { message: "College cannot be empty" }),
-  tshirtSize: z.custom<TshirtSize>((val) => {
-    return Object.values(TshirtSize).includes(val as TshirtSize);
-  }),
-  course: z.custom<Courses>((val) => {
-    return Object.values(Courses).includes(val as Courses);
-  }),
+  tshirtSize: z.nativeEnum(TshirtSize, { message: "Select a Tshirt Size" }),
+  course: z.nativeEnum(Courses, { message: "Select a Course" }),
   github: z
     .string()
     .min(1, { message: "Github usename cannot be empty" })
