@@ -106,6 +106,35 @@ export default function RegisterProfileForm() {
     },
   });
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const data = window.localStorage.getItem("hackfestProfileData");
+      if (data) {
+        const parsedData = JSON.parse(data) as z.infer<typeof updateProfileZ>;
+        form.reset(parsedData);
+        console.log(parsedData);
+        console.log(
+          colleges.data?.find((college) => college.id === parsedData.college)
+            ?.name ?? "",
+        );
+        console.log(
+          courses.find((course) => course.key === parsedData.course)?.name ??
+            "",
+        );
+        if (parsedData.college && parsedData.course && parsedData.tshirtSize) {
+          setSelectedCollege(
+            colleges.data?.find((college) => college.id === parsedData.college)
+              ?.name ?? "",
+          );
+          setSelectedCourse(
+            courses.find((course) => course.key === parsedData.course)?.name ??
+              "",
+          );
+        }
+      }
+    }
+  }, []);
+
   function onSubmit(values: z.infer<typeof updateProfileZ>) {
     updateProfileMutaion.mutate(values);
   }
@@ -149,7 +178,7 @@ export default function RegisterProfileForm() {
         { width: "0%", duration: 5 },
       );
     }
-  },[registerd]);
+  }, [registerd]);
 
   useEffect(() => {
     if (registerd && redirectingIn > 0) {
@@ -209,7 +238,7 @@ export default function RegisterProfileForm() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="mt-4 min-h-[32rem] sm:min-h-[28rem] h-full flex flex-col gap-4"
+          className="mt-4 flex h-full min-h-[32rem] flex-col gap-4 sm:min-h-[28rem]"
         >
           <div className="flex w-full flex-row justify-center">
             <div
@@ -280,7 +309,11 @@ export default function RegisterProfileForm() {
                   <FormLabel htmlFor="github">Github</FormLabel>
                   <FormControl>
                     <div className="flex flex-row gap-2">
-                      <Input placeholder="Username" {...field} />
+                      <Input
+                        placeholder="Username"
+                        {...field}
+                        disabled={isGithubVerified}
+                      />
                       {isGithubVerified ? (
                         <Button
                           onClick={(e) => {
@@ -546,6 +579,13 @@ export default function RegisterProfileForm() {
                     )
                   ) {
                     return;
+                  } else {
+                    if (typeof window !== "undefined") {
+                      window.localStorage.setItem(
+                        "hackfestProfileData",
+                        JSON.stringify(form.getValues()),
+                      );
+                    }
                   }
 
                   setTab(1);
@@ -586,8 +626,12 @@ export default function RegisterProfileForm() {
             </div>
           </div>
 
-          <div id="tab-2" className="flex flex-col h-full" style={{ display: "none" }}>
-            <div className="mt-6 flex md:h-[23rem] h-[26rem] w-full flex-col gap-4 md:flex-row">
+          <div
+            id="tab-2"
+            className="flex h-full flex-col"
+            style={{ display: "none" }}
+          >
+            <div className="mt-6 flex h-[26rem] w-full flex-col gap-4 md:h-[23rem] md:flex-row">
               <DragAndDropFile
                 accept="image/*"
                 onChange={setAadhaar}
@@ -656,29 +700,29 @@ export default function RegisterProfileForm() {
                       "image/png",
                       "image/jpg",
                     ];
-                    
+
                     if (
                       !allowedTypes.includes(aadhaar.type) ||
                       !allowedTypes.includes(collegeId.type)
                     ) {
-                      return toast.error(
-                        "Only jpeg, jpg and png files are allowed",
-                      );
+                      toast.error("Only jpeg, jpg and png files are allowed");
+                      return;
                     }
 
                     if (
                       aadhaar.size > 2 * 1000 * 1000 ||
                       collegeId.size > 2 * 1000 * 1000
                     ) {
-                      return toast.error("Uploads must be less than 2MB");
+                      toast.error("Uploads must be less than 2MB");
+                      return;
                     }
-                    
+
                     setTab(2);
                     setSubmitting(true);
                     toast.loading("Saving Details...", {
                       id: "loadingToast",
                     });
-                    
+
                     const result = await Promise.all([
                       await uploadFiles(aadhaar, setAadhaarUrl),
                       await uploadFiles(collegeId, setCollegeIdUrl),
