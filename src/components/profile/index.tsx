@@ -16,10 +16,10 @@ export default function ProfileCard({
 }) {
   return (
     <>
-      <PersonalDeatils user={user} order={order[1] ?? 2} />
-      <IdentityDetails user={user} order={order[2] ?? 3} />
-      <TeamDetails user={user} order={order[0] ?? 1} />
-      <IdeaDetails order={order[3] ?? 4} />
+      <PersonalDeatils user={user} order={order[0] ?? 2} />
+      <IdentityDetails user={user} order={order[1] ?? 3} />
+      <TeamDetails user={user} order={order[2] ?? 4} />
+      <IdeaDetails order={order[3] ?? 5} />
     </>
   );
 }

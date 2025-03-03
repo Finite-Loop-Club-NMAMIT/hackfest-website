@@ -85,7 +85,7 @@ export default function TeamList({
                     height={100}
                   />
                   <h1 className=" w-full text-ellipsis text-xs sm:text-sm">
-                    {leader?.name ?? "leader"}
+                    {member?.name ?? "leader"}
                   </h1>
                   <Link
                     replace={true}

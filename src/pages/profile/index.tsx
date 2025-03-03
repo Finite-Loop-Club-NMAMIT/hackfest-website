@@ -43,8 +43,7 @@ export default function ProfilePage() {
                       Your Profile
                     </CardTitle>
                   </CardHeader>
-                  {/* TODO: fix profile UI after registration */}
-                  <CardContent className="h-fit md:grid flex flex-col justify-evenly gap-2 grid-cols-2">
+                  <CardContent className="flex h-fit grid-cols-2 flex-col justify-evenly gap-2 md:grid">
                     <ProfilePhoto
                       progress={data.user.profileProgress}
                       isLeader={data.user.isLeader}
@@ -100,10 +99,10 @@ function Content({
       );
 
     case "FORM_TEAM":
-      return <ProfileCard user={user} order={[2, 3, 4, 0, 5]} />;
+      return <ProfileCard user={user} order={[4, 5, 3, 0]} />;
     case "SUBMIT_IDEA":
-      return <ProfileCard user={user} order={[2, 3, 5, 4, 5]} />;
+      return <ProfileCard user={user} order={[4, 5, 3, 2]} />;
     case "COMPLETE":
-      return <ProfileCard user={user} order={[2, 3, 5, 4, 5]} />;
+      return <ProfileCard user={user} order={[2, 5, 3, 4]} />;
   }
 }
