@@ -59,7 +59,7 @@ export default function RegisterCards({
     case "SUBMIT_IDEA":
       if (session.user.team?.ideaSubmission) {
         return (
-          <div className="flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg bg-gradient-to-r from-black/50 via-blue-700/50 to-black/50 p-6 shadow-lg transition duration-500 ease-in-out hover:scale-105">
+          <div className="flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg bg-gradient-to-r from-black/50 via-blue-700/50 to-black/50 p-6 shadow-lg transition duration-500 ease-in-out">
             <h1 className="gradient-text mt-2 text-center text-3xl font-bold text-white drop-shadow-xl md:text-6xl">
               Idea Submitted!
             </h1>
@@ -131,7 +131,7 @@ export default function RegisterCards({
 
     case "COMPLETE":
       return (
-        <div className="mx-4 flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg border border-white/20 bg-black/50 p-4 shadow-lg transition duration-500 ease-in-out hover:scale-105">
+        <div className="mx-4 flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg border border-white/20 bg-black/50 p-4 shadow-lg transition duration-500 ease-in-out">
           <h1 className="gradient-text mt-2 text-center text-3xl font-bold text-white drop-shadow-xl md:text-6xl">
             Idea Submitted!
           </h1>
