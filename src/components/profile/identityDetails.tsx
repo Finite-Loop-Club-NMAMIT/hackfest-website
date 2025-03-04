@@ -12,11 +12,11 @@ export default function IdentityDetails({
 }) {
   return (
     <div
-      className="flex h-full flex-col gap-4 rounded-md border-2 p-2"
+      className={`flex h-full flex-col gap-4 rounded-md border-2 p-2 pb-4 ${order === 5 && "col-span-2"}`}
       style={{ order: order }}
     >
       <h1 className="text-xl">Identify Proofs</h1>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="sm:grid flex flex-col grid-cols-2 gap-2">
         <div>
           <div className="container flex justify-center">
             {user?.aadhaar && (

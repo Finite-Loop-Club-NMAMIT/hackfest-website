@@ -79,13 +79,12 @@ export const domains = [
     },
 ];
 
-
 const mobilePositions = [
-    [0, 1.5, 0],  // Center frame
+    [0, 1.5, 0], // Center frame
     [-1.3, 3.5, 0], // Top frame
-    [1.3, 3.5, 0],  // Top-right frame
+    [1.3, 3.5, 0], // Top-right frame
     [-1.3, -0.5, 0], // Bottom-left frame
-    [1.3, -0.5, 0],  // Bottom-right frame
+    [1.3, -0.5, 0], // Bottom-right frame
 ];
 
 const GOLDENRATIO = 1.61803398875;
@@ -115,37 +114,41 @@ const Floor = () => {
                 minDepthThreshold={0.4}
                 maxDepthThreshold={1.4}
                 metalness={0.5}
-                mirror={.2}
+                mirror={0.2}
             />
         </mesh>
     );
 };
 
-
-export const Domains = ({ onLoaded }: { onLoaded: () => void, onProgress: (progress: number, component: string) => void; }) => {
+export const Domains = ({
+    onLoaded,
+    onProgress,
+}: {
+    onLoaded: () => void;
+    onProgress: (progress: number, component: string) => void;
+}) => {
     const { progress, loaded, total, errors } = useProgress();
 
+    const [maxProgress, setMaxProgress] = useState(0);
 
     useEffect(() => {
-        console.log('Domains Loading Progress:', {
-            progress,
-            loaded,
-            total,
-            errors
-        });
-    }, [progress, loaded, total, errors]);
-
+        if (progress > maxProgress) {
+            setMaxProgress(progress);
+        }
+    }, [progress, maxProgress]);
 
     useEffect(() => {
-        if (progress === 100 && loaded === total && errors.length === 0) {
-            console.log('Domains fully loaded');
+        console.log("progress from domains", maxProgress);
+        onProgress(maxProgress, "domain");
+        if (maxProgress === 100 && loaded == total) {
+            console.log("domain fully loaded");
             onLoaded();
         }
-    }, [progress, loaded, total, errors, onLoaded]);
+    }, [maxProgress]);
 
     return (
-        <div className="h-screen w-screen relative">
-            <h1 className="absolute top-[10%] z-[60] font-anton text-6xl text-center w-full">
+        <div className="relative h-screen w-screen">
+            <h1 className="absolute top-[10%] z-[60] w-full text-center font-anton text-6xl">
                 Tracks
             </h1>
             <Canvas camera={{ fov: 70, position: [0, 1, 4] }}>
@@ -175,29 +178,52 @@ function Frames({ q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
     const ref = useRef<THREE.Group>(null);
     const clicked = useRef<THREE.Object3D | null>(null);
     const [active, setActive] = useState<Domain | null>(null);
-    const { viewport } = useThree();
 
     useEffect(() => {
-
         const handleScroll = () => {
             if (active) {
                 setActive(null);
             }
-        }
-        window.addEventListener("scroll", handleScroll)
+        };
+        window.addEventListener("scroll", handleScroll);
         return () => {
-            window.removeEventListener("scroll", handleScroll)
-        }
-    }, [active])
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, [active]);
 
 
-    const isMobile = viewport.width < 5;   // Adjusted for R3F world scale
-    const isTablet = viewport.width >= 5 && viewport.width < 10;
 
+    const [viewport, setViewport] = useState({
+        width: typeof window !== "undefined" ? window.innerWidth : 1920,
+        height: typeof window !== "undefined" ? window.innerHeight : 1080,
+    });
 
-    const cameraDistance = isMobile ? 7.3 : isTablet ? 4.2 : 4;
+    useEffect(() => {
+        const handleResize = () => {
+            setViewport({
+                width: window.innerWidth,
+                height: window.innerHeight,
+            });
+        };
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const isMobile = viewport.width <= 768;
+    const isTablet = viewport.width > 768 && viewport.width <= 1024;
+
+    const cameraDistance = isMobile ? 7.3 : isTablet ? 5 : 4;
     const frameSpacing = isMobile ? 1.2 : isTablet ? 1.5 : 2;
     const frameScale = isMobile ? 1 : isTablet ? 0.9 : 1;
+
+    //     const { viewport } = useThree();
+    //   const isMobile = viewport.width < 5; // Adjusted for R3F world scale
+    //   const isTablet = viewport.width >= 5 && viewport.width < 10;
+
+    //   const cameraDistance = isMobile ? 7.3 : isTablet ? 4.2 : 4;
+    //   const frameSpacing = isMobile ? 1.2 : isTablet ? 1.5 : 2;
+    //   const frameScale = isMobile ? 1 : isTablet ? 0.9 : 1;
 
     useEffect(() => {
         if (!active) {
@@ -212,11 +238,9 @@ function Frames({ q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
 
         if (clicked.current) {
             clicked.current.updateWorldMatrix(true, true);
-            clicked.current.localToWorld(p.set(
-                0,
-                GOLDENRATIO / 2,
-                isMobile ? 2.5 : 1.25
-            ));
+            clicked.current.localToWorld(
+                p.set(0, GOLDENRATIO / 2, isMobile ? 2.5 : 1.25),
+            );
             clicked.current.getWorldQuaternion(q);
         }
     }, [active, p, q, cameraDistance, isMobile]);
@@ -233,7 +257,7 @@ function Frames({ q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
             onClick={(e) => e.stopPropagation()}
             onPointerMissed={() => setActive(null)}
             scale={frameScale}
-            position={[0,isMobile?-0.8:0, 0]}
+            position={[0, isMobile ? -0.8 : 0, 0]}
         >
             {domains.map((domain, index) => (
                 <Frame
@@ -250,7 +274,7 @@ function Frames({ q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
                     }}
                     position={
                         isMobile
-                            ? mobilePositions[index] as [number, number, number] // Use mobile positions if on mobile
+                            ? (mobilePositions[index] as [number, number, number]) // Use mobile positions if on mobile
                             : [
                                 (index - (domains.length - 1) / 2) * frameSpacing,
                                 0,
@@ -258,7 +282,16 @@ function Frames({ q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
                             ]
                     }
                     scale={[frameScale, frameScale, frameScale]}
-                    rotation={isMobile ? [0, 0, 0] : [0, -((index - (domains.length - 1) / 2) * Math.PI) / domains.length, 0]}
+                    rotation={
+                        isMobile
+                            ? [0, 0, 0]
+                            : [
+                                0,
+                                -((index - (domains.length - 1) / 2) * Math.PI) /
+                                domains.length,
+                                0,
+                            ]
+                    }
                 />
             ))}
 
@@ -283,7 +316,8 @@ function Frame({ isActive, onClick, isMobile, ...domain }: FrameProps) {
 
     useFrame(({ clock }) => {
         if (meshRef.current) {
-            meshRef.current.position.y += Math.sin(clock.getElapsedTime() * 2) * Math.random() * 0.002;
+            meshRef.current.position.y +=
+                Math.sin(clock.getElapsedTime() * 2) * Math.random() * 0.002;
         }
     });
 
@@ -316,7 +350,6 @@ function Frame({ isActive, onClick, isMobile, ...domain }: FrameProps) {
                         envMapIntensity={4}
                         toneMapped={false}
                         map={texture}
-
                     />
                 </mesh>
             </mesh>

@@ -1,3 +1,4 @@
+import { TeamNames } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
@@ -14,28 +15,11 @@ import {
 } from "~/server/schema/zod-schema";
 
 export const teamRouter = createTRPCRouter({
-  checkName: protectedProcedure
-    .input(createTeamZ)
-    .query(async ({ input, ctx }) => {
-      try {
-        const team = await ctx.db.team.findFirst({
-          where: {
-            name: input.teamName,
-          },
-        });
-        if (team?.id) {
-          return { status: "success", message: false };
-        }
-        return { status: "success", message: true };
-      } catch (error) {
-        console.log(error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Something went wrong",
-        });
-      }
-    }),
-
+  fetchTeamNames: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.$queryRaw<
+      TeamNames[]
+    >`SELECT * FROM "TeamNames" ORDER BY RANDOM() LIMIT 3`;
+  }),
   checkTeamById: protectedProcedure
     .input(joinTeamZ)
     .query(async ({ input, ctx }) => {
@@ -161,19 +145,6 @@ export const teamRouter = createTRPCRouter({
         });
       }
 
-      const teamNameExists = await ctx.db.team.findFirst({
-        where: {
-          name: input.teamName,
-        },
-      });
-
-      if (teamNameExists) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Team name already exists",
-        });
-      }
-
       try {
         const result = await ctx.db.user.update({
           where: {
@@ -186,6 +157,12 @@ export const teamRouter = createTRPCRouter({
                 name: input.teamName,
               },
             },
+          },
+        });
+
+        await ctx.db.teamNames.delete({
+          where: {
+            name: input.teamName,
           },
         });
         return {

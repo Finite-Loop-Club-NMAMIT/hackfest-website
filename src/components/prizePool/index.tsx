@@ -19,6 +19,7 @@ type ModelProps = {
 
 type Model = ModelProps & {
   scrollPosition: number;
+  inView: boolean;
 };
 
 const clouds = 4;
@@ -108,12 +109,12 @@ export default function PrizePool({
   const [responsiveModels, setResponsiveModels] = useState(
     getResponsiveModels(),
   );
+  const [inView, setInView] = useState(false);
 
   const [maxProgress, setMaxProgress] = useState(0);
-  const { progress } = useProgress();
+  const { progress, loaded, total } = useProgress();
 
   useEffect(() => {
-    // Only update if the new progress is higher than previous max
     if (progress > maxProgress) {
       setMaxProgress(progress);
     }
@@ -122,16 +123,25 @@ export default function PrizePool({
   useEffect(() => {
     const handleScroll = () => {
       if (componentRef.current) {
-        const scrolled = window.scrollY;
-        const componentHeight = componentRef.current.scrollHeight;
-        const windowHeight = window.innerHeight;
+        const rect = componentRef.current.getBoundingClientRect();
+        const isInView = rect.top < window.innerHeight && rect.bottom > 0;
 
-        const rawScrollPercentage = scrolled / (componentHeight - windowHeight);
+        if (isInView) {
+          setInView(true);
+          // Calculate progress only when component is in view
+          const componentTop = rect.top;
+          const componentHeight = rect.height;
+          const windowHeight = window.innerHeight;
 
-        // Clamp the value between 0 and 2
-        const normalizedScroll = Math.max(0, Math.min(2, rawScrollPercentage));
+          // Calculate how much of the component has been scrolled through
+          const scrolledAmount = windowHeight - componentTop;
+          const scrollProgress = scrolledAmount / componentHeight;
 
-        setScrollPosition(normalizedScroll);
+          // Normalize between 0 and 2
+          const normalizedScroll = Math.max(0, Math.min(2, scrollProgress * 2));
+
+          setScrollPosition(normalizedScroll);
+        }
       }
     };
 
@@ -151,8 +161,8 @@ export default function PrizePool({
   useEffect(() => {
     console.log("progress from prizepool", maxProgress);
     onProgress(maxProgress, "prizePool");
-    if (maxProgress === 100) {
-      console.log("Hero fully loaded");
+    if (maxProgress === 100 && loaded == total) {
+      console.log("prizepool fully loaded");
       onLoaded();
     }
   }, [maxProgress]);
@@ -162,7 +172,7 @@ export default function PrizePool({
       ref={componentRef}
       className="relative flex h-[160vh] min-h-screen w-full items-center justify-center sm:h-[150vh]"
     >
-      <h1 className="absolute top-[10%] z-[60] font-anton text-6xl ">
+      <h1 className="absolute top-[13%] z-[60] font-anton text-6xl md:top-[10%] ">
         2L+ PrizePool
       </h1>
       <Canvas camera={{ position: [0, 2, 10] }}>
@@ -173,6 +183,7 @@ export default function PrizePool({
               key={modelProps.index}
               {...modelProps}
               scrollPosition={scrollPosition}
+              inView={inView}
             />
           ))}
           <Clouds material={THREE.MeshBasicMaterial} frustumCulled={false}>
@@ -229,17 +240,19 @@ export default function PrizePool({
   );
 }
 
-const Model = ({
-  scale,
-  position,
-  rotation,
-  textY,
-  amount,
-  index,
-  scrollPosition,
-  textSize,
-  textPosition,
-}: Model) => {
+const Model = ({ ...props }: Model) => {
+  const {
+    scale,
+    position,
+    rotation,
+    textY,
+    amount,
+    index,
+    scrollPosition,
+    textSize,
+    textPosition,
+    inView,
+  } = props;
   const modelRef = useRef<THREE.Group>(null);
   const textRef = useRef<THREE.Mesh>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
@@ -257,12 +270,15 @@ const Model = ({
   }, [gltf]);
 
   useFrame(() => {
-    const yDistance = Math.abs(scrollPosition - 0.5);
+    const yDistance = scrollPosition - 0.5;
+    console.log("yDistance", yDistance);
+    console.log("inView", inView);
 
     if (
+      inView &&
       modelRef.current &&
       textRef.current &&
-      yDistance >= 0.8 &&
+      yDistance >= 0.26 &&
       !hasAnimated
     ) {
       gsap.set(modelRef.current.position, {
@@ -279,7 +295,7 @@ const Model = ({
 
       gsap.to(modelRef.current.position, {
         y: position[1],
-        duration: 1.0,
+        duration: 0.6,
         delay: index * 0.3,
         ease: "power4.out",
       });
@@ -287,7 +303,7 @@ const Model = ({
       gsap.to(textRef.current.position, {
         x: textPosition[0],
         y: textPosition[1],
-        duration: 1.0,
+        duration: 0.6,
         delay: index * 0.3,
         ease: "power4.out",
       });

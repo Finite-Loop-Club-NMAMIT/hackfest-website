@@ -15,6 +15,7 @@ export default function Home() {
     prizePool: false,
     timeline: false,
     domain: false,
+    about: false,
   });
 
   const loadedComponents = useRef(new Set());
@@ -24,6 +25,7 @@ export default function Home() {
     hero: 0,
     prizePool: 0,
     timeline: 0,
+    about: 0,
   });
 
   const [totalProgress, setTotalProgress] = useState(0);
@@ -52,8 +54,8 @@ export default function Home() {
 
   useEffect(() => {
     const total = Object.values(progress).reduce((acc, curr) => acc + curr, 0);
-    setTotalProgress(total / 4);
-    console.log("TOTAL progress", total / 4);
+    setTotalProgress(total / 5);
+    console.log("TOTAL progress", total / 5);
   }, [progress]);
 
   useEffect(() => {
@@ -82,8 +84,15 @@ export default function Home() {
     <div>
       {!showContent && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900">
-          <div className="font-anton  text-4xl text-white">
-            {totalProgress.toFixed(2)}%
+          <div className="relative flex flex-col items-center justify-center gap-4 px-4">
+            <div className="relative aspect-square w-[280px] sm:w-[320px] md:w-[380px] lg:w-[400px]">
+              <ProgressBar progress={totalProgress} />
+              <img
+                src="/logos/logo.png"
+                alt="HackFest Logo"
+                className="absolute left-1/2 top-1/2 z-10 aspect-square w-[70%] -translate-x-1/2 -translate-y-1/2 sm:w-[75%] md:w-[80%]"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -97,6 +106,7 @@ export default function Home() {
                   onLoaded={() => handleComponentLoad("hero")}
                   onProgress={handleProgress}
                 />
+                <Sponsors />
                 <PrizePool
                   onLoaded={() => handleComponentLoad("prizePool")}
                   onProgress={handleProgress}

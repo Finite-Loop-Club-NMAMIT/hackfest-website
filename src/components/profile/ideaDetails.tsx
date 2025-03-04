@@ -10,21 +10,33 @@ export default function IdeaDetails({ order }: { order: number }) {
   const { data } = useSession();
   const router = useRouter();
 
+  console.log(data?.user.team?.ideaSubmission);
+
   if (order !== 0) {
     if (data?.user.team?.ideaSubmission) {
       return (
-       <div
-             className="flex h-full flex-col gap-4 rounded-md border-2 p-2"
-             style={{ order: order }}
-           >
-             <h1 className="text-xl">Identify Proofs</h1>
-             <div className="grid grid-cols-2 gap-2 h-full">
-               {/* <PdfPreview /> */}
-               {/* <Button onClick={async() => { await fetchIdeaSubmission()}}>click</Button> */}
-               <iframe src={data.user.team.ideaSubmission.split(";")[0]}></iframe>
-             </div>
-             <p className="text-center opacity-50">You have submitted you idea</p>
-           </div>
+        <div
+          className="flex h-full flex-col gap-4 rounded-md border-2 p-2"
+          style={{ order: order }}
+        >
+          <h1 className="text-xl">Idea Details</h1>
+          <div className="mb-4 flex h-full w-full flex-col items-center justify-center gap-4">
+            {/* FIXME: pdf preview and pdf download not working. cloudinary issue. */}
+            {/* <PdfPreview /> */}
+            {/* <Button onClick={async() => { await fetchIdeaSubmission()}}>click</Button> */}
+            {/* <iframe src={data.user.team.ideaSubmission.split(";")[0]}></iframe> */}
+            {/* <Button className="mx-auto" onClick={async() => {
+                  const a = document.createElement("a");
+                  a.href = data.user.team.ideaSubmission.split(";")[0];
+                  a.download = "Idea_Submission.pdf";
+                  a.click();
+                  }}>Download</Button> */}
+            <p className="w-full max-w-md px-4 text-center opacity-80">
+              You have successfully submitted you idea. We wish you to be in the
+              top <span className="font-semibold">60</span>💐
+            </p>
+          </div>
+        </div>
       );
     } else {
       return (
