@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, useProgress } from "@react-three/drei";
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
@@ -108,7 +108,7 @@ function Model({ url }: ModelProps) {
         />
       </group>
 
-      <spotLight
+      {/* <spotLight
         ref={spotlightRef}
         position={[0, 0, 0]}
         angle={Math.PI}
@@ -118,27 +118,57 @@ function Model({ url }: ModelProps) {
         decay={1.5}
         color="#ffffff"
         castShadow
-      />
+      /> */}
 
-      <ambientLight intensity={0.6} />
+      <ambientLight intensity={1} />
     </>
   );
 }
 
-export default function Slab() {
+export const AboutUs = ({
+  onLoaded,
+  onProgress,
+}: {
+  onLoaded: () => void;
+  onProgress: (progress: number, component: string) => void;
+}) => {
+  const { progress, loaded, total, errors } = useProgress();
+
+  const [maxProgress, setMaxProgress] = useState(0);
+
+  useEffect(() => {
+    if (progress > maxProgress) {
+      setMaxProgress(progress);
+    }
+  }, [progress, maxProgress]);
+
+  useEffect(() => {
+    console.log("progress from about", maxProgress);
+    onProgress(maxProgress, "about");
+    if (maxProgress === 100 && loaded == total) {
+      console.log("about fully loaded");
+      onLoaded();
+    }
+  }, [maxProgress]);
   return (
     <div className="relative h-screen w-screen pt-5">
-      <Canvas
-        camera={{
-          position: [0, 5, 5],
-          fov: 75,
-        }}
-        shadows
-      >
-        <React.Suspense fallback={null}>
-          <Model url="/3D/glb_grid_v2.glb" />
-        </React.Suspense>
-      </Canvas>
+      <h1 className="absolute top-[0%] z-[60]  w-full text-center font-anton text-6xl">
+        About
+      </h1>
+      <div className="mt-2 h-full w-full">
+        {" "}
+        <Canvas
+          camera={{
+            position: [0, 5, 5],
+            fov: 75,
+          }}
+          shadows
+        >
+          <React.Suspense fallback={null}>
+            <Model url="/3D/glb_grid_v2.glb" />
+          </React.Suspense>
+        </Canvas>
+      </div>
     </div>
   );
-}
+};
