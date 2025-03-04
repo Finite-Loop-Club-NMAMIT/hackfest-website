@@ -125,7 +125,7 @@ function Model({ url }: ModelProps) {
   );
 }
 
-export const Slab = ({
+export const AboutUs = ({
   onLoaded,
   onProgress,
 }: {
@@ -152,17 +152,23 @@ export const Slab = ({
   }, [maxProgress]);
   return (
     <div className="relative h-screen w-screen pt-5">
-      <Canvas
-        camera={{
-          position: [0, 5, 5],
-          fov: 75,
-        }}
-        shadows
-      >
-        <React.Suspense fallback={null}>
-          <Model url="/3D/glb_grid_v2.glb" />
-        </React.Suspense>
-      </Canvas>
+      <h1 className="absolute top-[0%] z-[60]  w-full text-center font-anton text-6xl">
+        About
+      </h1>
+      <div className="mt-2 h-full w-full">
+        {" "}
+        <Canvas
+          camera={{
+            position: [0, 5, 5],
+            fov: 75,
+          }}
+          shadows
+        >
+          <React.Suspense fallback={null}>
+            <Model url="/3D/glb_grid_v2.glb" />
+          </React.Suspense>
+        </Canvas>
+      </div>
     </div>
   );
 };
