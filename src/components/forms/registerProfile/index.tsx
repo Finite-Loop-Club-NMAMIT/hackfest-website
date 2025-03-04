@@ -116,15 +116,6 @@ export default function RegisterProfileForm() {
       if (data) {
         const parsedData = JSON.parse(data) as z.infer<typeof updateProfileZ>;
         form.reset(parsedData);
-        console.log(parsedData);
-        console.log(
-          colleges.data?.find((college) => college.id === parsedData.college)
-            ?.name ?? "",
-        );
-        console.log(
-          courses.find((course) => course.key === parsedData.course)?.name ??
-            "",
-        );
         if (parsedData.college && parsedData.course && parsedData.tshirtSize) {
           setSelectedCollege(
             colleges.data?.find((college) => college.id === parsedData.college)

@@ -83,9 +83,9 @@ export default function TeamDetails({
               teamMembers?.members.length >= 2 &&
               teamMembers?.members.length <= 3 ? (
                 user.profileProgress === "FORM_TEAM" ? (
-                  <Badge className="bg-yellow-600 p-2 py-1">Pending</Badge>
+                  <Badge className="bg-yellow-600 p-2 py-1 hover:bg-yellow-700">Pending</Badge>
                 ) : (
-                  <Badge className="bg-green-800 p-2 py-1 text-white">
+                  <Badge className="bg-green-800 p-2 py-1 text-white hover:bg-green-700">
                     Complete
                   </Badge>
                 )
