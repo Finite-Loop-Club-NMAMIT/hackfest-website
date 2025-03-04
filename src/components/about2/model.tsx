@@ -151,7 +151,7 @@ export const AboutUs = ({
     }
   }, [maxProgress]);
   return (
-    <div className="relative h-screen w-screen pt-5">
+    <div className="relative h-screen w-screen pt-5" id="about">
       <h1 className="absolute top-[0%] z-[60]  w-full text-center font-anton text-6xl">
         About
       </h1>

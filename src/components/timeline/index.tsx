@@ -67,7 +67,7 @@ const Timeline = ({
   }, []);
 
   return (
-    <div className="relative py-4 " ref={ref}>
+    <div className="relative py-4 " ref={ref} id="timeline">
       <div className="relative flex w-full justify-center">
         {" "}
         <h1 className="absolute top-[10%] z-[60] font-anton text-6xl ">

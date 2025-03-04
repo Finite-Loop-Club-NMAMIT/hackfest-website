@@ -6,21 +6,15 @@ import { useLoader } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
-
-
 export default function ZeusBust() {
-  const gltf = useLoader(
-    GLTFLoader, 
-   '/3D/zeusHF.glb',
-    (loader) => {
-      const dracoLoader = new DRACOLoader();
-      dracoLoader.setDecoderPath(
-        "https://www.gstatic.com/draco/versioned/decoders/1.5.7/"
-      );
-      loader.setDRACOLoader(dracoLoader);
-    }
-  );
-  
+  const gltf = useLoader(GLTFLoader, "/3D/zeusHF.glb", (loader) => {
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(
+      "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
+    );
+    loader.setDRACOLoader(dracoLoader);
+  });
+
   const [scale, setScale] = useState([2.5, 2.5, 2.5]);
   const [rotation, setRotation] = useState([0, 0, 0]);
 
@@ -51,18 +45,16 @@ export default function ZeusBust() {
   }, []);
   return (
     <>
-      <ambientLight intensity={2} position={[0, 1, 5]} />
+      <ambientLight intensity={2.75} position={[0, 1, 5]} />
 
       <Float rotationIntensity={2}>
-      <primitive
-      object={gltf.scene}
-      scale={scale}
-      position={[0, 0, 0]}
-      rotation={rotation}
-    />
+        <primitive
+          object={gltf.scene}
+          scale={scale}
+          position={[0, 0, 0]}
+          rotation={rotation}
+        />
       </Float>
     </>
   );
 }
-
-
