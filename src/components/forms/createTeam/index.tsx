@@ -216,7 +216,7 @@ export default function RegisterTeamForm() {
                 value={joinTeamId}
                 onChange={getTeamDetailsHandler}
               />
-              <p className="text-sm">Get your Team ID from your leader</p>
+              <p className="text-sm opacity-70">Get your Team ID from your leader</p>
             </div>
             {searchTeamId.length > 0 && (
               <div className="flex justify-center">

@@ -5,9 +5,10 @@ import { signIn, signOut } from "next-auth/react";
 export default function ManageAccount() {
   return (
     <div className="mt-4 flex w-full justify-center gap-4">
-      <Button
+      {/* FIXME: switch account causes error for some reason. probably token thing */}
+      {/* <Button
         className="flex flex-nowrap items-center justify-center gap-2 text-xs md:text-sm"
-        onClick={async () => {
+        onClick={async() => {
           await signIn("google");
         }}
       >
@@ -24,7 +25,7 @@ export default function ManageAccount() {
           />
         </svg>
         Switch
-      </Button>
+      </Button> */}
       <Button
         variant="destructive"
         className="flex flex-nowrap items-center justify-center gap-2 text-xs md:text-sm"
