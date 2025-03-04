@@ -6,7 +6,8 @@ import PrizePool from "~/components/prizePool";
 import Sponsors from "~/components/sponsors";
 import Timeline from "~/components/timeline";
 import { BackgroundWrapper } from "~/components/layout/backgroundWrapper";
-import Slab from "~/components/about2/model";
+import AboutUs from "~/components/about2/model";
+import FAQSection from "~/components/accordion";
 
 export default function Home() {
   const [componentsLoaded, setComponentsLoaded] = useState({
@@ -109,7 +110,8 @@ export default function Home() {
                   onProgress={handleProgress}
                 />
                 <Sponsors />
-                <Slab />
+                <AboutUs />
+                <FAQSection />
               </div>
             </main>
           </BackgroundWrapper>

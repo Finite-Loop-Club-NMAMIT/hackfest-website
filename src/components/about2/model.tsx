@@ -108,7 +108,7 @@ function Model({ url }: ModelProps) {
         />
       </group>
 
-      <spotLight
+      {/* <spotLight
         ref={spotlightRef}
         position={[0, 0, 0]}
         angle={Math.PI}
@@ -118,9 +118,9 @@ function Model({ url }: ModelProps) {
         decay={1.5}
         color="#ffffff"
         castShadow
-      />
+      /> */}
 
-      <ambientLight intensity={0.6} />
+      <ambientLight intensity={1} />
     </>
   );
 }
