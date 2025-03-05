@@ -195,6 +195,7 @@ export default function PrizePool({
                 const isMobile = screenWidth <= 768;
                 const isTablet = screenWidth > 768 && screenWidth <= 1024;
 
+                // Adjusted scale factors
                 const scaleFactor = isMobile ? 0.4 : isTablet ? 0.6 : 1;
                 const ringRadius =
                   (ring + 0.5) * (isMobile ? 1.5 : 2) * scaleFactor;
