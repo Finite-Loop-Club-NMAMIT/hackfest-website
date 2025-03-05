@@ -65,7 +65,7 @@ const Hero = ({
         </p>
         <p
           style={{ textShadow: "0 0 15px #1df3fb" }}
-          className="font-ceasar-dressing bg-[#ffffff] bg-clip-text text-3xl font-extrabold leading-none text-transparent sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
+          className="bg-[#ffffff] bg-clip-text font-ceasar-dressing text-3xl font-extrabold leading-none text-transparent sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
         >
           TECH OLYMPUS
         </p>
