@@ -170,7 +170,7 @@ export default function PrizePool({
   return (
     <div
       ref={componentRef}
-      className="relative flex h-[160vh] min-h-screen w-full items-center justify-center sm:h-[150vh]"
+      className="relative flex h-[120vh] min-h-screen w-full items-center justify-center sm:h-[150vh]"
       id="prizes"
     >
       <h1 className="absolute top-[13%] z-[60] font-anton text-6xl md:top-[10%] ">

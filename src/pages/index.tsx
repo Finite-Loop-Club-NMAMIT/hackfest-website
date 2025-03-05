@@ -11,7 +11,6 @@ import { AboutUs } from "~/components/about2/model";
 import FAQSection from "~/components/accordion";
 import ProgressBar from "~/components/progressBar";
 
-
 export default function Home() {
   const [componentsLoaded, setComponentsLoaded] = useState({
     hero: false,
@@ -98,7 +97,7 @@ export default function Home() {
             <div className="flex w-full flex-col items-center gap-2">
               <ProgressBar progress={totalProgress} />
               <span className="font-anton text-xl text-white sm:text-2xl md:text-3xl">
-                {totalProgress.toFixed(2)}%
+                {totalProgress.toFixed(0)}%
               </span>
             </div>
           </div>
@@ -124,8 +123,6 @@ export default function Home() {
                   onLoaded={() => handleComponentLoad("domain")}
                   onProgress={handleProgress}
                 />
-
-                <Sponsors />
 
                 <AboutUs
                   onLoaded={() => handleComponentLoad("about")}

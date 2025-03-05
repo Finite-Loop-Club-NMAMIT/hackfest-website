@@ -147,7 +147,7 @@ export const Domains = ({
 
   return (
     <div className="relative h-screen w-screen" id="tracks">
-      <h1 className="absolute top-[10%] z-[60] w-full text-center font-anton text-6xl">
+      <h1 className="absolute top-[0] z-[60] my-4 w-full text-center font-anton text-6xl sm:top-[10%]">
         Tracks
       </h1>
       <Canvas camera={{ fov: 70, position: [0, 1, 4] }}>
