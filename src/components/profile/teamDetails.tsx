@@ -4,7 +4,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { type userRouter } from "~/server/api/routers/user";
 import { api } from "~/utils/api";
 import { toast } from "sonner";
-import { useSession } from "next-auth/react";
 import { context as settingsCtx } from "../appSettingValidator";
 
 import { Button } from "../ui/button";
@@ -20,6 +19,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import Link from "next/link";
+import Image from "next/image";
 
 interface User {
   name: string | null;
@@ -72,28 +73,43 @@ export default function TeamDetails({
         className="flex h-full w-full flex-col gap-4 rounded-md border-2 p-2"
         style={{ order: order }}
       >
-        <h1 className="text-xl">Team Details</h1>
+        <div className="flex w-full items-center justify-between">
+          <h1 className="text-xl">Team Details</h1>
+          {user?.Team ? (
+            teamMembers?.members &&
+            teamMembers.leader &&
+            teamMembers?.members.length >= 2 &&
+            teamMembers?.members.length <= 3 ? (
+              user?.profileProgress === "FORM_TEAM" ? (
+                <Badge className="bg-yellow-600 p-2 py-1 hover:bg-yellow-700">
+                  Pending
+                </Badge>
+              ) : (
+                <Badge className="bg-green-800 p-2 py-1 text-white hover:bg-green-700">
+                  Complete
+                </Badge>
+              )
+            ) : (
+              <Badge variant="destructive" className="p-2 py-1">
+                {3 - (teamMembers?.members?.length ?? 0)}-
+                {4 - (teamMembers?.members?.length ?? 0)} more members needed
+              </Badge>
+            )
+          ) : (
+            <></>
+          )}
+        </div>
         {user?.Team ? (
           <div className="flex h-full w-full flex-col">
-            <div className="flex w-full flex-nowrap items-center justify-between px-4">
+            <div className="flex w-full flex-col items-center justify-center gap-2 px-4">
+              <Image
+                src={`https://res.cloudinary.com/dmopbpn6f/image/upload/v1741114693/TeamImages/${user.Team.name.replace(" ", "_")}.webp`}
+                width={100}
+                height={100}
+                alt="Team Image"
+                className="rounded-full"
+              />
               <h1 className="text-2xl font-semibold">{user.Team.name}</h1>
-              {/* threshold is 2 and 3 because leader in not included in the list */}
-              {teamMembers?.members &&
-              teamMembers.leader &&
-              teamMembers?.members.length >= 2 &&
-              teamMembers?.members.length <= 3 ? (
-                user.profileProgress === "FORM_TEAM" ? (
-                  <Badge className="bg-yellow-600 p-2 py-1 hover:bg-yellow-700">Pending</Badge>
-                ) : (
-                  <Badge className="bg-green-800 p-2 py-1 text-white hover:bg-green-700">
-                    Complete
-                  </Badge>
-                )
-              ) : (
-                <Badge variant="destructive" className="p-2 py-1">
-                  Incomplete
-                </Badge>
-              )}
             </div>
             <div className="flex h-full flex-col items-center justify-between">
               <TeamList teamId={user.Team.id} showTeamName={false} />
@@ -131,23 +147,12 @@ function NotInTeam() {
         <p className="text-base text-white md:text-lg">
           You are not in any team
         </p>
-        <div className="mt-4 flex flex-row-reverse justify-center gap-4">
-          <Button
-            className="text-xs md:text-sm"
-            onClick={async () => {
-              await router.push("/register?t=join");
-            }}
-          >
-            Join Team
-          </Button>
-          <Button
-            className="text-xs md:text-sm"
-            onClick={async () => {
-              await router.push("/register?t=create");
-            }}
-          >
-            Create Team
-          </Button>
+        <div className="mt-4 flex w-full justify-center gap-4">
+          <Link href="/register">
+            <Button className="text-xs md:text-sm">
+              Create or Join a team
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
@@ -212,12 +217,13 @@ function TeamSettings({
             </DialogHeader>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="destructive">No</Button>
+                <Button>No</Button>
               </DialogClose>
               <Button
                 onClick={() => {
                   deleteTeamMutaion.mutate();
                 }}
+                variant="destructive"
               >
                 Yes
               </Button>
@@ -278,12 +284,13 @@ function TeamSettings({
             </DialogHeader>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="destructive">No</Button>
+                <Button>No</Button>
               </DialogClose>
               <Button
                 onClick={() => {
                   leaveTeamMutation.mutate();
                 }}
+                variant="destructive"
               >
                 Yes
               </Button>

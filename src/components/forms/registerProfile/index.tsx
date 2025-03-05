@@ -196,7 +196,7 @@ export default function RegisterProfileForm() {
             Your profile has been registerd successfully 🎉. You can now join a
             team or create a new one
           </p>
-          <div className="mt-6 flex w-full flex-row flex-nowrap justify-evenly">
+          <div className="mt-6 flex w-full flex-row  justify-evenly">
             <Button
               variant="outline"
               className="bg-transparent/30"
@@ -738,7 +738,7 @@ export default function RegisterProfileForm() {
                         // await form.handleSubmit(onSubmit)();
                       }
                     } catch (error) {
-                      toast.dismiss("submitting")
+                      toast.dismiss("submitting");
                       toast.error("Error Registering");
                       setSubmitting(false);
                     }

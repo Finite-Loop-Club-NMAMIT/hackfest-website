@@ -13,12 +13,12 @@ export default function ProfilePhoto({
 }) {
   if (isLeader) {
     return (
-      <div className="order-1 flex flex-col items-center justify-center md:min-h-0 pb-4">
+      <div className="order-1 flex flex-col items-center justify-center pb-4 md:min-h-0">
         <div className="relative p-10 md:p-8">
           <Image
             src={image}
-            width={100}
-            height={100}
+            width={600}
+            height={600}
             className="z-0 size-28 rounded-full md:size-36"
             alt="profile"
           />
@@ -35,7 +35,7 @@ export default function ProfilePhoto({
     );
   } else {
     return (
-      <div className="order-1 flex flex-col items-center justify-center md:min-h-0 pb-4">
+      <div className="order-1 flex flex-col items-center justify-center pb-4 md:min-h-0">
         <div className="relative p-10 md:p-8">
           <Image
             src={image}

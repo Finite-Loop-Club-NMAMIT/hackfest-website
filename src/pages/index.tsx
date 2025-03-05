@@ -10,6 +10,7 @@ import { BackgroundWrapper } from "~/components/layout/backgroundWrapper";
 import { AboutUs } from "~/components/about2/model";
 import FAQSection from "~/components/accordion";
 import ProgressBar from "~/components/progressBar";
+import Image from "next/image";
 
 export default function Home() {
   const [componentsLoaded, setComponentsLoaded] = useState({
@@ -88,10 +89,12 @@ export default function Home() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900">
           <div className="relative flex flex-col items-center justify-center gap-2">
             <div className="relative  w-[280px] sm:w-[320px] md:w-[380px] lg:w-[400px]">
-              <img
+              <Image
                 src="/logos/logo.png"
                 alt="HackFest Logo"
                 className="mx-auto w-[70%] sm:w-[75%] md:w-[80%]"
+                width={512}
+                height={512}
               />
             </div>
             <div className="flex w-full flex-col items-center gap-2">
@@ -114,6 +117,10 @@ export default function Home() {
                   onProgress={handleProgress}
                 />
                 <Sponsors />
+                <AboutUs
+                  onLoaded={() => handleComponentLoad("about")}
+                  onProgress={handleProgress}
+                />
                 <PrizePool
                   onLoaded={() => handleComponentLoad("prizePool")}
                   onProgress={handleProgress}
@@ -124,10 +131,7 @@ export default function Home() {
                   onProgress={handleProgress}
                 />
 
-                <AboutUs
-                  onLoaded={() => handleComponentLoad("about")}
-                  onProgress={handleProgress}
-                />
+                <Sponsors />
 
                 <Timeline
                   onLoaded={() => handleComponentLoad("timeline")}

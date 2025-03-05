@@ -41,12 +41,12 @@ export default function TeamList({
     return <div className="text-white/50">Fetching Details...</div>;
   } else if (teamDetails.data) {
     return (
-      <div className="flex w-full flex-col items-center justify-center">
+      <div className="flex w-full flex-col items-center justify-center ">
         {showTeamName && (
           <div className="text-2xl font-bold">{teamDetails.data?.name}</div>
         )}
-        <div className="mt-4 flex w-full max-w-md flex-col gap-1 bg-blue-500/10">
-          <div className="flex w-full flex-row flex-nowrap items-center gap-4 rounded-md border-2 p-1 px-2">
+        <div className="mt-4 flex w-full max-w-md flex-col gap-1 ">
+          <div className="flex w-full flex-row flex-nowrap items-center gap-4 rounded-lg  border-2 p-2">
             <Image
               className="size-10 rounded-full border-4 border-yellow-500"
               src={leader?.image ?? "https://github.com/shadcn.png"}
@@ -74,11 +74,11 @@ export default function TeamList({
             if (!member.isLeader) {
               return (
                 <div
-                  className="flex w-full flex-row flex-nowrap items-center gap-4 rounded-md border-2 p-1 px-2"
+                  className="flex w-full flex-row flex-nowrap items-center gap-4 rounded-lg border-2 p-2"
                   key={idx}
                 >
                   <Image
-                    className="size-10 rounded-full border-4 border-white"
+                    className="size-10 rounded-full border-4 border-green-500"
                     src={member.image ?? "https://github.com/shadcn.png"}
                     alt="leader"
                     width={100}

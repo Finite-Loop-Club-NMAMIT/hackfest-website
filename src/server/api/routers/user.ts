@@ -200,6 +200,7 @@ export const userRouter = createTRPCRouter({
       if (user?.profileProgress !== "SUBMIT_IDEA")
         await ctx.db.team.update({
           data: {
+            isComplete: true,
             Members: {
               updateMany: {
                 where: {

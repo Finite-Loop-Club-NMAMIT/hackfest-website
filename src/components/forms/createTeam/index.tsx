@@ -15,14 +15,12 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
-import { RxCrossCircled } from "react-icons/rx";
-import { ClipboardCopy, RefreshCcw } from "lucide-react";
+import { ClipboardCopy, Loader, RefreshCcw } from "lucide-react";
 import TeamList from "~/components/team/teamList";
 // Removed react-hook-form and related component imports
 
 export default function RegisterTeamForm() {
   const { data, update } = useSession();
-  const params = useSearchParams();
   const router = useRouter();
 
   const createTeamMutation = api.team.createTeam.useMutation({
@@ -46,12 +44,11 @@ export default function RegisterTeamForm() {
     },
   });
 
-  // New useState variables replacing react-hook-form controls
   const [createTeamName, setCreateTeamName] = useState<string>("");
   const [joinTeamId, setJoinTeamId] = useState<string>("");
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(true);
   const [searchTeamId, setSearchTeamId] = useState<string>("");
   const [isJoined, setIsJoined] = useState<boolean>(false);
   const [teamDetailsTimeout, setTeamDetailsTimeout] =
@@ -61,7 +58,22 @@ export default function RegisterTeamForm() {
 
   function onCreateTeamSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    createTeamMutation.mutate({ teamName: createTeamName });
+    setIsSubmitting(true);
+    toast.loading(`Creating team ${createTeamName}`, {
+      id: "create-team",
+    });
+    createTeamMutation.mutate(
+      { teamName: createTeamName },
+      {
+        onSuccess: () => {
+          toast.dismiss("create-team");
+        },
+        onError: () => {
+          toast.dismiss("create-team");
+          setIsSubmitting(false);
+        },
+      },
+    );
   }
   function onJoinTeamSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -174,20 +186,31 @@ export default function RegisterTeamForm() {
               <p className="pb-3">Pick a Team Name</p>
               <div className="flex flex-col items-center justify-center gap-2">
                 <div className="flex flex-wrap items-center justify-center gap-2">
-                  {getTeamNames.data?.map((item) => (
-                    <button
-                      key={item.name}
-                      type="button"
-                      className={`rounded-lg px-4 py-2 backdrop-blur-xl ${
-                        createTeamName === item.name
-                          ? "border-green-500 bg-green-500/50"
-                          : "border-white bg-white/50"
-                      }`}
-                      onClick={() => setCreateTeamName(item.name)}
-                    >
-                      {item.name}
-                    </button>
-                  ))}
+                  {getTeamNames.isLoading ? (
+                    <>
+                      <div className="animate-spin">
+                        <Loader />
+                      </div>
+                    </>
+                  ) : (
+                    getTeamNames.data?.map((item) => (
+                      <button
+                        key={item.name}
+                        type="button"
+                        className={`rounded-lg px-4 py-2 backdrop-blur-xl ${
+                          createTeamName === item.name
+                            ? "border-green-500 bg-green-500/50"
+                            : "border-white bg-white/50"
+                        }`}
+                        onClick={() => {
+                          setCreateTeamName(item.name);
+                          setIsSubmitting(false);
+                        }}
+                      >
+                        {item.name}
+                      </button>
+                    ))
+                  )}
                 </div>
 
                 <button
@@ -208,15 +231,20 @@ export default function RegisterTeamForm() {
         {/* Join Team Card */}
         <div className="mt-8 flex-1 rounded-lg border p-6 shadow-lg md:mt-0">
           <h2 className="mb-4 text-center text-2xl font-bold">Join Team</h2>
-          <form onSubmit={onJoinTeamSubmit} className="space-y-8">
-            <div>
-              <label className="block pb-2">Team Id</label>
+          <form
+            onSubmit={onJoinTeamSubmit}
+            className="flex h-full flex-col items-center justify-evenly"
+          >
+            <div className="flex flex-col items-center justify-center gap-1">
+              <h1>Team Id</h1>
               <Input
                 placeholder="Enter team Id"
                 value={joinTeamId}
                 onChange={getTeamDetailsHandler}
               />
-              <p className="text-sm opacity-70">Get your Team ID from your leader</p>
+              <p className="text-sm opacity-70">
+                Get your Team ID from your leader
+              </p>
             </div>
             {searchTeamId.length > 0 && (
               <div className="flex justify-center">

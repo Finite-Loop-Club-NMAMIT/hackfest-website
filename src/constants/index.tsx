@@ -128,9 +128,9 @@ export const siteMetadata = {
 
 export const navLinks = [
   { url: "/", label: "Home" },
+  { url: "/#sponsors", label: "Sponsors" },
   { url: "/#about", label: "About" },
   { url: "/#prizes", label: "Prizes" },
   { url: "/#tracks", label: "Tracks" },
   { url: "/#timeline", label: "Timeline" },
-  { url: "/#sponsors", label: "Sponsors" },
 ];

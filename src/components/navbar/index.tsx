@@ -46,7 +46,8 @@ const NavBar = () => {
             </div>
 
             {/* Mobile Nav toggle */}
-            <div className="md:hidden">
+            <div className="flex gap-6 md:hidden">
+              <AuthButtons />
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="group relative p-2"
@@ -75,7 +76,6 @@ const NavBar = () => {
                 ))}
 
                 <DashboardButton role={user.data?.user.role ?? "PARTICIPANT"} />
-                <AuthButtons />
               </div>
             </div>
           )}

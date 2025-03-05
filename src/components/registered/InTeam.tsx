@@ -57,7 +57,7 @@ export default function InTeam({ isLeader }: { isLeader: boolean }) {
   });
 
   return (
-    <div className="flex w-full max-w-4xl flex-col items-center justify-center rounded-md bg-black/50 p-4 border border-white/20">
+    <div className="flex w-full max-w-4xl flex-col items-center justify-center rounded-md border border-white/20 bg-black/50 p-4">
       <h1 className="gradient-text text-2xl font-bold md:text-4xl">
         Team Details
       </h1>
@@ -137,7 +137,7 @@ export default function InTeam({ isLeader }: { isLeader: boolean }) {
             </DialogHeader>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="destructive">No</Button>
+                <Button>No</Button>
               </DialogClose>
               <Button
                 onClick={() => {
@@ -151,6 +151,7 @@ export default function InTeam({ isLeader }: { isLeader: boolean }) {
                     updateProfileMutation.mutate();
                   }
                 }}
+                variant="destructive"
               >
                 Yes
               </Button>
