@@ -10,6 +10,12 @@ interface ModelProps {
   url: string;
 }
 
+const baseWidth = {
+  sm: 640,
+  md: 920,
+  lg: 1000,
+};
+
 function Model({ url }: ModelProps) {
   const groupRef = useRef<THREE.Group>(null);
   const spotlightRef = useRef<THREE.SpotLight>(null);
@@ -63,7 +69,6 @@ function Model({ url }: ModelProps) {
           intersectionPoint.z,
         );
 
-        // Target the exact intersection point
         spotlightRef.current.target.position.copy(intersectionPoint);
         spotlightRef.current.target.updateMatrixWorld();
       } else {
@@ -88,14 +93,14 @@ function Model({ url }: ModelProps) {
     }
   });
 
-  const playAnimation = (index: number) => {
-    if (mixer && animations[index]) {
-      mixer.stopAllAction();
-      const action = mixer.clipAction(animations[index]);
-      action.reset().play();
-      setCurrentAnimation(index);
-    }
-  };
+  // const playAnimation = (index: number) => {
+  //   if (mixer && animations[index]) {
+  //     mixer.stopAllAction();
+  //     const action = mixer.clipAction(animations[index]);
+  //     action.reset().play();
+  //     setCurrentAnimation(index);
+  //   }
+  // };
 
   return (
     <>
@@ -125,7 +130,26 @@ function Model({ url }: ModelProps) {
   );
 }
 
-export const Slab = ({
+const Slab = ({ fov, url }: { fov: number; url: string }) => {
+  // max: fov 75 mid: fov 85 min: fov 140 h-[230vh]
+  return (
+    <div className="relative h-[230vh]  w-screen pt-5 sm:h-[100vh]">
+      <Canvas
+        camera={{
+          position: [0, 5, 5],
+          fov: fov,
+        }}
+        shadows
+      >
+        <React.Suspense fallback={null}>
+          <Model url={url} />
+        </React.Suspense>
+      </Canvas>
+    </div>
+  );
+};
+
+export const AboutUs = ({
   onLoaded,
   onProgress,
 }: {
@@ -150,19 +174,40 @@ export const Slab = ({
       onLoaded();
     }
   }, [maxProgress]);
-  return (
-    <div className="relative h-screen w-screen pt-5">
-      <Canvas
-        camera={{
-          position: [0, 5, 5],
+
+  const [config, setConfig] = useState({
+    width: baseWidth.lg,
+    fov: 75,
+    url: "/3D/about_compressed_max.glb",
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      console.log("Window width:", window.innerWidth);
+
+      if (window.innerWidth < baseWidth.sm) {
+        setConfig({
+          width: baseWidth.sm,
+          fov: 140,
+          url: "/3D/about_compressed_min.glb",
+        });
+      } else if (window.innerWidth < baseWidth.md) {
+        setConfig({
+          width: baseWidth.md,
+          fov: 85,
+          url: "/3D/about_compressed_mid.glb",
+        });
+      } else {
+        setConfig({
+          width: baseWidth.lg,
           fov: 75,
-        }}
-        shadows
-      >
-        <React.Suspense fallback={null}>
-          <Model url="/3D/glb_grid_v2.glb" />
-        </React.Suspense>
-      </Canvas>
-    </div>
-  );
+          url: "/3D/about_compressed_max.glb",
+        });
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  return <Slab key={config.fov} fov={config.fov} url={config.url} />;
 };
