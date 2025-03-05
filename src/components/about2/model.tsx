@@ -133,7 +133,7 @@ function Model({ url }: ModelProps) {
 const Slab = ({ fov, url }: { fov: number; url: string }) => {
   // max: fov 75 mid: fov 85 min: fov 140 h-[230vh]
   return (
-    <div className="absolute mt-16  h-[230vh] w-screen pt-5 sm:mt-24 sm:h-[100vh]">
+    <div className="absolute right-2  mt-16 h-[230vh] w-screen pt-5 sm:mt-24 sm:h-[100vh]">
       <Canvas
         camera={{
           position: [0, 5, 5],
@@ -210,8 +210,8 @@ export const AboutUs = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   return (
-    <div className="relative mb-12 h-[250vh] sm:mb-40 sm:h-screen ">
-      <h1 className="absolute top-[0] z-[60] my-4 w-full text-center font-anton text-6xl ">
+    <div className="relative mt-20 h-[250vh] w-screen sm:mb-40 sm:h-screen">
+      <h1 className="absolute top-[0] z-[60] my-4 w-full text-center font-anton text-6xl">
         About
       </h1>
       <Slab key={config.fov} fov={config.fov} url={config.url} />

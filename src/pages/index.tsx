@@ -131,8 +131,6 @@ export default function Home() {
                   onProgress={handleProgress}
                 />
 
-                <Sponsors />
-
                 <Timeline
                   onLoaded={() => handleComponentLoad("timeline")}
                   onProgress={handleProgress}

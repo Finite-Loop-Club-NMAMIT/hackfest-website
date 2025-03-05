@@ -3,7 +3,7 @@ import Image from "next/image";
 const Sponsors = () => {
   return (
     <section
-      className="mx-2 mt-28 flex min-h-[70vh] w-screen flex-col items-center gap-8 sm:mb-4"
+      className="mx-2 mt-28 flex min-h-[70vh] w-screen flex-col items-center gap-8 sm:mb-16"
       id="sponsors"
     >
       <h1 className="my-1 font-anton text-4xl font-bold sm:text-6xl">
