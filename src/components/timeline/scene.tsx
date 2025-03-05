@@ -99,16 +99,6 @@ export default function Scene() {
         fov={30}
       />
 
-      {/* <Stars
-        radius={100}
-        depth={50}
-        count={5000}
-        factor={4}
-        saturation={0}
-        fade
-        speed={1}
-      /> */}
-
       <Model
         scale={[11, 11, 11]}
         position={[0, 0, 0]}
@@ -117,8 +107,6 @@ export default function Scene() {
 
       {linePoints.length > 1 && <EventObjects linePoints={linePoints} />}
 
-      <ambientLight intensity={1.5} color={"#ffbf00"} />
-
       <directionalLight position={[0, 0, 5]} intensity={0.5} color={"white"} />
 
       <directionalLight position={[0, 0, -5]} intensity={0.5} color={"white"} />
@@ -126,8 +114,7 @@ export default function Scene() {
       <directionalLight position={[8, 0, 0]} intensity={0.5} color={"white"} />
 
       <directionalLight position={[-8, 0, 0]} intensity={0.5} color={"white"} />
-      <ambientLight intensity={1} color="#ffffff" />
-      <pointLight position={[0, 0, 0]} intensity={1} />
+      <ambientLight intensity={2} color="#ffffff" />
     </>
   );
 }

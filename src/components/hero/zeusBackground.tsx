@@ -114,16 +114,6 @@ function Scene() {
   return (
     <>
       <fog attach="fog" args={[0x777777, 0.001]} />
-      <ambientLight intensity={0.8} color={0x444444} />
-      <directionalLight position={[1, 2, 1]} intensity={1} />
-      <pointLight
-        ref={flashRef}
-        color={0xb5eef9}
-        intensity={0}
-        distance={30}
-        decay={1}
-        position={[Math.random() * 30 - 15, Math.random() * 1.5 + 1.5, -9]}
-      />
 
       {clouds.map((cloud, i) => (
         <mesh

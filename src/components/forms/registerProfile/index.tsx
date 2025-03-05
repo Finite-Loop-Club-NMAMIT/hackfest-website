@@ -61,11 +61,11 @@ export default function RegisterProfileForm() {
   const colleges = api.college.getColleges.useQuery();
   const updateProfileMutaion = api.user.updateProfile.useMutation({
     onSuccess: () => {
-      if(typeof window !== "undefined"){
+      if (typeof window !== "undefined") {
         window.localStorage.removeItem("hackfestProfileData");
       }
 
-      toast.dismiss("saving-details");
+      toast.dismiss("submitting");
       setSubmitting(false);
       setRegisterd(true);
       gsap.set("#form-title", { innerText: "Profile Registered" });
@@ -75,7 +75,7 @@ export default function RegisterProfileForm() {
       }, 5000);
     },
     onError: () => {
-      toast.dismiss("saving-details");
+      toast.dismiss("submitting");
       setSubmitting(false);
       toast.error("Failed to register");
     },
@@ -714,29 +714,33 @@ export default function RegisterProfileForm() {
 
                     setTab(2);
                     setSubmitting(true);
-                    toast.loading("Uploading files...", {
-                      id: "upload-file",
+                    toast.loading("Saving Details...", {
+                      id: "submitting",
                     });
 
-                    const result = await Promise.all([
-                      await uploadFiles(aadhaar, setAadhaarUrl),
-                      await uploadFiles(collegeId, setCollegeIdUrl),
-                    ]);
+                    try {
+                      const result = await Promise.all([
+                        uploadFiles(aadhaar, setAadhaarUrl),
+                        uploadFiles(collegeId, setCollegeIdUrl),
+                      ]);
 
-                    toast.dismiss("upload-file")
+                      if (result[0] === false || result[1] === false) {
+                        toast.error("Error uploading files");
+                        toast.dismiss("submitting");
+                        setSubmitting(false);
+                      } else {
+                        // FIXME: This timeout allows to wait for the state to get updated
+                        const timeout = setTimeout(() => {
+                          void form.handleSubmit(onSubmit)();
+                        }, 500);
 
-                    if (result[0] === false || result[1] === false) {
-                      toast.error("Error uploading files");
+                        return () => clearTimeout(timeout);
+                        // await form.handleSubmit(onSubmit)();
+                      }
+                    } catch (error) {
+                      toast.dismiss("submitting")
+                      toast.error("Error Registering");
                       setSubmitting(false);
-                    } else {
-                      toast.loading("Saving details...", {
-                        id: "saving-details"
-                      })
-                      const timeout = setTimeout(() => {
-                        void form.handleSubmit(onSubmit)();
-                      }, 500);
-
-                      return () => clearTimeout(timeout);
                     }
                   } else {
                     toast.error("Please upload both files");

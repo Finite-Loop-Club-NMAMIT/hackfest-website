@@ -130,6 +130,7 @@ function Model({ url }: ModelProps) {
   );
 }
 
+
 const Slab = ({ fov, url }: { fov: number; url: string }) => {
   // max: fov 75 mid: fov 85 min: fov 140 h-[230vh]
   return (

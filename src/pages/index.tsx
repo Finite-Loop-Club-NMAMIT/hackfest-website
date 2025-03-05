@@ -6,9 +6,11 @@ import PrizePool from "~/components/prizePool";
 import Sponsors from "~/components/sponsors";
 import Timeline from "~/components/timeline";
 import { BackgroundWrapper } from "~/components/layout/backgroundWrapper";
+
 import { AboutUs } from "~/components/about2/model";
 import FAQSection from "~/components/accordion";
 import ProgressBar from "~/components/progressBar";
+
 
 export default function Home() {
   const [componentsLoaded, setComponentsLoaded] = useState({
@@ -85,14 +87,19 @@ export default function Home() {
     <div>
       {!showContent && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900">
-          <div className="relative flex flex-col items-center justify-center gap-4 px-4">
-            <div className="relative aspect-square w-[280px] sm:w-[320px] md:w-[380px] lg:w-[400px]">
-              <ProgressBar progress={totalProgress} />
+          <div className="relative flex flex-col items-center justify-center gap-2">
+            <div className="relative  w-[280px] sm:w-[320px] md:w-[380px] lg:w-[400px]">
               <img
                 src="/logos/logo.png"
                 alt="HackFest Logo"
-                className="absolute left-1/2 top-1/2 z-10 aspect-square w-[70%] -translate-x-1/2 -translate-y-1/2 sm:w-[75%] md:w-[80%]"
+                className="mx-auto w-[70%] sm:w-[75%] md:w-[80%]"
               />
+            </div>
+            <div className="flex w-full flex-col items-center gap-2">
+              <ProgressBar progress={totalProgress} />
+              <span className="font-anton text-xl text-white sm:text-2xl md:text-3xl">
+                {totalProgress.toFixed(2)}%
+              </span>
             </div>
           </div>
         </div>
@@ -112,19 +119,24 @@ export default function Home() {
                   onLoaded={() => handleComponentLoad("prizePool")}
                   onProgress={handleProgress}
                 />
-                <Timeline
-                  onLoaded={() => handleComponentLoad("timeline")}
-                  onProgress={handleProgress}
-                />
+
                 <Domains
                   onLoaded={() => handleComponentLoad("domain")}
                   onProgress={handleProgress}
                 />
+
                 <Sponsors />
+
                 <AboutUs
                   onLoaded={() => handleComponentLoad("about")}
                   onProgress={handleProgress}
                 />
+
+                <Timeline
+                  onLoaded={() => handleComponentLoad("timeline")}
+                  onProgress={handleProgress}
+                />
+
                 <FAQSection />
               </div>
             </main>
