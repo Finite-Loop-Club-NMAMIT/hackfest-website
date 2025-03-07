@@ -94,6 +94,7 @@ const Timeline = ({
             id="three-canvas-container"
             className="three"
             shadows
+            dpr={[1, 1]}
             style={{
               height: "100% !important",
               width: "100% !important",

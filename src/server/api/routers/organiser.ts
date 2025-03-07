@@ -12,53 +12,50 @@ export const organiserRouter = createTRPCRouter({
       },
     });
   }),
-  addJudge: adminProcedure
-    .input(addJudgeZ)
-    .mutation(async ({ input, ctx }) => {
-        const user = await ctx.db.user.findUnique({
-          where: {
-            id: input.userId,
-          },
-          include: {
-            Judges: true,
-          },
-        });
+  addJudge: adminProcedure.input(addJudgeZ).mutation(async ({ input, ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: {
+        id: input.userId,
+      },
+      include: {
+        Judges: true,
+      },
+    });
 
-        if (!user?.Judges) {
-          await ctx.db.user.update({
-            where: {
-              id: input.userId,
-            },
-            data: {
-              role: 'JUDGE',
-            },
-          });
-          await ctx.db.judges.create({
-            data: {
-              userId: input.userId,
-              type: input.type,
-            },
-          });
-          } else {
-            await ctx.db.user.update({
-              where: {
-                id: input.userId,
-              },
-              data: {
-                role: 'JUDGE',
-              },
-            });
-            await ctx.db.judges.update({
-              where: {
-                userId: input.userId,
-              },
-              data: {
-                type: input.type,
-              },
-            });
-          }
-        } 
-    ),
+    if (!user?.Judges) {
+      await ctx.db.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {
+          role: "JUDGE",
+        },
+      });
+      await ctx.db.judges.create({
+        data: {
+          userId: input.userId,
+          type: input.type,
+        },
+      });
+    } else {
+      await ctx.db.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {
+          role: "JUDGE",
+        },
+      });
+      await ctx.db.judges.update({
+        where: {
+          userId: input.userId,
+        },
+        data: {
+          type: input.type,
+        },
+      });
+    }
+  }),
   removeJudge: adminProcedure
     .input(
       z.object({
@@ -66,23 +63,19 @@ export const organiserRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      
-
-        await ctx.db.judges.delete({
-          where: {
-            userId: input.userId,
-          },
-        });
-        await ctx.db.user.update({
-          where: {
-            id: input.userId,
-          },
-          data: {
-            role: "PARTICIPANT",
-          },
-        });
-      
-    
+      await ctx.db.judges.delete({
+        where: {
+          userId: input.userId,
+        },
+      });
+      await ctx.db.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {
+          role: "PARTICIPANT",
+        },
+      });
     }),
   getVolunteerList: adminProcedure.query(async ({ ctx }) => {
     return await ctx.db.user.findMany({
@@ -98,16 +91,14 @@ export const organiserRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      
-        await ctx.db.user.update({
-          where: {
-            id: input.id,
-          },
-          data: {
-            role: "TEAM",
-          },
-        });
-      
+      await ctx.db.user.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          role: "TEAM",
+        },
+      });
     }),
   removeVolunteer: adminProcedure
     .input(
@@ -116,16 +107,16 @@ export const organiserRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-        await ctx.db.user.update({
-          where: {
-            id: input.userId,
-          },
-          data: {
-            role: "PARTICIPANT",
-          },
-        });
+      await ctx.db.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {
+          role: "PARTICIPANT",
+        },
+      });
     }),
-    changeTeamProgress: adminProcedure
+  changeTeamProgress: adminProcedure
     .input(
       z.object({
         teamId: z.string(),

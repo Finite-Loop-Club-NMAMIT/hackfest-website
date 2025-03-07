@@ -107,14 +107,9 @@ export default function Scene() {
 
       {linePoints.length > 1 && <EventObjects linePoints={linePoints} />}
 
-      <directionalLight position={[0, 0, 5]} intensity={0.5} color={"white"} />
+      <directionalLight position={[0, 0, 5]} intensity={0.7} color="white" />
 
-      <directionalLight position={[0, 0, -5]} intensity={0.5} color={"white"} />
-
-      <directionalLight position={[8, 0, 0]} intensity={0.5} color={"white"} />
-
-      <directionalLight position={[-8, 0, 0]} intensity={0.5} color={"white"} />
-      <ambientLight intensity={2} color="#ffffff" />
+      <ambientLight intensity={1.5} color="#ffffff" />
     </>
   );
 }
