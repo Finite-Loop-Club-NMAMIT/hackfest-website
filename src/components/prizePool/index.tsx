@@ -1,7 +1,5 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import {
   Cloud,
   Clouds,
@@ -12,7 +10,6 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
-import { on } from "events";
 
 type ModelProps = {
   scale: readonly [number, number, number];

@@ -33,15 +33,16 @@ function Accordian({ faqs }: { faqs: FAQ }) {
 const faqs: FAQ = [
   {
     question: "What is the registration charge?",
-    answer: "The registration fee is ₹350 which has to be paid after selection",
+    answer:
+      "The registration fee is ₹350/member which has to be paid after selection.",
   },
   {
     question: "Will the be accomodation provided?",
-    answer: "Yes accomodation will be provided",
+    answer: "Yes, basic accomodation will be provided.",
   },
   {
     question: "Will travel expensed be covered?",
-    answer: "No, travel expenses will not be covered",
+    answer: "No, travel expenses will not be covered.",
   },
 ];
 export default function FAQSection() {
