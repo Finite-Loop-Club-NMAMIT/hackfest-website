@@ -24,7 +24,7 @@ function Accordian({ faqs }: { faqs: FAQ }) {
 const faqs: FAQ = [
   {
     question: "What is the registration charge?",
-    answer: "The registration fee is ₹300 which has to be paid after selection",
+    answer: "The registration fee is ₹350 which has to be paid after selection",
   },
   {
     question: "Will the be accomodation provided?",
