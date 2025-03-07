@@ -136,5 +136,5 @@ export const navLinks = [
   { url: "/#about", label: "About" },
   { url: "/#prizes", label: "Prizes" },
   { url: "/#tracks", label: "Tracks" },
-  { url: "/#timeline", label: "Timeline" },
+  { url: "/timeline", label: "Timeline" },
 ];

@@ -1,11 +1,11 @@
 <p align="center">
   <img src="https://res.cloudinary.com/dpfpk49oa/image/upload/v1712719273/mxrw7jnz96pfkc9xooc5.png" width="94" height="94">
 <img src="https://res.cloudinary.com/dpfpk49oa/image/upload/v1661426779/logo1_gyjvor.png" width="501" height="94">
-<h1 align="center">Official website of Hackfest '24</h1>
+<h1 align="center">Official website of Hackfest '25</h1>
 </p>
 
 <p align="center">
-Hackfest '24, a 3-day national level hackathon hosted by Finite Loop Club from April 5th to 7th, 2024, at NMAM Institute of Technology, focused on the theme "Retrofuturism: Hack the Timestream”. Hosted by Finite Loop Club – NMAM Institute of Technology, Nitte, and proudly powered by EGDK India Pvt. Ltd., along with co-sponsorship from Niveus Solutions Pvt. Ltd. and the Global Point - Study abroad.
+Hackfest '25, a 3-day national level hackathon hosted by Finite Loop Club from April 18th to 20th, 2025, at NMAM Institute of Technology, focused on the theme "Tech Olympus”. Hosted by Finite Loop Club – NMAM Institute of Technology, Nitte, and proudly powered by <b>Paloalto Networks</b> and <b>Inflow Technologies</b>, along with co-sponsorship from <b>Rakuten</b>.
 </p>
 <p align="center">
 <a href="https://github.com/hackfest-dev/website/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/hackfest-dev/website"></a>
@@ -22,7 +22,7 @@ Hackfest '24, a 3-day national level hackathon hosted by Finite Loop Club from A
 - [📑 Appendix](#appendix)
 
 ## Features
-- Retrofuturism theme based Landing page
+- Tech Olympus theme based Landing page
 - Paperless system with 5 Robust dashboards with extensive features for Admin, Team, Organiser, Volunteer, Validator
 - Hackathon Registration multi-step form with collecting details, team formation & idea submission
 - Team Management feature with Create/Join team, Delete/leave team
@@ -32,6 +32,7 @@ Hackfest '24, a 3-day national level hackathon hosted by Finite Loop Club from A
 ## Built with
 
 <p align="left">
+<img src="https://ucarecdn.com/22a0a69b-689f-46c9-866b-57650f31fde9/-/format/jpeg/-/progressive/yes/-/preview/480x480/" height="50px">&nbsp; &nbsp; &nbsp;
 <img src="https://ui-lib.com/blog/wp-content/uploads/2021/12/nextjs-boilerplate-logo.png" height="50px">&nbsp; &nbsp; &nbsp;
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Typescript_logo_2020.svg/1024px-Typescript_logo_2020.svg.png?20221110153201" height="50px">&nbsp; &nbsp; &nbsp;
 <img src="https://www.svgrepo.com/show/374118/tailwind.svg" height="50px">
@@ -44,6 +45,7 @@ Hackfest '24, a 3-day national level hackathon hosted by Finite Loop Club from A
 <img src="https://us.v-cdn.net/6036703/uploads/2GBTXLD32F2O/cloudinary-cloud-glyph-blue-png.png" height="50px">
 </p>
 
+- [**Three JS**](https://threejs.org/): Javascript 3D library for easy-to-use, lightweight, cross-browser rendering
 - [**Next JS**](https://nextjs.org/): React-based framework for building server-side rendered and statically exported web apps.
 - [**Typescript**](https://www.typescriptlang.org/): Statically typed superset of JavaScript, adds type annotations to enhance code reliability & readability
 - [**TailwindCSS**](https://tailwindcss.com/): Utility-first CSS framework

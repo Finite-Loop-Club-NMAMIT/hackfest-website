@@ -4,7 +4,7 @@ import Hero from "~/components/hero";
 import RootLayout from "~/components/layout";
 import PrizePool from "~/components/prizePool";
 import Sponsors from "~/components/sponsors";
-import Timeline from "~/components/timeline";
+
 import { BackgroundWrapper } from "~/components/layout/backgroundWrapper";
 import { AboutUs } from "~/components/about2/model";
 import FAQSection from "~/components/accordion";
@@ -20,7 +20,6 @@ export default function Home() {
     hero: 0,
     domain: 0,
     prizePool: 0,
-    timeline: 0,
     about: 0,
   });
 
@@ -127,11 +126,6 @@ export default function Home() {
 
                 <Domains
                   onLoaded={() => handleComponentLoad("domain")}
-                  onProgress={handleProgress}
-                />
-
-                <Timeline
-                  onLoaded={() => handleComponentLoad("timeline")}
                   onProgress={handleProgress}
                 />
 
