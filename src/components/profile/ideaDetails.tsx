@@ -3,8 +3,7 @@ import React, { useEffect } from "react";
 import { Button } from "../ui/button";
 import { Download } from "lucide-react";
 import { useRouter } from "next/router";
-import { templateURL } from "../registrationProgress";
-import PdfPreview from "../pdf";
+import { downloadPPT } from "~/utils/helper";
 
 export default function IdeaDetails({ order }: { order: number }) {
   const { data } = useSession();
@@ -67,10 +66,7 @@ export default function IdeaDetails({ order }: { order: number }) {
                   variant="outline"
                   className="flex flex-row gap-1 text-xs text-white md:text-sm"
                   onClick={async () => {
-                    const a = document.createElement("a");
-                    a.href = templateURL;
-                    a.download = "Idea_template.pptx";
-                    a.click();
+                    await downloadPPT();
                   }}
                 >
                   <Download className="size-4 md:size-5" />

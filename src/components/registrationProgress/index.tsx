@@ -10,9 +10,7 @@ import InTeam from "../registered/InTeam";
 import { Button } from "../ui/button";
 import { useRouter } from "next/router";
 import IdeaSubmitForm from "../forms/ideaSubmitForm";
-
-export const templateURL =
-  "https://res.cloudinary.com/dwwno9ngw/raw/upload/v1737346827/Hackathon_Abstract_Submission_-_Goopy_Gophers_mjnwtt.pptx";
+import { downloadPPT } from "~/utils/helper";
 
 export default function RegisterCards({
   session,
@@ -101,13 +99,14 @@ export default function RegisterCards({
                     <p className="mt-4 text-center">
                       The team leader should submit the idea. Only ideas
                       submitted using the{" "}
-                      <a
-                        download={"idea_template.pptx"}
-                        href={templateURL}
+                      <button
+                        onClick={async () => {
+                          await downloadPPT();
+                        }}
                         className="underline"
                       >
                         template
-                      </a>{" "}
+                      </button>{" "}
                       provided will be considered.
                     </p>
                     <Button
