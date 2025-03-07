@@ -37,7 +37,7 @@ const faqs: FAQ = [
 ];
 export default function FAQSection() {
   return (
-    <section className="flex h-[70vh] flex-col items-center justify-center ">
+    <section className="my-6 flex h-[70vh] flex-col items-center justify-center ">
       <h1 className="my-5  font-anton text-6xl font-bold">FAQ</h1>
 
       <Accordian faqs={faqs} />
