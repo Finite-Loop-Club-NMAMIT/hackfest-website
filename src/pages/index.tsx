@@ -33,7 +33,7 @@ export default function Home() {
   useEffect(() => {
     timerRef.current = setTimeout(() => {
       setShowRegistration(true);
-    }, 1);
+    }, 10000);
 
     return () => clearTimeout(timerRef.current);
   }, [])
