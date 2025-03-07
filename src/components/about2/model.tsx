@@ -7,7 +7,6 @@ const baseWidth = {
   lg: 1200,
 };
 
-<<<<<<< Updated upstream
 const Slab = ({ url, width }: { url: string; width: number }) => {
   return width === baseWidth.sm ? (
     <div className="relative mt-28 h-[150vh] w-[140vw]">
@@ -16,12 +15,6 @@ const Slab = ({ url, width }: { url: string; width: number }) => {
   ) : (
     <div className="mt-28 grid place-content-center">
       <Image src={url} alt="About Us" width={1200} height={1400} />
-=======
-const Slab = ({ url }: { url: string; width: number }) => {
-  return (
-    <div className="mt-28 grid place-content-center md:mx-4">
-      <Image src={url} alt="About Us" width={1500} height={1300} />
->>>>>>> Stashed changes
     </div>
   );
 };
