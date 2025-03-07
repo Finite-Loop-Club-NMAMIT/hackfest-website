@@ -1,5 +1,3 @@
-// src/components/layout/BackgroundWrapper.tsx
-import { useTexture } from "@react-three/drei";
 import { PropsWithChildren } from "react";
 
 export const BackgroundWrapper = ({ children }: PropsWithChildren) => {

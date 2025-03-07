@@ -238,6 +238,14 @@ const config = {
   					opacity: '1'
   				}
   			},
+			float: {
+				"0%, 100%": {
+					transform: "translateY(0)"
+				},
+          		"50%": {
+					transform: "translateY(-15px)"
+				},
+			},
   			move: {
   				'0%': {
   					'background-position-y': '0px'
@@ -345,6 +353,7 @@ const config = {
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			'meteor-effect': 'meteor 5s linear infinite',
   			flicker: 'flicker 20s linear infinite',
+			float: 'float 3s ease-in-out infinite',
   			move: 'move 5s linear infinite',
   			'hue-rotate': 'hue-rotate 100s linear infinite',
   			marquee: 'marquee 6s linear infinite',

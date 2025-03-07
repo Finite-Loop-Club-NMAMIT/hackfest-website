@@ -6,7 +6,6 @@ import TimeLineScene from "~/components/timeline/scene";
 import ProgressBar from "~/components/progressBar";
 import { BackgroundWrapper } from "~/components/layout/backgroundWrapper";
 import ErrorScreen from "~/components/errorScreen";
-import RootLayout from "~/components/layout";
 import NavBar from "~/components/navbar";
 
 const Timeline = () => {

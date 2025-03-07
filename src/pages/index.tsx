@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useRef, use } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Domains from "~/components/domains";
 import Hero from "~/components/hero";
 import RootLayout from "~/components/layout";
 import PrizePool from "~/components/prizePool";
 import Sponsors from "~/components/sponsors";
-
+import Link from "next/link";
 import { BackgroundWrapper } from "~/components/layout/backgroundWrapper";
 import { AboutUs } from "~/components/about2/model";
 import FAQSection from "~/components/accordion";
@@ -107,7 +107,7 @@ export default function Home() {
         <RootLayout>
           <BackgroundWrapper>
             <main className="relative mx-auto overflow-y-clip">
-              <div className="relative z-10">
+              <div className="relative z-10 flex flex-col gap-y-[5rem]">
                 <Hero
                   onLoaded={() => handleComponentLoad("hero")}
                   onProgress={handleProgress}
@@ -123,6 +123,8 @@ export default function Home() {
                   onLoaded={() => handleComponentLoad("domain")}
                   onProgress={handleProgress}
                 />
+                
+                <TimelineLink />
 
                 <FAQSection />
               </div>
@@ -133,3 +135,24 @@ export default function Home() {
     </div>
   );
 }
+
+const TimelineLink = () => {
+  return (
+    <div className="relative animate-float flex flex-col items-center justify-center w-full md:h-[28rem] h-[20rem]">
+      <Image
+        src="/images/timeline_leaves.webp"
+        alt="Timeline Leaves"
+        layout="fill"
+        objectFit="contain"
+        className="absolute md:w-[30rem] md:h-[28rem] h-[20rem]"
+        priority
+      />
+
+      <Link href="/timeline" className="md:w-[20%] w-[40%]">
+        <div className="text-center font-herkules hover:scale-105 tracking-wider text-4xl md:text-5xl rounded-md transition-transform transform">
+          Explore the Timeline
+        </div>
+      </Link>
+    </div>
+  );
+};

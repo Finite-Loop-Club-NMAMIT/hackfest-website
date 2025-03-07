@@ -18,7 +18,7 @@ const ErrorScreen = () => {
         anchorX="center"
         anchorY="middle"
       >
-        Couldn't Load Timeline
+        Couldn&apos;t Load Timeline
       </Text>
       <Text
         position={[0, -1.3, 0]}

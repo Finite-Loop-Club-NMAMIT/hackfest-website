@@ -9,7 +9,7 @@ const baseWidth = {
 
 const Slab = ({ url }: { url: string; width: number }) => {
   return (
-    <div className="mt-28 grid place-content-center md:mx-4">
+    <div className="mt-8 grid place-content-center md:mx-4">
       <Image src={url} alt="About Us" width={1500} height={1300} />
     </div>
   );
@@ -44,9 +44,10 @@ export const AboutUs = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
   return (
-    <div className="relative my-10 mt-40 grid place-content-center">
-      <h1 className="absolute top-[0] z-[60] my-4 w-full text-center font-anton text-6xl">
+    <div className="relative grid place-content-center">
+      <h1 className="z-[60] w-full text-center font-herkules sm:text-7xl text-6xl tracking-wider">
         About
       </h1>
       <Slab key={config.width} url={config.url} width={config.width} />

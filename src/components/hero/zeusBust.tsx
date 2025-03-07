@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React from "react";
 import { Float, useGLTF } from "@react-three/drei";
 import { useEffect, useState } from "react";
 

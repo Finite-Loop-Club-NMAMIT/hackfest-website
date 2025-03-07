@@ -1,13 +1,12 @@
 import * as THREE from "three";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import {
   useCursor,
   Environment,
   useTexture,
   useProgress,
   MeshReflectorMaterial,
-  Cloud,
   Html,
 } from "@react-three/drei";
 import { easing } from "maath";
@@ -89,35 +88,35 @@ const mobilePositions = [
 
 const GOLDENRATIO = 1.61803398875;
 
-const Floor = () => {
-  const props = useTexture(
-    {
-      map: "/images/tracks/1K/marble_albedo.png",
-    },
-    (error) => {
-      console.log(error);
-    },
-  );
+// const Floor = () => {
+//   const props = useTexture(
+//     {
+//       map: "/images/tracks/1K/marble_albedo.png",
+//     },
+//     (error) => {
+//       console.log(error);
+//     },
+//   );
 
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[50, 50]} />
+//   return (
+//     <mesh rotation={[-Math.PI / 2, 0, 0]}>
+//       <planeGeometry args={[50, 50]} />
 
-      <MeshReflectorMaterial
-        {...props}
-        blur={[0, 0]}
-        mixBlur={2}
-        mixStrength={10}
-        roughness={1}
-        depthScale={1.2}
-        minDepthThreshold={0.4}
-        maxDepthThreshold={1.4}
-        metalness={0.5}
-        mirror={0.2}
-      />
-    </mesh>
-  );
-};
+//       <MeshReflectorMaterial
+//         {...props}
+//         blur={[0, 0]}
+//         mixBlur={2}
+//         mixStrength={10}
+//         roughness={1}
+//         depthScale={1.2}
+//         minDepthThreshold={0.4}
+//         maxDepthThreshold={1.4}
+//         metalness={0.5}
+//         mirror={0.2}
+//       />
+//     </mesh>
+//   );
+// };
 
 export const Domains = ({
   onLoaded,
@@ -126,7 +125,7 @@ export const Domains = ({
   onLoaded: () => void;
   onProgress: (progress: number, component: string) => void;
 }) => {
-  const { progress, loaded, total, errors } = useProgress();
+  const { progress, loaded, total } = useProgress();
 
   const [maxProgress, setMaxProgress] = useState(0);
 
@@ -147,7 +146,7 @@ export const Domains = ({
 
   return (
     <div className="relative h-screen w-screen" id="tracks">
-      <h1 className="absolute top-[0] z-[60] my-4 w-full text-center font-anton text-6xl sm:top-[10%]">
+      <h1 className="absolute top-[0] z-[60] w-full text-center font-herkules sm:text-7xl text-6xl tracking-wider sm:top-[5%]">
         Tracks
       </h1>
       <Canvas camera={{ fov: 70, position: [0, 1, 4] }}>

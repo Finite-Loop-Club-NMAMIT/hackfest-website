@@ -47,8 +47,8 @@ const faqs: FAQ = [
 ];
 export default function FAQSection() {
   return (
-    <section className="relative my-6 flex min-h-[70vh] flex-col items-center justify-center py-16">
-      <h1 className="mb-12 bg-gradient-to-b from-white via-white/95 to-white/90 bg-clip-text font-anton text-5xl font-bold text-transparent sm:text-6xl">
+    <section className="relative my-6 flex min-h-[70vh] flex-col items-center justify-center pb-16">
+      <h1 className="mb-12 bg-gradient-to-b from-white via-white/95 to-white/90 bg-clip-text font-herkules tracking-wider text-7xl">
         FAQ
       </h1>
 

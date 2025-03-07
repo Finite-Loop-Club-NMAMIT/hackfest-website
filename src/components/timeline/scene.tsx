@@ -1,9 +1,9 @@
-import { PerspectiveCamera, Stars, useScroll } from "@react-three/drei";
+import { PerspectiveCamera, useScroll } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Model } from "./model";
 import { HelixCurve } from "./helix";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import EventObjects from "./eventObjects";
 
 const TimeLineScene = () => {
