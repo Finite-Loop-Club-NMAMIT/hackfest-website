@@ -1,6 +1,10 @@
 import { AiOutlineInstagram, AiOutlineMail } from "react-icons/ai";
 import { FaDiscord } from "react-icons/fa";
 
+// HACK: Add idea template ppt download link below
+export const pptUrl =
+  "https://res.cloudinary.com/dwwno9ngw/raw/upload/v1741349448/idea%20ppts/bg940gppunueopprpzzr.pptx";
+
 export const dates: [Date, Date, Date] = [
   new Date("2024-4-5"),
   new Date("2024-4-6"),

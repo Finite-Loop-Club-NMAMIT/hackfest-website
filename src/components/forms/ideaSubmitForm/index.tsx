@@ -27,8 +27,8 @@ import {
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
 import { Dropzone } from "../../ui/dropZone";
-import { templateURL } from "~/components/registrationProgress";
 import { toast } from "sonner";
+import { downloadPPT } from "~/utils/helper";
 
 export default function IdeaSubmitForm() {
   const { update } = useSession();
@@ -41,16 +41,16 @@ export default function IdeaSubmitForm() {
   const [pdf, setPdf] = useState<File | null>(null);
   const [wordLimit, setWordLimit] = useState(0);
   const submitIdea = api.idea.submitIdea.useMutation({
-    onSuccess: async() => {
+    onSuccess: async () => {
       toast.dismiss("idea");
       toast.success("Idea Submitted Successfully");
-      await update()
+      await update();
     },
     onError: (error) => {
       setSubmitting(false);
       toast.dismiss("idea");
-      toast.error(error.message)
-    }
+      toast.error(error.message);
+    },
   });
 
   const upload = async (file: File) => {
@@ -93,7 +93,7 @@ export default function IdeaSubmitForm() {
       if (secure_url) {
         form.setValue("pptUrl", secure_url as string);
         return true;
-      }else{
+      } else {
         return false;
       }
     }
@@ -107,7 +107,7 @@ export default function IdeaSubmitForm() {
 
   return (
     <div
-      className={`relative max-h-max w-full max-w-7xl rounded-md bg-black/50 p-4 border mt-8 border-white/20`}
+      className={`relative mt-8 max-h-max w-full max-w-7xl rounded-md border border-white/20 bg-black/50 p-4`}
     >
       <Form {...form}>
         <form
@@ -201,13 +201,17 @@ export default function IdeaSubmitForm() {
                   <FormItem className="mx-auto w-full max-w-4xl">
                     <FormLabel className="flex items-center justify-between">
                       Idea PPT
-                      <a
-                        href={templateURL}
-                        download
+                      <button
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+
+                          await downloadPPT();
+                        }}
                         className="cursor-pointer text-xs underline"
                       >
                         Download PPT Template
-                      </a>
+                      </button>
                     </FormLabel>
                     <FormControl>
                       <Dropzone
@@ -222,13 +226,17 @@ export default function IdeaSubmitForm() {
               ></FormField>
               <p className="text-center text-xs">
                 Please download our provided{" "}
-                <a
-                  href={templateURL}
-                  download
+                <button
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    await downloadPPT();
+                  }}
                   className="cursor-pointer text-xs underline"
                 >
                   PPT Template
-                </a>{" "}
+                </button>{" "}
                 for your submission, only submissions using this template will
                 be accepted.
               </p>
@@ -242,17 +250,20 @@ export default function IdeaSubmitForm() {
                     e.preventDefault();
                     await form.trigger(["problemStatement", "track"]);
 
-                    if(form.formState.errors.problemStatement ?? form.formState.errors.track) {
+                    if (
+                      form.formState.errors.problemStatement ??
+                      form.formState.errors.track
+                    ) {
                       return;
-                    }else{
+                    } else {
                       setSubmitting(true);
                       const isUploaded = await uploadPdf();
-                      if(isUploaded){
-                        toast.loading("Submitting Idea",{
-                          id: "idea"
+                      if (isUploaded) {
+                        toast.loading("Submitting Idea", {
+                          id: "idea",
                         });
                         await form.handleSubmit(onSubmit)();
-                      }else{
+                      } else {
                         setSubmitting(false);
                       }
                     }

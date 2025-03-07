@@ -210,7 +210,7 @@ export const AboutUs = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   return (
-    <div className="relative mt-20 h-[250vh] w-screen sm:mb-40 sm:h-screen">
+    <div className="relative mt-20 h-[250vh] w-screen sm:mb-40 sm:h-screen" id="about">
       <h1 className="absolute top-[0] z-[60] my-4 w-full text-center font-anton text-6xl">
         About
       </h1>

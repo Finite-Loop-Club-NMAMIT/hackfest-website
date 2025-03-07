@@ -15,7 +15,7 @@ export default function PersonalDeatils({
   return (
     <>
       <div
-        className="flex h-full w-full flex-col gap-4 rounded-md border-2 p-2"
+        className="flex h-full w-full flex-col justify-evenly gap-4 rounded-md border-2 p-2"
         style={{ order: order }}
       >
         <h1 className="text-xl">Personal Details</h1>

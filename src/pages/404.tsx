@@ -5,7 +5,7 @@ const NotFound = () => {
   const router = useRouter();
   return (
     <div
-      className={`relative flex min-h-screen items-center justify-center overflow-hidden bg-[url("/images/blue-grainy.png")] bg-cover bg-center px-5 py-40 md:p-40`}
+      className={`relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328] bg-cover bg-center px-5 py-40 md:p-40`}
     >
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center bg-black/20"></div>
 
@@ -19,7 +19,7 @@ const NotFound = () => {
             You need to be logged in to view this page
           </p>
 
-          <Button variant={"default"} onClick={() => router.back()}>
+          <Button variant={"secondary"} onClick={() => router.back()}>
             Go Back
           </Button>
         </div>
