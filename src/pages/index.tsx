@@ -13,14 +13,12 @@ import Image from "next/image";
 import AuthButton from "~/components/navbar/authButton";
 
 export default function Home() {
-
   const loadedComponents = useRef(new Set());
   const [showContent, setShowContent] = useState(false);
   const [progress, setProgress] = useState({
     hero: 0,
     domain: 0,
     prizePool: 0,
-    about: 0,
   });
 
   const SECTION_COUNT = Object.entries(progress).length;
@@ -36,7 +34,7 @@ export default function Home() {
     }, 10000);
 
     return () => clearTimeout(timerRef.current);
-  }, [])
+  }, []);
 
   const handleProgress = useCallback((progress: number, component: string) => {
     setProgress((prev) => ({
@@ -55,7 +53,7 @@ export default function Home() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }
+  };
 
   useEffect(() => {
     const total = Object.values(progress).reduce((acc, curr) => acc + curr, 0);
@@ -115,10 +113,7 @@ export default function Home() {
                   onProgress={handleProgress}
                 />
                 <Sponsors />
-                <AboutUs
-                  onLoaded={() => handleComponentLoad("about")}
-                  onProgress={handleProgress}
-                />
+                <AboutUs />
                 <PrizePool
                   onLoaded={() => handleComponentLoad("prizePool")}
                   onProgress={handleProgress}

@@ -6,6 +6,8 @@ import TimeLineScene from "~/components/timeline/scene";
 import ProgressBar from "~/components/progressBar";
 import { BackgroundWrapper } from "~/components/layout/backgroundWrapper";
 import ErrorScreen from "~/components/errorScreen";
+import RootLayout from "~/components/layout";
+import NavBar from "~/components/navbar";
 
 const Timeline = () => {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -44,6 +46,8 @@ const Timeline = () => {
 
   return (
     <BackgroundWrapper>
+      <NavBar />
+
       <div className="relative py-4" ref={ref} id="timeline">
         <div>
           {!showContent && (
@@ -67,12 +71,6 @@ const Timeline = () => {
               </div>
             </div>
           )}
-        </div>
-        <div className="relative flex w-full justify-center">
-          {" "}
-          <h1 className="absolute top-[10%] z-[60] font-anton text-6xl text-white">
-            Timeline
-          </h1>
         </div>
 
         <div className="sticky top-0 h-screen pt-5">

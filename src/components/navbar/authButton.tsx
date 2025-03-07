@@ -56,7 +56,7 @@ const AuthButton = () => {
         <Button
           onClick={() => signIn("google")}
           color="white"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-white text-black"
         >
           <FiLogIn />
           Login

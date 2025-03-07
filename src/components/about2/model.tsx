@@ -10,38 +10,13 @@ const baseWidth = {
 
 const Slab = ({ url }: { url: string; width: number }) => {
   return (
-    <div className="grid place-content-center">
+    <div className="mt-28 grid place-content-center">
       <Image src={url} alt="About Us" width={1100} height={1300} />
     </div>
   );
 };
 
-export const AboutUs = ({
-  onLoaded,
-  onProgress,
-}: {
-  onLoaded: () => void;
-  onProgress: (progress: number, component: string) => void;
-}) => {
-  const { progress, loaded, total, errors } = useProgress();
-
-  const [maxProgress, setMaxProgress] = useState(0);
-
-  useEffect(() => {
-    if (progress > maxProgress) {
-      setMaxProgress(progress);
-    }
-  }, [progress, maxProgress]);
-
-  useEffect(() => {
-    console.log("progress from about", maxProgress);
-    onProgress(maxProgress, "about");
-    if (maxProgress === 100 && loaded == total) {
-      console.log("about fully loaded");
-      onLoaded();
-    }
-  }, [maxProgress]);
-
+export const AboutUs = () => {
   const [config, setConfig] = useState({
     width: baseWidth.lg,
     url: "/images/about_us_max.webp",
@@ -73,7 +48,7 @@ export const AboutUs = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   return (
-    <div className="my-10 grid place-content-center">
+    <div className="relative my-10 mt-40 grid place-content-center">
       <h1 className="absolute top-[0] z-[60] my-4 w-full text-center font-anton text-6xl">
         About
       </h1>
@@ -82,7 +57,6 @@ export const AboutUs = ({
   );
 };
 
-
-useGLTF.preload("/3D/about_compressed_max.glb");
-useGLTF.preload("/3D/about_compressed_mid.glb");
-useGLTF.preload("/3D/about_compressed_min.glb");
+// useGLTF.preload("/3D/about_compressed_max.glb");
+// useGLTF.preload("/3D/about_compressed_mid.glb");
+// useGLTF.preload("/3D/about_compressed_min.glb");

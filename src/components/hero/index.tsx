@@ -18,8 +18,7 @@ const Hero = ({
   const [maxProgress, setMaxProgress] = useState(0);
   const { progress, errors, loaded, total } = useProgress();
 
-
-  console.warn(errors)
+  console.warn(errors);
 
   useEffect(() => {
     // Only update if the new progress is higher than previous max
@@ -38,7 +37,7 @@ const Hero = ({
   }, [maxProgress]);
 
   return (
-    <main className="relative mx-auto flex h-screen w-full items-center justify-center overflow-hidden">
+    <main className="relative mx-auto flex h-screen w-full items-center justify-center overflow-hidden sm:mb-28">
       <Canvas>
         <Suspense
           fallback={
@@ -53,7 +52,7 @@ const Hero = ({
           <ZeusBust />
         </Suspense>
       </Canvas>
-      
+
       <div className="absolute top-[65%] select-none text-center md:top-[55%]">
         <p
           style={{ textShadow: "0 0 40px #22a3ff" }}
