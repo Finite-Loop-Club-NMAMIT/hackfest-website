@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, useProgress } from "@react-three/drei";
+import { OrbitControls, useGLTF, useProgress } from "@react-three/drei";
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
@@ -218,3 +218,8 @@ export const AboutUs = ({
     </div>
   );
 };
+
+
+useGLTF.preload("/3D/about_compressed_max.glb");
+useGLTF.preload("/3D/about_compressed_mid.glb");
+useGLTF.preload("/3D/about_compressed_min.glb");

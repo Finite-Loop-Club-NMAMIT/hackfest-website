@@ -2,9 +2,10 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { Cloud, Clouds, Float, Text3D, useProgress } from "@react-three/drei";
+import { Cloud, Clouds, Float, Text3D, useGLTF, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
+import { on } from "events";
 
 type ModelProps = {
   scale: readonly [number, number, number];
@@ -19,7 +20,6 @@ type ModelProps = {
 
 type Model = ModelProps & {
   scrollPosition: number;
-  inView: boolean;
 };
 
 const clouds = 4;
@@ -70,7 +70,7 @@ const getResponsiveModels = () => {
     const responsivePosition = [
       model.position[0] * scaleFactor,
       model.position[1] +
-        (model.index == 2 && (isMobile || isTablet) ? 0.5 : 0),
+      (model.index == 2 && (isMobile || isTablet) ? 0.5 : 0),
       model.position[2] * scaleFactor,
     ] as const;
 
@@ -126,8 +126,9 @@ export default function PrizePool({
         const rect = componentRef.current.getBoundingClientRect();
         const isInView = rect.top < window.innerHeight && rect.bottom > 0;
 
+        setInView(isInView);
+
         if (isInView) {
-          setInView(true);
           // Calculate progress only when component is in view
           const componentTop = rect.top;
           const componentHeight = rect.height;
@@ -141,6 +142,9 @@ export default function PrizePool({
           const normalizedScroll = Math.max(0, Math.min(2, scrollProgress * 2));
 
           setScrollPosition(normalizedScroll);
+        } else {
+          // Reset scroll position when out of view
+          setScrollPosition(0);
         }
       }
     };
@@ -148,6 +152,7 @@ export default function PrizePool({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -165,7 +170,9 @@ export default function PrizePool({
       console.log("prizepool fully loaded");
       onLoaded();
     }
-  }, [loaded, maxProgress, onLoaded, onProgress, total]);
+
+    console.log(loaded, maxProgress, onLoaded, total)
+  }, [loaded, maxProgress]);
 
   return (
     <div
@@ -179,12 +186,11 @@ export default function PrizePool({
       <Canvas camera={{ position: [0, 2, 10] }}>
         <Suspense fallback={null}>
           <ambientLight intensity={2} position={[0, 1, 5]} />
-          {responsiveModels.map((modelProps) => (
+          {inView && responsiveModels.map((modelProps) => (
             <Model
               key={modelProps.index}
               {...modelProps}
               scrollPosition={scrollPosition}
-              inView={inView}
             />
           ))}
           <Clouds material={THREE.MeshBasicMaterial} frustumCulled={false}>
@@ -252,31 +258,31 @@ const Model = ({ ...props }: Model) => {
     scrollPosition,
     textSize,
     textPosition,
-    inView,
   } = props;
   const modelRef = useRef<THREE.Group>(null);
   const textRef = useRef<THREE.Mesh>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
 
-  const gltf = useLoader(GLTFLoader, "/3D/prizePoolPillar.glb", (loader) => {
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath(
-      "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
-    );
-    loader.setDRACOLoader(dracoLoader);
-  });
+  // const gltf = useLoader(GLTFLoader, "/3D/prizePoolPillar.glb", (loader) => {
+  //   const dracoLoader = new DRACOLoader();
+  //   dracoLoader.setDecoderPath(
+  //     "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
+  //   );
+  //   loader.setDRACOLoader(dracoLoader);
+  // });
 
-  const scene = useMemo(() => {
-    return gltf.scene.clone();
-  }, [gltf]);
+  // const scene = useMemo(() => {
+  //   return gltf.scene.clone();
+  // }, [gltf]);
+
+  const { scene: pillarScene } = useGLTF("/3D/prizePoolPillar.glb", true);
+  const scene = useMemo(() => pillarScene.clone(), [pillarScene]);
 
   useFrame(() => {
     const yDistance = scrollPosition - 0.5;
     console.log("yDistance", yDistance);
-    console.log("inView", inView);
 
     if (
-      inView &&
       modelRef.current &&
       textRef.current &&
       yDistance >= 0.26 &&
@@ -335,3 +341,6 @@ const Model = ({ ...props }: Model) => {
     </>
   );
 };
+
+
+useGLTF.preload("/3D/prizePoolPillar.glb");
