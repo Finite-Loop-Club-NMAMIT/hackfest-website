@@ -8,10 +8,14 @@ const baseWidth = {
   lg: 1200,
 };
 
-const Slab = ({ url }: { url: string; width: number }) => {
-  return (
+const Slab = ({ url, width }: { url: string; width: number }) => {
+  return width === baseWidth.sm ? (
+    <div className="relative mt-28 h-[150vh] w-[140vw]">
+      <Image src={url} alt="About Us" fill />
+    </div>
+  ) : (
     <div className="mt-28 grid place-content-center">
-      <Image src={url} alt="About Us" width={1100} height={1300} />
+      <Image src={url} alt="About Us" width={1200} height={1400} />
     </div>
   );
 };
