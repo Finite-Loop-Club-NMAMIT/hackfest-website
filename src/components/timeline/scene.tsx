@@ -6,21 +6,7 @@ import { HelixCurve } from "./helix";
 import { useFrame, useThree } from "@react-three/fiber";
 import EventObjects from "./eventObjects";
 
-function Fog() {
-  const { scene } = useThree();
-  useEffect(() => {
-    scene.fog = new THREE.Fog(
-      "#0D47A1", // sky blue color
-      22, // near
-      25,
-      // far
-    );
-  }, [scene]);
-
-  return null;
-}
-
-export default function Scene() {
+const TimeLineScene = () => {
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const [points, setPoints] = useState<THREE.Vector3[]>([]);
   cameraRef.current?.lookAt(0, 0, 18);
@@ -108,8 +94,10 @@ export default function Scene() {
       {linePoints.length > 1 && <EventObjects linePoints={linePoints} />}
 
       <directionalLight position={[0, 0, 5]} intensity={0.7} color="white" />
-
+      <directionalLight position={[-8, 0, -5]} intensity={0.7} color="white" />
       <ambientLight intensity={1.5} color="#ffffff" />
     </>
   );
-}
+};
+
+export default TimeLineScene;

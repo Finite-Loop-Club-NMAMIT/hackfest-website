@@ -4,7 +4,7 @@ import Hero from "~/components/hero";
 import RootLayout from "~/components/layout";
 import PrizePool from "~/components/prizePool";
 import Sponsors from "~/components/sponsors";
-import Timeline from "~/components/timeline";
+
 import { BackgroundWrapper } from "~/components/layout/backgroundWrapper";
 
 import { AboutUs } from "~/components/about2/model";
@@ -16,7 +16,6 @@ export default function Home() {
   const [componentsLoaded, setComponentsLoaded] = useState({
     hero: false,
     prizePool: false,
-    timeline: false,
     domain: false,
     about: false,
   });
@@ -27,7 +26,6 @@ export default function Home() {
     domain: 0,
     hero: 0,
     prizePool: 0,
-    timeline: 0,
     about: 0,
   });
 
@@ -128,11 +126,6 @@ export default function Home() {
 
                 <Domains
                   onLoaded={() => handleComponentLoad("domain")}
-                  onProgress={handleProgress}
-                />
-
-                <Timeline
-                  onLoaded={() => handleComponentLoad("timeline")}
                   onProgress={handleProgress}
                 />
 
