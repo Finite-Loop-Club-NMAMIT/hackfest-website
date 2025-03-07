@@ -2,8 +2,8 @@ import { SessionProvider, signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { FiLogIn } from "react-icons/fi";
-import Link from "next/link";
-import { useRouter } from "next/router";
+// import Link from "next/link";
+// import { useRouter } from "next/router";
 import { RiErrorWarningFill } from "react-icons/ri";
 import {
   Tooltip,
@@ -22,23 +22,20 @@ const AuthButton = () => {
 
 const SessionButton = () => {
   const { data: session } = useSession();
-  const router = useRouter();
+  // const router = useRouter();
 
   return (
     <div className="flex justify-center pl-4">
       {session ? (
         session.user.profileProgress === "FILL_DETAILS" ? (
-          <Button
-            onClick={() => router.push("/register")}
-            className="flex flex-nowrap items-center gap-2"
-          >
+          <Button className="flex flex-nowrap items-center gap-2">
             {/* <Trophy /> */}
-            Register
+            <a href={"/register"}>Register</a>
           </Button>
         ) : (
           <>
             <div className="relative h-fit w-fit rounded-full">
-              <Link href={"/profile"} className="rounded-full">
+              <a href={"/profile"} className="rounded-full">
                 <Image
                   src={session.user.image!}
                   width={40}
@@ -46,7 +43,7 @@ const SessionButton = () => {
                   alt="profile"
                   className="rounded-full"
                 />
-              </Link>
+              </a>
               {session.user.profileProgress !== "COMPLETE" && (
                 <TooltipProvider>
                   <Tooltip>
@@ -54,8 +51,10 @@ const SessionButton = () => {
                       <RiErrorWarningFill className=" size-5  animate-click-me rounded-full bg-white fill-yellow-500" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      {session.user.profileProgress === "FORM_TEAM" && "Pending Team deatils"}
-                      {session.user.profileProgress === "SUBMIT_IDEA" && "Pending Idea submission"}
+                      {session.user.profileProgress === "FORM_TEAM" &&
+                        "Pending Team deatils"}
+                      {session.user.profileProgress === "SUBMIT_IDEA" &&
+                        "Pending Idea submission"}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
