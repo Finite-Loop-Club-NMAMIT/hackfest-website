@@ -18,6 +18,9 @@ const Hero = ({
   const [maxProgress, setMaxProgress] = useState(0);
   const { progress, errors, loaded, total } = useProgress();
 
+
+  console.warn(errors)
+
   useEffect(() => {
     // Only update if the new progress is higher than previous max
     if (progress > maxProgress) {
@@ -50,12 +53,7 @@ const Hero = ({
           <ZeusBust />
         </Suspense>
       </Canvas>
-
-      {errors.length > 0 && (
-        <div className="absolute bottom-4 left-4 text-red-500">
-          Error loading assets
-        </div>
-      )}
+      
       <div className="absolute top-[65%] select-none text-center md:top-[55%]">
         <p
           style={{ textShadow: "0 0 40px #22a3ff" }}

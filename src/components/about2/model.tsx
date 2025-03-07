@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useProgress } from "@react-three/drei";
+import { useGLTF, useProgress } from "@react-three/drei";
 import Image from "next/image";
 
 const baseWidth = {
@@ -81,3 +81,8 @@ export const AboutUs = ({
     </div>
   );
 };
+
+
+useGLTF.preload("/3D/about_compressed_max.glb");
+useGLTF.preload("/3D/about_compressed_mid.glb");
+useGLTF.preload("/3D/about_compressed_min.glb");
