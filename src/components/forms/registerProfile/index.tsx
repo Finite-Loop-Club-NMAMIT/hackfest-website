@@ -378,8 +378,18 @@ export default function RegisterProfileForm() {
                         <Command className="w-full border-2">
                           <CommandInput placeholder="Search College..." />
                           <CommandEmpty>
-                            <p>College not found</p>
-                            <Dialog
+                            <div className="flex flex-col items-center justify-center gap-2">
+                              <p>College not found</p>
+                              <Link
+                                href="tel:9481585863"
+                                className=" w-fit rounded-lg bg-white px-4 py-2 text-black"
+                              >
+                                Reach out to us!
+                              </Link>
+                              <p>Tel: 9481585863</p>
+                            </div>
+
+                            {/* <Dialog
                               open={isDialogOpen}
                               onOpenChange={setDialogOpen}
                             >
@@ -401,7 +411,7 @@ export default function RegisterProfileForm() {
                                   </DialogDescription>
                                 </DialogHeader>
                               </DialogContent>
-                            </Dialog>
+                            </Dialog> */}
                           </CommandEmpty>
                           <CommandList>
                             <CommandGroup className="max-h-56 overflow-auto">
