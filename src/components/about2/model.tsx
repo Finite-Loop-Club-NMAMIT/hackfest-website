@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useGLTF, useProgress } from "@react-three/drei";
 import Image from "next/image";
 
 const baseWidth = {
@@ -8,6 +7,7 @@ const baseWidth = {
   lg: 1200,
 };
 
+<<<<<<< Updated upstream
 const Slab = ({ url, width }: { url: string; width: number }) => {
   return width === baseWidth.sm ? (
     <div className="relative mt-28 h-[150vh] w-[140vw]">
@@ -16,6 +16,12 @@ const Slab = ({ url, width }: { url: string; width: number }) => {
   ) : (
     <div className="mt-28 grid place-content-center">
       <Image src={url} alt="About Us" width={1200} height={1400} />
+=======
+const Slab = ({ url }: { url: string; width: number }) => {
+  return (
+    <div className="mt-28 grid place-content-center md:mx-4">
+      <Image src={url} alt="About Us" width={1500} height={1300} />
+>>>>>>> Stashed changes
     </div>
   );
 };
@@ -28,8 +34,6 @@ export const AboutUs = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      console.log("Window width:", window.innerWidth);
-
       if (window.innerWidth < baseWidth.sm) {
         setConfig({
           width: baseWidth.sm,
@@ -60,7 +64,3 @@ export const AboutUs = () => {
     </div>
   );
 };
-
-// useGLTF.preload("/3D/about_compressed_max.glb");
-// useGLTF.preload("/3D/about_compressed_mid.glb");
-// useGLTF.preload("/3D/about_compressed_min.glb");

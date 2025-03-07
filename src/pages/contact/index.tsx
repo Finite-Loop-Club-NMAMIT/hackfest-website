@@ -48,63 +48,25 @@ const contacts = [
   },
 ];
 
-// const technicalContact = [
-//   {
-//     name: "Nandan R Pai",
-//     designation: "Technical Committee",
-//     email: "nnm22am033@nmamit.in",
-//     ph: "9481585863",
-//   },
-//   {
-//     name: "Srivatsa R Upadhya",
-//     designation: "Technical Committee",
-//     email: "4nm21cs171@nmamit.in",
-//     ph: "9449414199",
-//   },
-// ];
-
 export default function Contact() {
   return (
     <RootLayout>
-      <main
-        className="mx-auto flex min-h-screen flex-col items-center justify-start bg-gradient-to-b from-[#060e3c] via-[#052d4f] to-[#001933] p-2 pb-8 pt-20 sm:p-6 sm:pt-20 md:p-10 md:pt-24 xl:p-20 xl:pt-28"
-        // style={{
-        //   background:
-        //     "url('/images/noise.svg') repeat,linear-gradient(180deg, #060e3c 0%, #052d4f 30%, #001933 100%)",
-        // }}
-      >
+      <main className="mx-auto flex min-h-screen flex-col items-center justify-start bg-gradient-to-b from-[#060e3c] via-[#052d4f] to-[#001933] p-2 pb-8 pt-20 sm:p-6 sm:pt-20 md:p-10 md:pt-24 xl:p-20 xl:pt-28">
         <SectionHeading
           title="CONTACT US"
           classname="text-5xl md:text-6xl xl:text-7xl mt-3 mb-5"
         />
         <div className="flex flex-col items-center justify-center gap-5 md:gap-10">
           <div className="flex w-full flex-wrap items-center justify-center gap-3 md:gap-24">
-            {contacts.map((contact, idx) => {
-              return (
-                <div key={idx} className="w-full max-w-xs md:max-w-sm">
-                  <ContactCard {...contact} />
-                </div>
-              );
-            })}
+            {contacts.map((contact, idx) => (
+              <div key={idx} className="w-full max-w-xs md:max-w-sm">
+                <ContactCard {...contact} />
+              </div>
+            ))}
           </div>
 
-          {/* <SectionHeading
-            title="TECHNICAL SUPPORT"
-            classname="text-5xl md:text-6xl xl:text-7xl"
-          />
-
-          <div className="flex w-full flex-wrap items-center justify-center gap-3 md:gap-24">
-            {technicalContact.map((contact, idx) => {
-              return (
-                <div key={idx} className="w-full max-w-xs md:max-w-sm">
-                  <ContactCard {...contact} />
-                </div>
-              );
-            })}
-          </div> */}
-
           <div className="flex w-full max-w-sm flex-col items-center justify-center gap-2 md:max-w-xl md:gap-4">
-            <div className=" flex w-full flex-col gap-1 rounded-2xl border-2 border-blue-600 bg-gradient-to-br via-blue-500/50 to-blue-700/50 px-5 py-2 text-sm text-white backdrop-blur-2xl md:text-base xl:text-lg">
+            <div className="flex w-full flex-col gap-1 rounded-2xl border-2 border-blue-600 bg-gradient-to-br from-blue-700 to-blue-500 px-5 py-2 text-sm text-white transition hover:bg-blue-600 hover:shadow-lg md:text-base xl:text-lg">
               <p>
                 <span className="font-semibold">Discord: </span>
                 <a href="https://discord.gg/d9hQV8Hcv6">
@@ -112,20 +74,19 @@ export default function Contact() {
                 </a>
               </p>
             </div>
-            <div className=" flex w-full flex-col gap-1 rounded-2xl border-2 border-blue-600 bg-gradient-to-br via-blue-500/50 to-blue-700/50 px-5 py-2 text-sm text-white backdrop-blur-2xl md:text-base xl:text-lg">
+            <div className="flex w-full flex-col gap-1 rounded-2xl border-2 border-blue-600 bg-gradient-to-br from-blue-700 to-blue-500 px-5 py-2 text-sm text-white transition hover:bg-blue-600 hover:shadow-lg md:text-base xl:text-lg">
               <p>
                 <span className="font-semibold">General queries: </span>
                 <a href="mailto:admin@hackfest.dev">admin@hackfest.dev</a>
               </p>
             </div>
-            <div className=" flex w-full flex-col gap-1 rounded-2xl border-2 border-blue-600 bg-gradient-to-br via-blue-500/50 to-blue-700/50 px-5 py-2 text-sm text-white backdrop-blur-2xl md:text-base xl:text-lg">
+            <div className="flex w-full flex-col gap-1 rounded-2xl border-2 border-blue-600 bg-gradient-to-br from-blue-700 to-blue-500 px-5 py-2 text-sm text-white transition hover:bg-blue-600 hover:shadow-lg md:text-base xl:text-lg">
               <p>
                 <span className="font-semibold">Tech support: </span>
                 <a href="mailto:tech@hackfest.dev">tech@hackfest.dev</a>
               </p>
             </div>
-
-            <div className=" flex w-full flex-col gap-1 rounded-2xl border-2 border-blue-600 bg-gradient-to-br via-blue-500/50 to-blue-700/50 px-5 py-2 text-sm text-white backdrop-blur-2xl md:text-base xl:text-lg">
+            <div className="flex w-full flex-col gap-1 rounded-2xl border-2 border-blue-600 bg-gradient-to-br from-blue-700 to-blue-500 px-5 py-2 text-sm text-white transition hover:bg-blue-600 hover:shadow-lg md:text-base xl:text-lg">
               <p>
                 <span className="font-semibold">
                   Interested in sponsoring?{" "}
@@ -152,7 +113,7 @@ function ContactCard({
   ph: string;
 }) {
   return (
-    <div className="from-blue-950-700/50 rounded-2xl border-2 border-blue-600 bg-gradient-to-br via-blue-500/50 to-blue-700/50 px-6 py-6 text-sm text-white backdrop-blur-2xl md:px-10  md:text-base xl:text-lg">
+    <div className="transform rounded-2xl border-2 border-blue-600 bg-gradient-to-br from-blue-700 via-blue-500 to-blue-600 px-6 py-6 text-sm text-white backdrop-blur-md transition duration-300 hover:scale-105 hover:shadow-xl md:px-10 md:text-base xl:text-lg">
       <div className="flex flex-col gap-1 text-justify">
         <div className="text-lg font-semibold md:text-xl xl:text-2xl">
           {name}

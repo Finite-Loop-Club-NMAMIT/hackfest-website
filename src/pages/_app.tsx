@@ -3,7 +3,7 @@ import { SessionProvider } from "next-auth/react";
 import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 import "~/styles/globals.css";
-import { Anton, Caesar_Dressing, Poppins,  } from "next/font/google";
+import { Anton, Caesar_Dressing, Poppins } from "next/font/google";
 import LocalFont from "next/font/local";
 
 import Head from "next/head";
@@ -26,8 +26,15 @@ export const herkules = LocalFont({
   src: "../../public/fonts/Herkules.ttf",
   display: "swap",
   variable: "--font-herkules",
-  style: "normal"
-})
+  style: "normal",
+});
+
+export const lagistha = LocalFont({
+  src: "../../public/fonts/Lagistha.ttf",
+  display: "swap",
+  variable: "--font-lagistha",
+  style: "normal",
+});
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -97,7 +104,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         />
       </Head>
       <main
-        className={`${poppins.className}  ${anton.variable} ${caesarDressing.variable} ${herkules.variable}`}
+        className={`${poppins.className}  ${anton.variable} ${caesarDressing.variable} ${herkules.variable} ${lagistha.variable}`}
       >
         <Component {...pageProps} />
       </main>

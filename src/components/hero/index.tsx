@@ -3,6 +3,7 @@ import ZeusBackground from "./zeusBackground";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { Suspense, useEffect, useState } from "react";
 import { useProgress, Html } from "@react-three/drei";
+import { lagistha } from "~/pages/_app";
 // import ZeusBust from "./zeusBust";
 
 const ZeusBust = dynamic(() => import("./zeusBust"), { ssr: false });
@@ -18,6 +19,7 @@ const Hero = ({
   const [maxProgress, setMaxProgress] = useState(0);
   const { progress, errors, loaded, total } = useProgress();
 
+  console.warn(errors);
   console.warn(errors);
 
   useEffect(() => {
@@ -53,12 +55,12 @@ const Hero = ({
         </Suspense>
       </Canvas>
 
-      <div className="absolute top-[65%] select-none text-center md:top-[55%]">
+      <div className="absolute top-[70%] select-none text-center md:top-[60%]">
         <p
           style={{ textShadow: "0 0 40px #22a3ff" }}
-          className="font-herkules text-[5rem] leading-none text-[#ffffff] sm:text-[8rem] md:text-[10rem] lg:text-[12rem]"
+          className={`${lagistha.className} text-[5rem] leading-none text-[#ffffff] sm:text-[8rem] md:text-[10rem] lg:text-[12rem]`}
         >
-          {"HACKFEST"}
+          {"Hackfest"}
         </p>
         <p
           style={{ textShadow: "0 0 15px #1df3fb" }}
