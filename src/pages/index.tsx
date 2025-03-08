@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 import { useState, useEffect, useCallback, useRef } from "react";
 import Domains from "~/components/domains";
 import Hero from "~/components/hero";
