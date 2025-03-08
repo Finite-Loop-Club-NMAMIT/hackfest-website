@@ -1,12 +1,17 @@
-import { LogOut } from "lucide-react";
+import { LogOut, Pencil } from "lucide-react";
 import { Button } from "../ui/button";
 import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useContext } from "react";
+import { context as AppSettingsContext } from "../appSettingValidator";
 
 export default function ManageAccount() {
   const { status, data } = useSession();
+  const router = useRouter();
+  const settings = useContext(AppSettingsContext);
 
   return (
-    <div className="mt-4 flex w-full flex-col justify-center items-center gap-4">
+    <div className="mt-4 flex w-full flex-col items-center justify-center gap-4">
       {/* FIXME: switch account causes error for some reason. probably token thing */}
       {/* <Button
         className="flex flex-nowrap items-center justify-center gap-2 text-xs md:text-sm"
@@ -30,20 +35,26 @@ export default function ManageAccount() {
       </Button> */}
       {status === "authenticated" &&
         data.user.profileProgress !== "FILL_DETAILS" && (
-          <p className="text-xl font-bold">{data?.user.name}</p>
+          <p className="text-xl font-bold text-center">{data?.user.name}</p>
         )}
-      <Button
-        variant="destructive"
-        className="flex flex-nowrap items-center justify-center gap-2 text-xs md:text-sm"
-        onClick={async () => {
-          await signOut({
-            callbackUrl: "/",
-          });
-        }}
-      >
-        <LogOut className="size-4 md:size-5" />
-        Log Out
-      </Button>
+      <div className="flex w-full flex-row flex-wrap justify-center gap-4">
+        {/* <Button className="flex flex-nowrap flex-row items-center justify-center gap-2 text-xs md:text-sm" onClick={async() => { await router.push("/profile/edit") }} disabled={!settings.settings?.isProfileEditOpen}>
+          <Pencil className="size-4 md:size-5" />
+          Edit
+        </Button> */}
+        <Button
+          variant="destructive"
+          className="flex flex-nowrap items-center justify-center gap-2 text-xs md:text-sm"
+          onClick={async () => {
+            await signOut({
+              callbackUrl: "/",
+            });
+          }}
+        >
+          <LogOut className="size-4 md:size-5" />
+          Log Out
+        </Button>
+      </div>
     </div>
   );
 }

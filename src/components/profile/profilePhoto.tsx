@@ -26,7 +26,7 @@ export default function ProfilePhoto({
             src={"/images/crown-gold.svg"}
             width={100}
             height={100}
-            className="absolute left-4 top-3 z-10 size-40 rounded-full md:-top-2 md:left-0 md:size-52"
+            className="absolute left-4 top-3 z-10 size-40 rounded-full md:-top-2 md:left-0 md:size-52 select-none"
             alt="profile"
           />
         </div>
@@ -48,7 +48,7 @@ export default function ProfilePhoto({
             src={"/images/crown-green.svg"}
             width={100}
             height={100}
-            className="absolute left-4 top-5 z-10 size-40 rounded-full md:left-0 md:top-2 md:size-52"
+            className="absolute left-4 top-5 z-10 size-40 rounded-full md:left-0 md:top-2 md:size-52 select-none"
             alt="profile"
           />
         </div>

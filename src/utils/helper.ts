@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { pptUrl } from "~/constants";
+import { brochureUrl, pptUrl } from "~/constants";
 
 function getUrlAndId(data: string) {
   return {
@@ -25,4 +25,26 @@ async function downloadPPT() {
   }
 }
 
-export { getUrlAndId, downloadPPT };
+async function downloadBrochure() {
+  toast.loading("Downloading Brochure",{ id: 'brochure' });
+  
+  try {
+    const res = await fetch(brochureUrl);
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = "Hackfest_Brochure.pdf";
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(objectUrl);
+    toast.dismiss('brochure');
+    toast.success("Brochure downloaded successfully");
+  } catch (error) {
+    toast.dismiss('brochure');
+    toast.error("Failed to download the Brochure");
+  }
+}
+
+export { getUrlAndId, downloadPPT, downloadBrochure };
