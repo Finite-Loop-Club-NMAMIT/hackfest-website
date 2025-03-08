@@ -114,6 +114,7 @@ export default function PrizePool({
     getResponsiveModels(),
   );
   const [inView, setInView] = useState(false);
+  const [visited, setVisited] = useState(false);
 
   const [maxProgress, setMaxProgress] = useState(0);
   const { progress, loaded, total } = useProgress();
@@ -146,6 +147,7 @@ export default function PrizePool({
           const normalizedScroll = Math.max(0, Math.min(2, scrollProgress * 2));
 
           setScrollPosition(normalizedScroll);
+          setVisited(true);
         } else {
           // Reset scroll position when out of view
           setScrollPosition(0);
@@ -180,16 +182,16 @@ export default function PrizePool({
   return (
     <div
       ref={componentRef}
-      className="relative flex h-[120vh] min-h-screen w-full items-center justify-center sm:h-[150vh]"
+      className="relative flex h-[90vh] w-full items-center justify-center sm:h-[150vh] sm:min-h-screen"
       id="prizes"
     >
       <h1 className="absolute top-[13%] z-[60] text-center font-herkules text-6xl tracking-wider sm:text-7xl md:top-[10%]">
         2.5L+ PrizePool
       </h1>
-      <Canvas camera={{ position: [0, 2, 10] }}>
+      <Canvas camera={{ position: [0, 2, 10] }} className="mt-40 sm:mt-0">
         <Suspense fallback={null}>
           <ambientLight intensity={2} position={[0, 1, 5]} />
-          {inView &&
+          {(inView || visited) &&
             responsiveModels.map((modelProps) => (
               <Model
                 key={modelProps.index}
