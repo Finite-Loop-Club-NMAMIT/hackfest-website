@@ -15,8 +15,9 @@ const Slab = ({ url, width }: { url: string; width: number }) => {
         className={`absolute ${width > baseWidth.md ? "bottom-[16%] right-[4%] h-[6%] w-[12%]" : width > baseWidth.sm ? "bottom-[12%] left-[12%] h-[4%] w-[14%]" : "bottom-[18%] right-[11%] h-[2%] w-[30%]"}`}
         onClick={async () => {
           // await downloadBrochure();
+          // FIXME: Implement downloadBrochure function
           const a = document.createElement("a");
-          a.href = "/hackfest_brochure.pdf";
+          a.href = "/brochure.pdf";
           a.download = "Hackfest_Brochure.pdf";
           a.click();
           a.remove();
