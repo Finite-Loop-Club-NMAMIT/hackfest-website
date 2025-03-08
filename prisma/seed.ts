@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, States } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -959,6 +959,33 @@ const seedTeams = async () => {
     await prisma.teamNames.createMany({
       data: teamNames.map((name) => ({ name })),
       skipDuplicates: true,
+    });
+    await prisma.appSettings.deleteMany({});
+    await prisma.appSettings.create({
+      data: {
+        id: 1,
+        isPaymentOpen: false,
+        isRegistrationOpen: true,
+        isProfileEditOpen: false,
+        isVideoSubmissionOpen: false,
+      },
+    });
+    await prisma.college.createMany({
+      data: [
+        {
+          name: "NMAM Institute of Technology, Nitte",
+          state: States.KARNATAKA,
+        },
+        {
+          name: "National Institute of Technology, Karnataka",
+          state: States.KARNATAKA,
+        },
+        {
+          name: "Manipal Institute of Technology",
+          state: States.KARNATAKA,
+        },
+      ],
+      skipDuplicates: true
     });
 
     console.log("Seeding complete!");

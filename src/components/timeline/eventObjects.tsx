@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import * as THREE from "three";
-import { Center, Text3D } from "@react-three/drei";
+import { Text3D } from "@react-three/drei";
 import { Model } from "./island";
 import { events } from "~/constants/events";
 

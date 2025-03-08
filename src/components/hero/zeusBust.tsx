@@ -1,20 +1,9 @@
-import React, { Suspense } from "react";
-import { Canvas, ObjectMap } from "@react-three/fiber";
-import { Float } from "@react-three/drei";
-import { GLTF, GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { useLoader } from "@react-three/fiber";
+import React from "react";
+import { Float, useGLTF } from "@react-three/drei";
 import { useEffect, useState } from "react";
-import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
 export default function ZeusBust() {
-  const gltf = useLoader(GLTFLoader, "/3D/zeusHF.glb", (loader) => {
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath(
-      "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
-    );
-    loader.setDRACOLoader(dracoLoader);
-  });
-
+  const {scene} = useGLTF("/3D/zeusHF.glb");
   const [scale, setScale] = useState([2.5, 2.5, 2.5]);
   const [rotation, setRotation] = useState([0, 0, 0]);
 
@@ -49,7 +38,7 @@ export default function ZeusBust() {
 
       <Float rotationIntensity={2}>
         <primitive
-          object={gltf.scene}
+          object={scene}
           scale={scale}
           position={[0, 0, 0]}
           rotation={rotation}
@@ -58,3 +47,5 @@ export default function ZeusBust() {
     </>
   );
 }
+
+useGLTF.preload("/3D/zeusHF.glb");

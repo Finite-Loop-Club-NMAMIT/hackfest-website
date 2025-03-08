@@ -138,6 +138,7 @@ input[type="number"] {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none;
   scroll-behavior: smooth;
+  scroll-padding: 6rem;
 }
 
 /*UFO*/

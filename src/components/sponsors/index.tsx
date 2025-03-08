@@ -3,40 +3,40 @@ import Image from "next/image";
 const Sponsors = () => {
   return (
     <section
-      className="flex min-h-[70vh] w-screen flex-col items-center gap-16"
+      className="flex w-screen flex-col items-center gap-16 px-4 font-herkules tracking-wider text-5xl sm:text-6xl"
       id="sponsors"
     >
-      <h1 className="font-anton text-4xl font-bold sm:text-6xl">
-        Presented By
-      </h1>
-      <div className="flex w-full items-start justify-center px-4">
+      <div className="flex flex-col w-full items-center justify-center sm:gap-6 gap-4">
+        <h1>Presented By</h1>
         <Image
           src={"/logos/NMAMITLogo.png"}
-          alt="rakuten"
+          alt="nmamit"
           width={450}
           height={200}
         />
       </div>
-      <h1 className="font-anton text-4xl font-bold sm:text-6xl">Powered By</h1>
-      <div className="flex w-full flex-col items-center gap-12 overflow-hidden sm:flex-row  sm:justify-center  sm:gap-20 md:gap-40">
-        <Image
-          src={"/images/sponsors/paloalto.png"}
-          alt="paloalto"
-          width={400}
-          height={200}
-          className="w-[300px] sm:h-[200px] sm:w-[400px]"
-        />
-        <Image
-          src={"/images/sponsors/inflow.png"}
-          alt="inflow"
-          width={300}
-          height={150}
-        />
+
+      <div className="flex flex-col w-full justify-center items-center sm:gap-6 gap-4">
+        <h1>Powered By</h1>
+        <div className="flex w-full flex-col overflow-hidden sm:flex-row justify-center sm:justify-evenly lg:justify-center lg:gap-40 items-center">
+          <Image
+            src={"/images/sponsors/paloalto.png"}
+            alt="paloalto"
+            width={400}
+            height={200}
+            className="w-[300px] sm:h-[200px] sm:w-[400px]"
+          />
+          <Image
+            src={"/images/sponsors/inflow.png"}
+            alt="inflow"
+            width={300}
+            height={150}
+          />
+        </div>
       </div>
-      <h1 className="font-anton text-4xl font-bold sm:text-6xl">
-        Co-Powered By
-      </h1>
-      <div className="flex w-full items-start justify-center ">
+      
+      <div className="flex flex-col w-full items-center justify-center sm:gap-6 gap-4">
+        <h1>Co-Powered By</h1>
         <Image
           src={"/images/sponsors/rakuten.svg"}
           alt="rakuten"

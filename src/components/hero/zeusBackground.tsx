@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import {
   DoubleSide,
   Vector3,
@@ -8,7 +8,7 @@ import {
   LineBasicMaterial,
   Line,
 } from "three";
-import { Point, Points, useTexture } from "@react-three/drei";
+import { useTexture } from "@react-three/drei";
 
 interface CloudProps {
   position: [number, number, number];
@@ -85,7 +85,7 @@ function Scene() {
     );
 
     return () => clearInterval(interval);
-  }, []);
+  }, [triggerFlash]);
 
   useFrame((state, delta) => {
     if (flashRef.current) {
