@@ -5,6 +5,9 @@ import { FaDiscord } from "react-icons/fa";
 export const pptUrl =
   "https://res.cloudinary.com/dwwno9ngw/raw/upload/v1741349448/idea%20ppts/bg940gppunueopprpzzr.pptx";
 
+export const brochureUrl =
+  "https://res.cloudinary.com/dwwno9ngw/raw/upload/v1741440534/brochure/hxii3br9jvlubpwgoeli.pdf";
+
 export const dates: [Date, Date, Date] = [
   new Date("2024-4-5"),
   new Date("2024-4-6"),

@@ -38,6 +38,23 @@ const uploadImage = async (file: formidableFile, upload_preset: string) => {
   return p.secure_url + ";" + p.public_id;
 };
 
+const uploadPdf = async (file: formidableFile, upload_preset: string) => {
+  if (
+    !file.mimetype ||
+    !["image/png", "image/jpeg", "image/bmp", "application/pdf"].includes(
+      file.mimetype,
+    )
+  )
+    throw "Invalid file format use png,jpeg,bmp";
+
+  const p = await cloudinary.uploader
+    .upload(file.filepath, { upload_preset: upload_preset, resource_type: "raw" })
+    .catch((err) => {
+      throw err;
+    });
+  return p.secure_url + ";" + p.public_id;
+};
+
 // async function uploadFile(params: { file: File; folder: "ids" | "ppts" }) {
 //   const { signature, timestamp } = await getSignature();
 //   const formData = new FormData();
@@ -81,4 +98,4 @@ async function deleteFile(pid: string) {
   }
 }
 
-export { cloudinaryConfig, getSignature, uploadImage, deleteFile };
+export { cloudinaryConfig, getSignature, uploadImage, deleteFile, uploadPdf };
