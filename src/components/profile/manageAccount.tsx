@@ -35,7 +35,7 @@ export default function ManageAccount() {
       </Button> */}
       {status === "authenticated" &&
         data.user.profileProgress !== "FILL_DETAILS" && (
-          <p className="text-xl font-bold">{data?.user.name}</p>
+          <p className="text-xl font-bold text-center">{data?.user.name}</p>
         )}
       <div className="flex w-full flex-row flex-wrap justify-center gap-4">
         {/* <Button className="flex flex-nowrap flex-row items-center justify-center gap-2 text-xs md:text-sm" onClick={async() => { await router.push("/profile/edit") }} disabled={!settings.settings?.isProfileEditOpen}>

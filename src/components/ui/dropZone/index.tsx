@@ -66,6 +66,11 @@ export function Dropzone({
 
     const fileSizeInKB = Math.round(uploadedFile.size / 1024); // Convert to KB
 
+    if (fileSizeInKB > 5*1024) {
+      setError("File size exceeds 5MB");
+      return;
+    }
+
     const fileList = Array.from(files).map((file) => URL.createObjectURL(file));
     console.log(fileList);
     // onChange((prevFiles) => [...prevFiles, ...fileList]);
@@ -74,7 +79,7 @@ export function Dropzone({
     // Display file information
     setFileInfo(`Uploaded file: ${uploadedFile.name} (${fileSizeInKB} KB)`);
     setError(null); // Reset error state
-    const previewURL = URL.createObjectURL(uploadedFile);    
+    const previewURL = URL.createObjectURL(uploadedFile);
     setPreviewURL(previewURL);
   };
 
@@ -119,8 +124,7 @@ export function Dropzone({
         {pdf && <>{fileInfo}</>}
         {pdf && previewURL ? (
           <div className="h-full">
-
-            <PdfPreview file={previewURL} pages={[1]} width={100}/>
+            <PdfPreview file={previewURL} pages={[1]} width={100} />
           </div>
         ) : (
           <svg
@@ -135,7 +139,7 @@ export function Dropzone({
         )}
         <div className="text-center text-xs text-muted-foreground">
           {pdf
-            ? "Only .pdf is allowed less than 2MB"
+            ? "Only .pdf is allowed less than 5MB"
             : "Only .png, .jpg, and .jpeg files are allowed less than 2MB."}
         </div>
 
