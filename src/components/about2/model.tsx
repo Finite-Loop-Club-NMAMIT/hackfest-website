@@ -42,17 +42,17 @@ export const AboutUs = () => {
       if (window.innerWidth < baseWidth.sm) {
         setConfig({
           width: baseWidth.sm,
-          url: "/images/about_us_min.webp",
+          url: "/images/small.webp",
         });
       } else if (window.innerWidth < baseWidth.md) {
         setConfig({
           width: baseWidth.md,
-          url: "/images/about_us_mid.webp",
+          url: "/images/med.webp",
         });
       } else {
         setConfig({
           width: baseWidth.lg,
-          url: "/images/about_us_max.webp",
+          url: "/images/big.webp",
         });
       }
     };
