@@ -262,7 +262,7 @@ export default function TeamInfo({
                         <a
                           target="_blank"
                           href={`https://wa.me/?text=${encodeURIComponent(
-                            `Join my team at Hackfest 2024, 3 Day long Hackathon at NMAMIT, Nitte. Copy this Team ID: ${teamdata?.id}. Register here: blah/register`,
+                            `Join my team at Hackfest 2025, 3 Day long Hackathon at NMAMIT, Nitte. Copy this Team ID: ${teamdata?.id}. Register here: blah/register`,
                           )}`}
                           className="bodyFont flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-green-500 p-2 text-sm text-white hover:bg-green-600"
                         >

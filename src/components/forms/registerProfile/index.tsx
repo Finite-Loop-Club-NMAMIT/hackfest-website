@@ -31,20 +31,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { toast } from "sonner";
-import CreateCollegeForm from "../createCollege";
 import DragAndDropFile from "~/components/ui/dragDrop";
 import { LuChevronsUpDown } from "react-icons/lu";
 import { FaCheck, FaInfoCircle } from "react-icons/fa";
@@ -85,7 +76,6 @@ export default function RegisterProfileForm() {
   const [isCoursePopoverOpen, setCoursePopoverOpen] = useState(false);
   const [selectedCollege, setSelectedCollege] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
-  const [isDialogOpen, setDialogOpen] = useState(false);
   const [tab, setTab] = useState(0);
   const [aadhaar, setAadhaar] = useState<File | null>(null);
   const [collegeId, setCollegeId] = useState<File | null>(null);
@@ -196,28 +186,6 @@ export default function RegisterProfileForm() {
             Your profile has been registerd successfully 🎉. You can now join a
             team or create a new one
           </p>
-          <div className="mt-6 flex w-full flex-row  justify-evenly">
-            <Button
-              variant="outline"
-              className="bg-transparent/30"
-              onClick={async () => {
-                await router.push("/register", { query: { t: "join" } });
-                router.reload();
-              }}
-            >
-              Join Team
-            </Button>
-            <Button
-              variant="outline"
-              className="bg-transparent/30"
-              onClick={async () => {
-                await router.push("/register", { query: { t: "create" } });
-                router.reload();
-              }}
-            >
-              Create Team
-            </Button>
-          </div>
           <p className="mx-auto mt-4 text-sm opacity-50">
             Redirecting to{" "}
             <Link href={"/profile"} className="text-blue-500 underline">

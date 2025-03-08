@@ -50,14 +50,14 @@ const contacts = [
 export default function Contact() {
   return (
     <RootLayout>
-      <main className="mx-auto flex min-h-screen flex-col items-center justify-start bg-gradient-to-b from-[#060e3c] via-[#052d4f] to-[#001933] p-2 pb-8 pt-20 sm:p-6 sm:pt-20 md:p-10 md:pt-24 xl:p-20 xl:pt-28">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328] px-2 py-32">
         <h1 className="z-[60] w-full pb-8 text-center font-herkules text-6xl tracking-wider sm:text-7xl">
           Contact Us
         </h1>
         <div className="flex flex-col items-center justify-center gap-5 md:gap-10">
           <div className="flex w-full flex-wrap items-center justify-center gap-3 md:gap-12">
             {contacts.map((contact, idx) => (
-              <div key={idx} className="w-full max-w-xs md:max-w-sm">
+              <div key={idx} className="">
                 <ContactCard {...contact} />
               </div>
             ))}
@@ -117,7 +117,7 @@ function ContactCard({
   ph: string;
 }) {
   return (
-    <div className="flex w-[90%] max-w-lg flex-col items-center rounded-xl border border-blue-500/20 bg-white/[0.05] p-8 backdrop-blur-sm transition-all hover:border-blue-400/30 hover:bg-white/[0.08]">
+    <div className="flex w-[20rem] flex-col items-center rounded-xl border border-blue-500/20 bg-white/[0.05] p-8 backdrop-blur-sm transition-all hover:border-blue-400/30 hover:bg-white/[0.08]">
       <div className="flex flex-col gap-1 text-justify">
         <div className="text-lg font-semibold md:text-xl xl:text-2xl">
           {name}

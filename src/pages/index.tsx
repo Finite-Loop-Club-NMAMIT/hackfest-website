@@ -5,7 +5,6 @@ import Hero from "~/components/hero";
 import RootLayout from "~/components/layout";
 import PrizePool from "~/components/prizePool";
 import Sponsors from "~/components/sponsors";
-import Link from "next/link";
 import { BackgroundWrapper } from "~/components/layout/backgroundWrapper";
 import { AboutUs } from "~/components/about2/model";
 import FAQSection from "~/components/accordion";
