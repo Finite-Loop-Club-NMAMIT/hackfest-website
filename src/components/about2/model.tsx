@@ -47,12 +47,12 @@ export const AboutUs = () => {
       } else if (window.innerWidth < baseWidth.md) {
         setConfig({
           width: baseWidth.md,
-          url: "/images/med.webp",
+          url: "/images/mid.webp",
         });
       } else {
         setConfig({
           width: baseWidth.lg,
-          url: "/images/big.webp",
+          url: "/images/max.webp",
         });
       }
     };
