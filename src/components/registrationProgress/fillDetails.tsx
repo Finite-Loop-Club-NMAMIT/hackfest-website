@@ -4,7 +4,7 @@ import RegisterProfileForm from "../forms/registerProfile";
 
 export default function FillDetails() {
   return (
-    <Card className="mb-12 mt-[10rem] w-full max-w-7xl bg-black/50 py-2 md:mt-[12rem] md:py-4 border border-white/20">
+    <Card className="w-full max-w-7xl bg-black/50 py-2 md:py-4 border border-white/20">
       <CardHeader>
         <CardTitle
           id="form-title"

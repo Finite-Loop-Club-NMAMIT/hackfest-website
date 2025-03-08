@@ -1,5 +1,4 @@
-// import { getTeamDetailsById } from "@/src/server/actions";
-import { IdeaSubmission, Team, User } from "@prisma/client";
+import type { IdeaSubmission, Team, User } from "@prisma/client";
 import { useState } from "react";
 
 export default function TeamsList({

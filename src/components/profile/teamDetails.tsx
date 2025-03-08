@@ -21,6 +21,8 @@ import {
 } from "../ui/dialog";
 import Link from "next/link";
 import Image from "next/image";
+import { Copy } from "lucide-react";
+import { BsWhatsapp } from "react-icons/bs";
 
 interface User {
   name: string | null;
@@ -73,7 +75,7 @@ export default function TeamDetails({
         className="flex h-full w-full flex-col gap-4 rounded-md border-2 p-2"
         style={{ order: order }}
       >
-        <div className="flex w-full items-center justify-between">
+        <div className="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
           <h1 className="text-xl">Team Details</h1>
           {user?.Team ? (
             teamMembers?.members &&
@@ -110,6 +112,30 @@ export default function TeamDetails({
                 className="rounded-full"
               />
               <h1 className="text-2xl font-semibold">{user.Team.name}</h1>
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  className="flex items-center justify-center gap-2 rounded-full border border-white bg-white/50 px-4 py-2 text-xs font-semibold text-white backdrop-blur-2xl duration-300 hover:scale-105 hover:bg-white/70"
+                  onClick={async () => {
+                    if (typeof window !== "undefined") {
+                      await window.navigator.clipboard.writeText(
+                        user.Team?.id ?? "",
+                      );
+                      toast.info("Code copied successfully!");
+                    }
+                  }}
+                >
+                  <Copy size={15} />
+                  <span>Copy Team ID</span>
+                </button>
+                <a
+                  className="flex items-center justify-center gap-2 rounded-full border border-green-500 bg-green-500/50 px-4 py-2 text-xs font-semibold text-green-500 backdrop-blur-2xl duration-300 hover:scale-105 hover:bg-green-500/70"
+                  href={`https://wa.me/?text=${encodeURIComponent(`Join my team ${user.Team.name} for Hackfest '25. https://hackfest.dev/register?teamId=${user.Team.id}`)}`}
+                  target="_blank"
+                >
+                  <BsWhatsapp />
+                  Share on WhatsApp
+                </a>
+              </div>
             </div>
             <div className="flex h-full flex-col items-center justify-between">
               <TeamList teamId={user.Team.id} showTeamName={false} />

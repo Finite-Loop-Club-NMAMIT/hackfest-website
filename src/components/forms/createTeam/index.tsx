@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
@@ -15,10 +15,9 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
-import { RxCrossCircled } from "react-icons/rx";
 import { ClipboardCopy, RefreshCcw } from "lucide-react";
 import TeamList from "~/components/team/teamList";
-// Removed react-hook-form and related component imports
+import { BsWhatsapp } from "react-icons/bs";
 
 export default function RegisterTeamForm() {
   const { data, update } = useSession();
@@ -58,6 +57,13 @@ export default function RegisterTeamForm() {
     useState<NodeJS.Timeout>();
   const [teamDetails, setTeamDetails] = useState<Team | null>(null);
   const getTeamNames = api.team.fetchTeamNames.useQuery();
+
+  useEffect(() => {
+    const teamQuery = params.get("teamId");
+    if (teamQuery) {
+      setJoinTeamId(teamQuery);
+    }
+  }, [params]);
 
   function onCreateTeamSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -113,25 +119,35 @@ export default function RegisterTeamForm() {
                 , has been created successfully🥳. Use the code below to invite
                 your fellow members.
               </p>
-              <div
-                className="relative mt-4 flex cursor-pointer flex-row flex-nowrap"
-                onClick={async () => {
-                  if (teamDetails?.name) {
-                    await window.navigator.clipboard.writeText(
-                      teamDetails.id ?? "",
-                    );
-                    toast.info("Code copied successfully!");
-                  } else {
-                    toast.error("Failed to copy code!");
-                  }
-                }}
-              >
-                <Input
-                  value={teamDetails?.id ?? "code not available"}
-                  className="cursor-pointer truncate pr-10 text-left"
-                  readOnly
-                />
-                <ClipboardCopy className="absolute right-1 top-1 size-8 rounded-r-md p-1" />
+              <div className="flex flex-col gap-4">
+                <div
+                  className="relative mt-4 flex cursor-pointer flex-row flex-nowrap"
+                  onClick={async () => {
+                    if (teamDetails?.name) {
+                      await window.navigator.clipboard.writeText(
+                        teamDetails.id ?? "",
+                      );
+                      toast.info("Code copied successfully!");
+                    } else {
+                      toast.error("Failed to copy code!");
+                    }
+                  }}
+                >
+                  <Input
+                    value={teamDetails?.id ?? "code not available"}
+                    className="cursor-pointer truncate pr-10 text-left"
+                    readOnly
+                  />
+                  <ClipboardCopy className="absolute right-1 top-1 size-8 rounded-r-md p-1" />
+                </div>
+                <a
+                  className="flex items-center justify-center gap-2 rounded-full border border-green-500 bg-green-500/50 px-4 py-2 text-xs font-semibold text-green-500 backdrop-blur-2xl duration-300 hover:scale-105 hover:bg-green-500/70"
+                  href={`https://wa.me/?text=${encodeURIComponent(`Join my team ${teamDetails?.name} for Hackfest '25. https://hackfest.dev/register?teamId=${teamDetails?.id}`)}`}
+                  target="_blank"
+                >
+                  <BsWhatsapp />
+                  Share on WhatsApp
+                </a>
               </div>
             </DialogDescription>
           </DialogHeader>
@@ -206,17 +222,22 @@ export default function RegisterTeamForm() {
         </div>
 
         {/* Join Team Card */}
-        <div className="mt-8 flex-1 rounded-lg border p-6 shadow-lg md:mt-0">
-          <h2 className="mb-4 text-center text-2xl font-bold">Join Team</h2>
-          <form onSubmit={onJoinTeamSubmit} className="space-y-8">
-            <div>
+        <div className="mt-8 flex flex-1 flex-col items-center rounded-lg border p-6 shadow-lg md:mt-0">
+          <form
+            onSubmit={onJoinTeamSubmit}
+            className="flex flex-col items-center justify-between space-y-8"
+          >
+            <h2 className="mb-4 text-center text-2xl font-bold">Join Team</h2>
+            <div className="flex flex-col items-center">
               <label className="block pb-2">Team Id</label>
               <Input
                 placeholder="Enter team Id"
                 value={joinTeamId}
                 onChange={getTeamDetailsHandler}
               />
-              <p className="text-sm opacity-70">Get your Team ID from your leader</p>
+              <p className="text-sm opacity-70">
+                Get your Team ID from your leader
+              </p>
             </div>
             {searchTeamId.length > 0 && (
               <div className="flex justify-center">

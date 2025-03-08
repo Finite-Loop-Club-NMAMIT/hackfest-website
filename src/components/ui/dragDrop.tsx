@@ -18,7 +18,7 @@ export default function DragAndDropFile({
   return (
     <>
       <div
-        className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 hover:border-white/50 border-dashed bg-[#132b58]/50 p-4"
+        className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-dashed bg-[#132b58]/50 p-4 hover:border-white/50"
         onDragOver={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -48,13 +48,14 @@ export default function DragAndDropFile({
                 width={100}
                 src={fileUrl}
                 alt="Preview"
-                className="max-h-xl mx-auto object-contain"
+                className="max-h-xl mx-auto object-contain h-full w-full scale-75"
               />
             </div>
             {file !== null ? (
-              <p className="mx-auto text-center">
-                <span className="font-semibold">{text}</span>: {file.name}
-              </p>
+              <div className="text-ellipsis text-center">
+                <span className="font-semibold">{text}</span>:{" "}
+                <p className="truncate">{file.name}</p>
+              </div>
             ) : (
               <p className="mx-auto">
                 <span className="font-semibold">{text}</span>: file

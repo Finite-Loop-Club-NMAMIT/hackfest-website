@@ -61,7 +61,7 @@ const models: ModelProps[] = [
   },
 ];
 
-const getResponsiveModels = () => {
+const getResponsiveModels = (): ModelProps[] => {
   if (typeof window === "undefined") return models;
 
   const screenWidth = window.innerWidth;
@@ -82,7 +82,7 @@ const getResponsiveModels = () => {
       // Reduced X offset for closer text placement
       responsivePosition[0] + (isMobile ? -0.8 : isTablet ? -1.1 : -1.3),
       // Keep existing Y offset
-      responsivePosition[1] + (isMobile ? 1.5 : isTablet ? 2 : 2.7),
+      responsivePosition[1] + (isMobile ? 2.5 : isTablet ? 2 : 2.7),
       // Keep existing Z offset
       responsivePosition[2] + (isMobile ? -2 : isTablet ? -3.5 : -5),
     ] as const;
@@ -90,7 +90,7 @@ const getResponsiveModels = () => {
     return {
       ...model,
       scale: isMobile
-        ? ([1.5, 1.5, 1.5] as const)
+        ? ([2.2, 2.2, 2.2] as const)
         : isTablet
           ? ([1.8, 1.8, 1.8] as const)
           : model.scale,
@@ -192,7 +192,7 @@ export default function PrizePool({
         <Suspense fallback={null}>
           <ambientLight intensity={2} position={[0, 1, 5]} />
           {(inView || visited) &&
-            responsiveModels.map((modelProps) => (
+            responsiveModels.map((modelProps: ModelProps) => (
               <Model
                 key={modelProps.index}
                 {...modelProps}
@@ -208,9 +208,9 @@ export default function PrizePool({
                 const isTablet = screenWidth > 768 && screenWidth <= 1024;
 
                 // Adjusted scale factors
-                const scaleFactor = isMobile ? 0.4 : isTablet ? 0.6 : 1;
+                const scaleFactor = isMobile ? 0.8 : isTablet ? 0.6 : 1;
                 const ringRadius =
-                  (ring + 0.5) * (isMobile ? 1.5 : 2) * scaleFactor;
+                  (ring + 0.5) * (isMobile || isTablet ? 1.5 : 2) * scaleFactor;
 
                 // Reduce cloud density on mobile
                 const cloudsInRing =
