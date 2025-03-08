@@ -38,10 +38,10 @@ export default function ManageAccount() {
           <p className="text-xl font-bold">{data?.user.name}</p>
         )}
       <div className="flex w-full flex-row flex-wrap justify-center gap-4">
-        <Button className="flex flex-nowrap flex-row items-center justify-center gap-2 text-xs md:text-sm" onClick={async() => { await router.push("/profile/edit") }} disabled={!settings.settings?.isProfileEditOpen}>
+        {/* <Button className="flex flex-nowrap flex-row items-center justify-center gap-2 text-xs md:text-sm" onClick={async() => { await router.push("/profile/edit") }} disabled={!settings.settings?.isProfileEditOpen}>
           <Pencil className="size-4 md:size-5" />
           Edit
-        </Button>
+        </Button> */}
         <Button
           variant="destructive"
           className="flex flex-nowrap items-center justify-center gap-2 text-xs md:text-sm"

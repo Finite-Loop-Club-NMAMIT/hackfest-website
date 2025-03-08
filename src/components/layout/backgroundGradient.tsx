@@ -18,7 +18,7 @@ export default function GradientBackground({
   className?: string;
 }) {
   return (
-    <div className="h-full min-h-screen w-full bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328] px-2 py-40">
+    <div className={cn("h-full min-h-screen w-full bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328] px-2 py-40", className)}>
       {children}
     </div>
   );
