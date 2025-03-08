@@ -1,6 +1,13 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Cloud, Clouds, Float, Text3D, useGLTF, useProgress } from "@react-three/drei";
+import {
+  Cloud,
+  Clouds,
+  Float,
+  Text3D,
+  useGLTF,
+  useProgress,
+} from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
 
@@ -67,7 +74,7 @@ const getResponsiveModels = () => {
     const responsivePosition = [
       model.position[0] * scaleFactor,
       model.position[1] +
-      (model.index == 2 && (isMobile || isTablet) ? 0.5 : 0),
+        (model.index == 2 && (isMobile || isTablet) ? 0.5 : 0),
       model.position[2] * scaleFactor,
     ] as const;
 
@@ -150,7 +157,6 @@ export default function PrizePool({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-
   useEffect(() => {
     const handleResize = () => {
       setResponsiveModels(getResponsiveModels());
@@ -168,7 +174,7 @@ export default function PrizePool({
       onLoaded();
     }
 
-    console.log(loaded, maxProgress, onLoaded, total)
+    console.log(loaded, maxProgress, onLoaded, total);
   }, [loaded, maxProgress]);
 
   return (
@@ -177,19 +183,20 @@ export default function PrizePool({
       className="relative flex h-[120vh] min-h-screen w-full items-center justify-center sm:h-[150vh]"
       id="prizes"
     >
-      <h1 className="absolute text-center top-[13%] z-[60] font-herkules sm:text-7xl text-6xl md:top-[10%] tracking-wider">
-        2L+ PrizePool
+      <h1 className="absolute top-[13%] z-[60] text-center font-herkules text-6xl tracking-wider sm:text-7xl md:top-[10%]">
+        2.5L+ PrizePool
       </h1>
       <Canvas camera={{ position: [0, 2, 10] }}>
         <Suspense fallback={null}>
           <ambientLight intensity={2} position={[0, 1, 5]} />
-          {inView && responsiveModels.map((modelProps) => (
-            <Model
-              key={modelProps.index}
-              {...modelProps}
-              scrollPosition={scrollPosition}
-            />
-          ))}
+          {inView &&
+            responsiveModels.map((modelProps) => (
+              <Model
+                key={modelProps.index}
+                {...modelProps}
+                scrollPosition={scrollPosition}
+              />
+            ))}
           <Clouds material={THREE.MeshBasicMaterial} frustumCulled={false}>
             <Float speed={3} floatIntensity={3} rotationIntensity={0}>
               {Array.from({ length: 4 }).map((_, ring) => {
@@ -338,6 +345,5 @@ const Model = ({ ...props }: Model) => {
     </>
   );
 };
-
 
 useGLTF.preload("/3D/prizePoolPillar.glb");

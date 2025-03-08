@@ -46,8 +46,8 @@ export const AboutUs = () => {
   }, []);
 
   return (
-    <div className="relative grid place-content-center">
-      <h1 className="z-[60] w-full text-center font-herkules sm:text-7xl text-6xl tracking-wider">
+    <div className="relative grid place-content-center" id="about">
+      <h1 className="z-[60] w-full text-center font-herkules text-6xl tracking-wider sm:text-7xl">
         About
       </h1>
       <Slab key={config.width} url={config.url} width={config.width} />
