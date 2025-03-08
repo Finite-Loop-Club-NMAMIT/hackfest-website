@@ -112,7 +112,7 @@ export default function TeamDetails({
                 className="rounded-full"
               />
               <h1 className="text-2xl font-semibold">{user.Team.name}</h1>
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2 sm:flex-row flex-col">
                 <button
                   className="flex items-center justify-center gap-2 rounded-full border border-white bg-white/50 px-4 py-2 text-xs font-semibold text-white backdrop-blur-2xl duration-300 hover:scale-105 hover:bg-white/70"
                   onClick={async () => {
