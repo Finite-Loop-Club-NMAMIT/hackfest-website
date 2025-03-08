@@ -1,10 +1,12 @@
 import { LogOut } from "lucide-react";
 import { Button } from "../ui/button";
-import { signIn, signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 export default function ManageAccount() {
+  const { status, data } = useSession();
+
   return (
-    <div className="mt-4 flex w-full justify-center gap-4">
+    <div className="mt-4 flex w-full flex-col justify-center items-center gap-4">
       {/* FIXME: switch account causes error for some reason. probably token thing */}
       {/* <Button
         className="flex flex-nowrap items-center justify-center gap-2 text-xs md:text-sm"
@@ -26,6 +28,10 @@ export default function ManageAccount() {
         </svg>
         Switch
       </Button> */}
+      {status === "authenticated" &&
+        data.user.profileProgress !== "FILL_DETAILS" && (
+          <p className="text-xl font-bold">{data?.user.name}</p>
+        )}
       <Button
         variant="destructive"
         className="flex flex-nowrap items-center justify-center gap-2 text-xs md:text-sm"

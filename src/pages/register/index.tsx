@@ -24,7 +24,7 @@ export default function Register() {
   } else {
     return (
       <RootLayout>
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328] px-2">
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328] px-2 py-40">
           {data?.user && appSettings.data && (
             <RegisterCards
               progress={data.user.profileProgress}

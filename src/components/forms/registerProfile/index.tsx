@@ -633,10 +633,10 @@ export default function RegisterProfileForm() {
 
           <div
             id="tab-2"
-            className="flex h-full flex-col"
+            className="flex h-full flex-col basis-full min-h-96"
             style={{ display: "none" }}
           >
-            <div className="mt-6 flex h-[26rem] w-full flex-col gap-4 md:h-[23rem] md:flex-row">
+            <div className="mt-6 grid md:grid-cols-2 basis-full grid-cols-1 w-full gap-4 h-full min-h-96">
               <DragAndDropFile
                 accept="image/*"
                 onChange={setAadhaar}
@@ -649,11 +649,11 @@ export default function RegisterProfileForm() {
               />
             </div>
 
-            <div className="mt-6 flex w-full flex-nowrap items-center justify-center gap-2 text-white/50">
+            <div className="mt-6 flex w-full flex-nowrap items-center h-fit justify-center gap-2 text-white/50">
               <FaInfoCircle /> Drop image(jpg, png, jpeg) of size less than 2MB.
             </div>
 
-            <div className="flex flex-row flex-nowrap justify-evenly pt-6">
+            <div className="flex flex-row h-fit flex-nowrap justify-evenly pt-6">
               <Button
                 disabled={submitting}
                 variant="secondary"
