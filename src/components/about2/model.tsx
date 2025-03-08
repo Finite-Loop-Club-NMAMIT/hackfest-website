@@ -15,7 +15,7 @@ const Slab = ({ url, width }: { url: string; width: number }) => {
     <div className="relative mt-8 grid w-fit place-content-center md:mx-4">
       <Image src={url} alt="About Us" width={1500} height={1300} />
       <button
-        className={`absolute border-2 ${width > baseWidth.md ? "bottom-[16%] right-[5%] h-[7%] w-[12%]" : width > baseWidth.sm ? "bottom-[11%] left-[8%] h-[5%] w-[15%]" : "bottom-[18%] right-[11%] h-[2%] w-[30%]"}`}
+        className={`absolute ${width > baseWidth.md ? "bottom-[16%] right-[5%] h-[7%] w-[12%]" : width > baseWidth.sm ? "bottom-[11%] left-[8%] h-[5%] w-[15%]" : "bottom-[18%] right-[11%] h-[2%] w-[30%]"}`}
         onClick={async () => {
           // await downloadBrochure();
           // FIXME: Implement downloadBrochure function
