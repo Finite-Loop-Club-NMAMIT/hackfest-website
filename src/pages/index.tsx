@@ -123,7 +123,7 @@ export default function Home() {
                   onLoaded={() => handleComponentLoad("domain")}
                   onProgress={handleProgress}
                 />
-                
+
                 <TimelineLink />
 
                 <FAQSection />
@@ -138,21 +138,21 @@ export default function Home() {
 
 const TimelineLink = () => {
   return (
-    <div className="relative animate-float flex flex-col items-center justify-center w-full md:h-[28rem] h-[20rem]">
-      <Image
-        src="/images/timeline_leaves.webp"
-        alt="Timeline Leaves"
-        layout="fill"
-        objectFit="contain"
-        className="absolute md:w-[30rem] md:h-[28rem] h-[20rem]"
-        priority
-      />
+    <div className="animate-float relative flex h-[20rem] w-full flex-col items-center justify-center md:h-[28rem]">
+      <a href="/timeline" className="w-[40%] md:w-[20%]">
+        <Image
+          src="/images/timeline_leaves.webp"
+          alt="Timeline Leaves"
+          layout="fill"
+          objectFit="contain"
+          className="absolute h-[20rem] md:h-[28rem] md:w-[30rem]"
+          priority
+        />
 
-      <Link href="/timeline" className="md:w-[20%] w-[40%]">
-        <div className="text-center font-herkules hover:scale-105 tracking-wider text-4xl md:text-5xl rounded-md transition-transform transform">
+        <div className="transform rounded-md text-center font-herkules text-4xl tracking-wider transition-transform hover:scale-105 md:text-5xl">
           Explore the Timeline
         </div>
-      </Link>
+      </a>
     </div>
   );
 };
