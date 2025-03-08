@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 const baseWidth = {
   sm: 640,
@@ -8,6 +9,8 @@ const baseWidth = {
 };
 
 const Slab = ({ url, width }: { url: string; width: number }) => {
+  const router = useRouter();
+
   return (
     <div className="relative mt-8 grid w-fit place-content-center md:mx-4">
       <Image src={url} alt="About Us" width={1500} height={1300} />
@@ -16,11 +19,12 @@ const Slab = ({ url, width }: { url: string; width: number }) => {
         onClick={async () => {
           // await downloadBrochure();
           // FIXME: Implement downloadBrochure function
-          const a = document.createElement("a");
-          a.href = "/brochure.pdf";
-          a.download = "Hackfest_Brochure.pdf";
-          a.click();
-          a.remove();
+          // const a = document.createElement("a");
+          // a.href = "/brochure.pdf";
+          // a.download = "Hackfest_Brochure.pdf";
+          // a.click();
+          // a.remove();
+          await router.push("/brochure.pdf");
         }}
       ></button>
     </div>
