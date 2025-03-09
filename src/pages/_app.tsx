@@ -45,7 +45,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   const router = useRouter();
   const pathname = router.pathname;
-  const isParticipant = session?.user.role === "PARTICIPANT";
+  // const isParticipant = session?.user.role === "PARTICIPANT";
+  // const sessionExists = session !== null && session !== undefined;
   const meta = {
     title: `${
       pathname === "/"
@@ -107,7 +108,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <main
         className={`${poppins.className}  ${anton.variable} ${caesarDressing.variable} ${herkules.variable} ${lagistha.variable}`}
       >
-        {isParticipant && <TrackPageVisits />}
+        {/* {(isParticipant || sessionExists) && <TrackPageVisits />} */}
+        <TrackPageVisits />
         <Component {...pageProps} />
       </main>
     </SessionProvider>

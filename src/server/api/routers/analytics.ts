@@ -5,7 +5,7 @@ export const analyticsRouter = createTRPCRouter({
   logVisit: publicProcedure
     .input(
       z.object({
-        session_user: z.string(),
+        session_user: z.string().optional(),
         uniqueId: z.string(),
         routePath: z.string(),
         device:z.string()
