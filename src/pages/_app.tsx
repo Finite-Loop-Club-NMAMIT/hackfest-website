@@ -9,6 +9,7 @@ import LocalFont from "next/font/local";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { siteMetadata } from "~/constants";
+import TrackPageVisits from "~/components/TrackPageVisits";
 
 export const anton = Anton({
   subsets: ["latin"],
@@ -44,7 +45,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   const router = useRouter();
   const pathname = router.pathname;
-
+  const isParticipant = session?.user.role === "PARTICIPANT";
   const meta = {
     title: `${
       pathname === "/"
@@ -106,6 +107,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <main
         className={`${poppins.className}  ${anton.variable} ${caesarDressing.variable} ${herkules.variable} ${lagistha.variable}`}
       >
+        {isParticipant && <TrackPageVisits />}
         <Component {...pageProps} />
       </main>
     </SessionProvider>
