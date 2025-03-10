@@ -8,6 +8,15 @@ export const pptUrl =
 export const brochureUrl =
   "https://res.cloudinary.com/dwwno9ngw/raw/upload/v1741440534/brochure/hxii3br9jvlubpwgoeli.pdf";
 
+// TODO: Add payment QR code image url below
+export const paymentQRUrl =
+  "https://res.cloudinary.com/dwwno9ngw/image/upload/v1741614504/n2yaizaraqftwrkwheq6.png";
+
+export const UPIUser = {
+  name: "Hackfest",
+  phone: "+91 1234567890"
+}
+
 export const dates: [Date, Date, Date] = [
   new Date("2024-4-5"),
   new Date("2024-4-6"),

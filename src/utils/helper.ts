@@ -47,4 +47,26 @@ async function downloadBrochure() {
   }
 }
 
-export { getUrlAndId, downloadPPT, downloadBrochure };
+async function downloadFromUrl(url: string, fileName: string) {
+  toast.loading("Downloading...", { id: "download" });
+
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = fileName;
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(objectUrl);
+    toast.dismiss("download");
+    toast.success("downloaded successfully");
+  } catch (error) {
+    toast.dismiss("brochdownloadure");
+    toast.error("Download failed");
+  }
+}
+
+export { getUrlAndId, downloadPPT, downloadBrochure, downloadFromUrl };

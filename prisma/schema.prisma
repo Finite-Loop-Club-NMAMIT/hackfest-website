@@ -247,6 +247,7 @@ enum Courses {
 
 enum PaymentStatus {
   PENDING
+  VERIFY
   PAID
 }
 

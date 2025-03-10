@@ -9,7 +9,7 @@ import { type Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import { env } from "~/env";
 import { db } from "~/server/db";
-import type { Progress, Role, TeamProgress } from "@prisma/client";
+import type { PaymentStatus, Progress, Role, TeamProgress } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -28,6 +28,7 @@ declare module "next-auth" {
             isComplete: boolean;
             ideaSubmission: string | undefined;
             teamProgress: TeamProgress;
+            paymentStatus: PaymentStatus;
           }
         | null
         | undefined;
@@ -77,6 +78,7 @@ export const authOptions: NextAuthOptions = {
           isComplete: dbUser?.Team?.isComplete,
           ideaSubmission: dbUser?.Team?.IdeaSubmission?.pptUrl,
           teamProgress: dbUser?.Team?.teamProgress,
+          paymentStatus: dbUser?.Team?.paymentStatus,
         };
         session.user.team = team;
       } else session.user.team = null;
