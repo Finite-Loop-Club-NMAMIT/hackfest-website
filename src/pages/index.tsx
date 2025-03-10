@@ -74,71 +74,78 @@ export default function Home() {
   }, [showContent]);
 
   return (
-    <div>
-      {showRegsitration && !showContent && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900">
-          <AuthButton />
-        </div>
-      )}
+    // <div>
+    //   {showRegsitration && !showContent && (
+    //     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900">
+    //       <AuthButton />
+    //     </div>
+    //   )}
 
-      {!showContent && !showRegsitration && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900">
-          <div className="relative flex flex-col items-center justify-center gap-2">
-            <div className="relative  w-[280px] sm:w-[320px] md:w-[380px] lg:w-[400px]">
-              <Image
-                src="/logos/logo.png"
-                alt="HackFest Logo"
-                className="mx-auto w-[70%] sm:w-[75%] md:w-[80%]"
-                width={512}
-                height={512}
-              />
-            </div>
-            <div className="flex w-full flex-col items-center gap-2">
-              <ProgressBar progress={totalProgress} />
-              <span className="font-anton text-xl text-white sm:text-2xl md:text-3xl">
-                {totalProgress.toFixed(0)}%
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+    //   {!showContent && !showRegsitration && (
+    //     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900">
+    //       <div className="relative flex flex-col items-center justify-center gap-2">
+    //         <div className="relative  w-[280px] sm:w-[320px] md:w-[380px] lg:w-[400px]">
+    //           <Image
+    //             src="/logos/logo.png"
+    //             alt="HackFest Logo"
+    //             className="mx-auto w-[70%] sm:w-[75%] md:w-[80%]"
+    //             width={512}
+    //             height={512}
+    //           />
+    //         </div>
+    //         <div className="flex w-full flex-col items-center gap-2">
+    //           <ProgressBar progress={totalProgress} />
+    //           <span className="font-anton text-xl text-white sm:text-2xl md:text-3xl">
+    //             {totalProgress.toFixed(0)}%
+    //           </span>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   )}
 
-      <div style={{ visibility: showContent ? "visible" : "hidden" }}>
-        <RootLayout>
-          <BackgroundWrapper>
-            <main className="relative mx-auto overflow-y-clip">
-              <div className="relative z-10 flex flex-col gap-y-[5rem]">
-                <Hero
-                  onLoaded={() => handleComponentLoad("hero")}
-                  onProgress={handleProgress}
-                />
-                <Sponsors />
-                <AboutUs />
-                <PrizePool
-                  onLoaded={() => handleComponentLoad("prizePool")}
-                  onProgress={handleProgress}
-                />
+    //   <div style={{ visibility: showContent ? "visible" : "hidden" }}>
+    //     <RootLayout>
+    //       <BackgroundWrapper>
+    //         <main className="relative mx-auto overflow-y-clip">
+    //           <div className="relative z-10 flex flex-col gap-y-[5rem]">
+    //             <Hero
+    //               onLoaded={() => handleComponentLoad("hero")}
+    //               onProgress={handleProgress}
+    //             />
+    //             <Sponsors />
+    //             <AboutUs />
+    //             <PrizePool
+    //               onLoaded={() => handleComponentLoad("prizePool")}
+    //               onProgress={handleProgress}
+    //             />
 
-                <Domains
-                  onLoaded={() => handleComponentLoad("domain")}
-                  onProgress={handleProgress}
-                />
+    //             <Domains
+    //               onLoaded={() => handleComponentLoad("domain")}
+    //               onProgress={handleProgress}
+    //             />
 
-                <TimelineLink />
+    //             <TimelineLink />
 
-                <FAQSection />
-              </div>
-            </main>
-          </BackgroundWrapper>
-        </RootLayout>
+    //             <FAQSection />
+    //           </div>
+    //         </main>
+    //       </BackgroundWrapper>
+    //     </RootLayout>
+    //   </div>
+    // </div>
+    <>
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-blue-950 text-white">
+        <Image src="/logos/logo.png" alt="logo" width={300} height={300} />
+        <h1 className="text-3xl font-bold">Website Under Maintenance</h1>
+        <h2 className="text-2xl font-semibold">We will be back by 11:30 am</h2>
       </div>
-    </div>
+    </>
   );
 }
 
 const TimelineLink = () => {
   return (
-    <div className="animate-float relative flex h-[20rem] w-full flex-col items-center justify-center md:h-[28rem]">
+    <div className="relative flex h-[20rem] w-full animate-float flex-col items-center justify-center md:h-[28rem]">
       <a href="/timeline" className="w-[40%] md:w-[20%]">
         <Image
           src="/images/timeline_leaves.webp"

@@ -11,6 +11,8 @@ import { videoRouter } from "./routers/videoSubmission";
 import { appSettingsRouter } from "./routers/app";
 import { remarkRouter } from "./routers/remark";
 import { ideaRouter } from "./routers/idea";
+import { analyticsRouter } from "./routers/analytics";
+import { auditLog } from "./routers/auditlog";
 
 /**
  * This is the primary router for your server.
@@ -27,6 +29,8 @@ export const appRouter = createTRPCRouter({
   github: githubRouter,
   judges: JudgeRouter,
   video: videoRouter,
+  analytics: analyticsRouter ,
+  audit: auditLog,
   appSettings: appSettingsRouter,
   remark: remarkRouter,
   idea: ideaRouter,

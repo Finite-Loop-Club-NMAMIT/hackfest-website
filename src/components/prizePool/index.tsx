@@ -286,7 +286,6 @@ const Model = ({ ...props }: Model) => {
 
   useFrame(() => {
     const yDistance = scrollPosition - 0.5;
-    console.log("yDistance", yDistance);
 
     if (
       modelRef.current &&
