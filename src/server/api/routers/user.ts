@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import {
+  adminProcedure,
   createTRPCRouter,
   protectedProcedure,
   teamProcedure,
@@ -302,7 +303,7 @@ export const userRouter = createTRPCRouter({
     });
   }),
 
-  getAllUsers: protectedProcedure.query(async ({ ctx }) => {
+  getAllUsers: adminProcedure.query(async ({ ctx }) => {
     try {
       return await ctx.db.user.findMany({
         include: {
