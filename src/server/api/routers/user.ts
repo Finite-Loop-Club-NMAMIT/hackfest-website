@@ -303,6 +303,16 @@ export const userRouter = createTRPCRouter({
   }),
 
   getAllUsers: protectedProcedure.query(async ({ ctx }) => {
+    if (
+      !["ADMIN", "JUDGE", "VALIDATOR", "SUPER_VALIDATOR"].includes(
+       ctx.session.user.role,
+      )
+    ) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You are not authorized to view this page",
+      });
+    }
     try {
       return await ctx.db.user.findMany({
         include: {
