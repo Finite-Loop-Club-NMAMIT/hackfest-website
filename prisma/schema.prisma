@@ -200,6 +200,27 @@ model TeamNames {
   name String @unique
 }
 
+
+model AuditLog {
+  id              Int      @id @default(autoincrement())
+  sessionUser String? // User performing action
+  auditType      String // Type of audit entry
+  dateTime        DateTime @default(now())
+  description     String // Audit details
+}
+model webAnalytics {
+  id           Int      @id @default(autoincrement())
+  sessionUser String? // User session info
+  uniqueId     String // Unique visitor ID
+  routePath    String // Page accessed
+  isChecked    String // Verification status
+  timer        Int? // Time spent
+  startPing    DateTime // Session start
+  lastPing     DateTime // Last activity
+  device       String // User device info
+}
+
+
 enum JudgeType {
   DAY1
   DAY2
