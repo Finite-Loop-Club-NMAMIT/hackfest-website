@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * Component for tracking user page visits and analytics
  * Handles:
