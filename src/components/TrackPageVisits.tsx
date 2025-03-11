@@ -7,7 +7,7 @@
  * - Timer synchronization
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import { generateUniqueId } from "~/utils/generateUniqueId";
@@ -27,127 +27,109 @@ const TrackPageVisits = () => {
   const uniqueIdRef = useRef<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const currentPathRef = useRef<string | null>(null);
   const { data: session } = useSession();
-  const session_user = session?.user.email?.toLowerCase() ?? "";
+  const session_user = session?.user.email?.toLowerCase() ?? null;
 
-  // State to track device readiness
-  const [deviceType, setDeviceType] = useState<string | null>(null);
+  // Determine device type once outside of effects
+  const deviceType = (() => {
+    if (typeof window === 'undefined') return null;
+    if (isMobile) return "mobile";
+    if (isTablet) return "tablet";
+    if (isDesktop) return "desktop";
+    return "unknown";
+  })();
 
-  // Device type detection effect
-  useEffect(() => {
-    // Device type detection logic
-    const determineDeviceType = () => {
-      if (isMobile) return "mobile";
-      if (isTablet) return "tablet";
-      if (isDesktop) return "desktop";
-      return "unknown"; // Fallback
-    };
-
-    // Set device type once determined
-    setDeviceType(determineDeviceType());
+  // Memoize the update visit function to avoid dependency issues
+  const updateVisit = useCallback(() => {
+    if (uniqueIdRef.current) {
+      updateVisitMutation.mutate({
+        uniqueId: uniqueIdRef.current,
+        timer: timerRef.current,
+      });
+    }
   }, []);
 
-  // Main tracking logic effect
+  // Memoize the sync timer function
+  const syncTimer = useCallback(() => {
+    if (uniqueIdRef.current) {
+      syncTimerMutation.mutate({
+        uniqueId: uniqueIdRef.current,
+        timer: timerRef.current,
+      });
+    }
+  }, []);
+
+  // Monitor path changes to trigger visit logging
   useEffect(() => {
-    // Ensure deviceType is determined before proceeding
+    // Skip if we don't have a valid session or device yet
     if (!deviceType) return;
-
-    /**
-     * Handles new page visit initialization
-     * - Generates unique visit ID
-     * - Updates null entries
-     * - Starts visit timer
-     * - Sets up sync intervals
-     */
-    const handlePageVisit = () => {
-      const routePath = router.asPath;
-      const allowedPaths = ["/contact", "/about", "/profile", "/register","/timeline"];
-      const isAllowedPath = routePath === "/" || allowedPaths.some((path) => routePath.startsWith(path));
-
-      if (!isAllowedPath) return;
+    
+    const currentPath = router.asPath;
+    const allowedPaths = ["/contact", "/about", "/profile", "/register", "/timeline"];
+    const isAllowedPath = currentPath === "/" || allowedPaths.some((path) => currentPath.startsWith(path));
+    
+    // Only proceed if it's an allowed path and different from the current one
+    if (isAllowedPath && currentPath !== currentPathRef.current) {
+      currentPathRef.current = currentPath;
       
-      const uniqueId = generateUniqueId();
-      uniqueIdRef.current = uniqueId;
-
-      // First, update null entries
-      updateNullEntriesMutation.mutate(
-        { session_user },
-        {
-          onSuccess: () => {
-            // Log visit once null entries are updated
-            logVisitMutation.mutate(
-              { session_user, uniqueId, routePath, device: deviceType }, 
-              {
-                onError: (error) => console.error("Error logging visit:", error),
-              }
-            );
-          },
-          onError: (error) => console.error("Error updating null entries:", error),
-        }
-      );
-
-      timerRef.current = 0;
-
-      // Clear any existing intervals
+      // Clean up previous visit
+      updateVisit();
+      
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
-
+      
+      // Create a new unique ID for this visit
+      const uniqueId = generateUniqueId();
+      uniqueIdRef.current = uniqueId;
+      
+      // Update null entries first
+      updateNullEntriesMutation.mutate({ session_user }, {
+        onSuccess: () => {
+          // Then log the new visit
+          logVisitMutation.mutate(
+            { session_user, uniqueId, routePath: currentPath, device: deviceType }, 
+            { onError: (error) => console.error("Error logging visit:", error) }
+          );
+        },
+        onError: (error) => console.error("Error updating null entries:", error),
+      });
+      
+      // Reset and start timer
+      timerRef.current = 0;
+      
       // Start visit duration timer
       intervalRef.current = setInterval(() => {
         timerRef.current++;
       }, 1000);
-
+      
       // Sync timer every 20 seconds
-      syncIntervalRef.current = setInterval(() => {
-        if (uniqueIdRef.current) {
-          syncTimerMutation.mutate({
-            uniqueId: uniqueIdRef.current,
-            timer: timerRef.current,
-          });
-        }
-      }, 20000);
-    };
+      syncIntervalRef.current = setInterval(syncTimer, 20000);
+    }
+  }, [router.asPath, deviceType, session_user, syncTimer]);
 
-    /**
-     * Handles cleanup on page exit
-     * - Updates final visit duration
-     * - Clears intervals
-     */
-    const handlePageExit = () => {
-      // Handle page exit logic
-      if (uniqueIdRef.current) {
-        updateVisitMutation.mutate({
-          uniqueId: uniqueIdRef.current,
-          timer: timerRef.current,
-        });
-      }
+  // Cleanup effect when component unmounts
+  useEffect(() => {
+    return () => {
+      // Handle cleanup
+      updateVisit();
+      
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
     };
+  }, [updateVisit]);
 
-    // Event listener setup and cleanup
-    if (document.readyState === "complete") {
-      handlePageVisit();
-    } else {
-      window.addEventListener("load", handlePageVisit);
-    }
-
-    window.addEventListener("beforeunload", handlePageExit);
-    return () => {
-      // Cleanup
-      handlePageExit();
-      window.removeEventListener("load", handlePageVisit);
-      window.removeEventListener("beforeunload", handlePageExit);
+  // Handle beforeunload event
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      updateVisit();
     };
-  }, [
-    router.asPath, 
-    deviceType, 
-    logVisitMutation, 
-    session_user, 
-    syncTimerMutation,
-    updateNullEntriesMutation,
-    updateVisitMutation
-  ]); // Include all dependencies used inside the effect
+    
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [updateVisit]);
 
   return null;
 };

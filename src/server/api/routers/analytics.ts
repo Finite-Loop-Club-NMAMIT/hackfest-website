@@ -5,7 +5,7 @@ export const analyticsRouter = createTRPCRouter({
   logVisit: publicProcedure
     .input(
       z.object({
-        session_user: z.string().optional(),
+        session_user: z.string().nullable(),
         uniqueId: z.string(),
         routePath: z.string(),
         device:z.string()
@@ -59,7 +59,7 @@ export const analyticsRouter = createTRPCRouter({
   updateNullEntries: publicProcedure
     .input(
       z.object({
-        session_user: z.string(),
+        session_user: z.string().nullable(),
       })
     )
     .mutation(async ({ input }) => {
