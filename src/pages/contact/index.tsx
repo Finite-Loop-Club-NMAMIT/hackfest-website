@@ -33,18 +33,6 @@ const contacts = [
     email: "nnm22am045@nmamit.in",
     ph: "8618564271",
   },
-  {
-    name: "Dr. Shashank Shetty",
-    designation: "Faculty Coordinator",
-    email: "shashankshetty@nitte.edu.in",
-    ph: "8197903771",
-  },
-  {
-    name: "Mr. Puneeth R P",
-    designation: "Faculty Coordinator",
-    email: "Puneeth.rp@nitte.edu.in",
-    ph: "9036366204",
-  },
 ];
 
 export default function Contact() {

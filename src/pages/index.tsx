@@ -138,7 +138,7 @@ export default function Home() {
 
 const TimelineLink = () => {
   return (
-    <div className="animate-float relative flex h-[20rem] w-full flex-col items-center justify-center md:h-[28rem]">
+    <div className="relative flex h-[20rem] w-full animate-float flex-col items-center justify-center md:h-[28rem]">
       <a href="/timeline" className="w-[40%] md:w-[20%]">
         <Image
           src="/images/timeline_leaves.webp"
