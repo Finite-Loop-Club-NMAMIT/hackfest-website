@@ -109,7 +109,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
         className={`${poppins.className}  ${anton.variable} ${caesarDressing.variable} ${herkules.variable} ${lagistha.variable}`}
       >
         {(isParticipant || !sessionExists) && <TrackPageVisits />}
-        {/* <TrackPageVisits /> */}
         <Component {...pageProps} />
       </main>
     </SessionProvider>
