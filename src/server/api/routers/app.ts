@@ -1,12 +1,17 @@
 import { appSettingsZ } from "~/server/schema/zod-schema";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "../trpc";
 
 export const appSettingsRouter = createTRPCRouter({
   getAppSettings: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.appSettings.findFirst();
   }),
 
-  updateAppSettings: protectedProcedure
+  updateAppSettings: adminProcedure
     .input(appSettingsZ)
     .mutation(async ({ ctx, input }) => {
       const filteredInput = Object.fromEntries(
