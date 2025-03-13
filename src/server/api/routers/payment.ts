@@ -40,6 +40,7 @@ export const paymentRouter = createTRPCRouter({
           data: {
             paymentStatus: "VERIFY",
             transactionId: input.transactionId,
+            paymentProof: input.paymentProof
           },
         });
 
