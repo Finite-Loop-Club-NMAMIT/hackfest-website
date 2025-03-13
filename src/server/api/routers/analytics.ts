@@ -50,7 +50,7 @@ export const analyticsRouter = createTRPCRouter({
     }),
 
   // Retrieve analytics data
-  getAnalytics: publicProcedure.query(async ({ ctx }) => {
+  getAnalytics: adminProcedure.query(async ({ ctx }) => {
       const data = await ctx.db.webAnalytics.findMany();
       return data;
   }),
