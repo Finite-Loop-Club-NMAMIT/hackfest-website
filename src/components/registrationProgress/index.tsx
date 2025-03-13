@@ -150,12 +150,25 @@ export default function RegisterCards({
             )}
           </AppSetting.Active>
           <AppSetting.FallBack>
-            {session.user.team?.teamProgress === "SELECTED" ? (
-              <RegistrationClosed
-                session={session}
-                message="Payment submission is now closed"
-                heading="Too Late!"
-              />
+            {settings?.isTop60Validated ? (
+              session.user.team?.paymentStatus === "PAID" ||
+              session.user.team?.paymentStatus === "VERIFY" ? (
+                <PaymentCondition
+                  paymentStatus={session.user.team.paymentStatus}
+                />
+              ) : session.user.team?.teamProgress === "SELECTED" ? (
+                <RegistrationClosed
+                  session={session}
+                  message="Payment submission is now closed"
+                  heading="Too Late!"
+                />
+              ) : (
+                <RegistrationClosed
+                  session={session}
+                  message="You are not selected in the top 60's"
+                  heading="Sorry!"
+                />
+              )
             ) : (
               <div className="mx-4 flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg border border-white/20 bg-black/50 p-4 shadow-lg transition duration-500 ease-in-out">
                 <h1 className="gradient-text mt-2 text-center text-3xl font-bold text-white drop-shadow-xl md:text-6xl">
