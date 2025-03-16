@@ -1,4 +1,5 @@
-import { TeamNames } from "@prisma/client";
+
+import type { TeamNames } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
@@ -395,7 +396,7 @@ export const teamRouter = createTRPCRouter({
       return team;
     }),
 
-  getTeamsList: adminProcedure.query(async ({ ctx }) => {
+  getTeamsList: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.team.findMany({
       include: {
         Members: {

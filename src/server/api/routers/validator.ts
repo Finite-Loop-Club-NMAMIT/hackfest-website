@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, validatorProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, validatorProcedure } from "~/server/api/trpc";
 
 export const validatorRouter = createTRPCRouter({
   getValidatorCriteria: validatorProcedure.query(async ({ ctx }) => {
@@ -10,7 +10,7 @@ export const validatorRouter = createTRPCRouter({
       },
     });
   }),
-  setScore: validatorProcedure
+  setScore: protectedProcedure
     .input(
       z.object({
         score: z.number().min(1).max(10), //todo: set limits
