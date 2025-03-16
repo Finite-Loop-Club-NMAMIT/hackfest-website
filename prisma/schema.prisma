@@ -179,6 +179,8 @@ model AppSettings {
   isPaymentOpen         Boolean @default(true)
   isVideoSubmissionOpen Boolean @default(true)
   isProfileEditOpen     Boolean @default(true)
+  isTop60Validated      Boolean @default(false)
+  isEventStarted        Boolean @default(false)
 }
 
 model Remark {
@@ -247,6 +249,7 @@ enum Courses {
 
 enum PaymentStatus {
   PENDING
+  VERIFY
   PAID
 }
 

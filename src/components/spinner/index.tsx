@@ -1,6 +1,6 @@
 import React from "react";
 import { BiLoaderAlt } from "react-icons/bi";
-import { cva, VariantProps } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 
 const spinnerStyles = cva(
   "flex h-full w-full items-center justify-center mx-auto my-auto",

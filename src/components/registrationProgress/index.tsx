@@ -11,6 +11,11 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/router";
 import IdeaSubmitForm from "../forms/ideaSubmitForm";
 import { downloadPPT } from "~/utils/helper";
+import RegistrationClosed from "../message/registrationsClosed";
+import type { PaymentStatus } from "@prisma/client";
+import PaymentComponent from "../payment";
+import PaymentVerification from "../payment/verify";
+import PaymentSuccess from "../payment/success";
 
 export default function RegisterCards({
   session,
@@ -130,36 +135,71 @@ export default function RegisterCards({
 
     case "COMPLETE":
       return (
-        <div className="mx-4 flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg border border-white/20 bg-black/50 p-4 shadow-lg transition duration-500 ease-in-out">
-          <h1 className="gradient-text mt-2 text-center text-3xl font-bold text-white drop-shadow-xl md:text-6xl">
-            Idea Submitted!
-          </h1>
-          <p className="p-4 text-center text-sm text-white md:text-lg">
-            You have already submitted your idea. We wish you to be in the top
-            60 teams.
-          </p>
-          <div className="mt-4">
-            <svg
-              className="h-16 w-16 animate-bounce text-yellow-400"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M10 15l-3.5 2.1 1-4.2-3.2-2.8 4.3-.4L10 6l1.4 3.7 4.3.4-3.2 2.8 1 4.2z" />
-            </svg>
-          </div>
-          <Button
-            className="mt-4"
-            onClick={async () => {
-              await router.push("/profile");
-            }}
-          >
-            Profile
-          </Button>
-        </div>
+        <AppSetting.Provider value={settings?.isPaymentOpen ?? false}>
+          <AppSetting.Active>
+            {session.user.team?.teamProgress === "SELECTED" ? (
+              <PaymentCondition
+                paymentStatus={session.user.team.paymentStatus}
+              />
+            ) : (
+              <RegistrationClosed
+                session={session}
+                message="You are not selected in the top 60's"
+                heading="Sorry!"
+              />
+            )}
+          </AppSetting.Active>
+          <AppSetting.FallBack>
+            {settings?.isTop60Validated ? (
+              session.user.team?.paymentStatus === "PAID" ||
+              session.user.team?.paymentStatus === "VERIFY" ? (
+                <PaymentCondition
+                  paymentStatus={session.user.team.paymentStatus}
+                />
+              ) : session.user.team?.teamProgress === "SELECTED" ? (
+                <RegistrationClosed
+                  session={session}
+                  message="Payment submission is now closed"
+                  heading="Too Late!"
+                />
+              ) : (
+                <RegistrationClosed
+                  session={session}
+                  message="You are not selected in the top 60's"
+                  heading="Sorry!"
+                />
+              )
+            ) : (
+              <div className="mx-4 flex w-full max-w-5xl transform flex-col items-center justify-center rounded-lg border border-white/20 bg-black/50 p-4 shadow-lg transition duration-500 ease-in-out">
+                <h1 className="gradient-text mt-2 text-center text-3xl font-bold text-white drop-shadow-xl md:text-6xl">
+                  Idea Submitted!
+                </h1>
+                <p className="p-4 text-center text-sm text-white md:text-lg">
+                  You have already submitted your idea. We wish you to be in the
+                  top 60 teams.
+                </p>
+                <div className="mt-4">
+                  <svg
+                    className="h-16 w-16 animate-bounce text-yellow-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M10 15l-3.5 2.1 1-4.2-3.2-2.8 4.3-.4L10 6l1.4 3.7 4.3.4-3.2 2.8 1 4.2z" />
+                  </svg>
+                </div>
+                <Button
+                  className="mt-4"
+                  onClick={async () => {
+                    await router.push("/profile");
+                  }}
+                >
+                  Profile
+                </Button>
+              </div>
+            )}
+          </AppSetting.FallBack>
+        </AppSetting.Provider>
       );
-
-    case "PAYMENT":
-      return <p>Payment</p>;
 
     default:
       return (
@@ -172,32 +212,24 @@ export default function RegisterCards({
   }
 }
 
-function RegistrationClosed({ session }: { session: Session }) {
-  const router = useRouter();
+function PaymentCondition({ paymentStatus }: { paymentStatus: PaymentStatus }) {
+  switch (paymentStatus) {
+    case "PENDING":
+      return <PaymentComponent />;
 
-  return (
-    <div className="flex h-screen w-screen items-center justify-center">
-      <div className="mx-4 h-fit w-full max-w-[70rem] rounded-xl border border-white/20 bg-black/50 p-10 text-center text-white">
-        <h1 className="bg-gradient-to-b from-red-300 via-red-800 to-red-500 bg-clip-text text-5xl font-bold text-transparent md:text-8xl">
-          Too Late!
-        </h1>
-        <p className="mt-8 md:text-xl">
-          Sorry{" "}
-          <span className="font-semibold">
-            {session.user.name ?? "Tech Enthusiast"}
-          </span>
-          . Registrations are now closed.
-        </p>
-        <Button
-          className="mt-8"
-          variant="outline"
-          onClick={() => {
-            void router.push("/");
-          }}
-        >
-          Home
-        </Button>
-      </div>
-    </div>
-  );
+    case "VERIFY":
+      return <PaymentVerification />;
+
+    case "PAID":
+      return <PaymentSuccess />;
+
+    default:
+      return (
+        <div className="rounded-lg bg-black/50 p-4">
+          <h1 className="text-xl text-white">
+            Something went wrong. please contact admin
+          </h1>
+        </div>
+      );
+  }
 }

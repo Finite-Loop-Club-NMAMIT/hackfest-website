@@ -1,0 +1,58 @@
+import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { paymentTransactionZ } from "~/server/schema/zod-schema";
+
+export const paymentRouter = createTRPCRouter({
+  createTransaction: protectedProcedure
+    .input(paymentTransactionZ)
+    .mutation(async ({ input, ctx }) => {
+      const team = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: {
+          Team: true,
+        },
+      });
+
+      if (!team?.Team) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Team not found",
+        });
+      }
+
+      if (team.Team?.teamProgress === "NOT_SELECTED") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You are not selected in the top 60's",
+        });
+      }
+
+      if (team.Team?.paymentStatus === "VERIFY" || team.Team?.paymentStatus === "PAID") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Payment already done",
+        });
+      }
+
+      try {
+        await ctx.db.team.update({
+          where: { id: team.Team.id },
+          data: {
+            paymentStatus: "VERIFY",
+            transactionId: input.transactionId,
+            paymentProof: input.paymentProof
+          },
+        });
+
+        return {
+            success: true,
+            message: "Payment successful",
+        }
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+        });
+      }
+    }),
+});

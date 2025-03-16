@@ -127,6 +127,11 @@ const appSettingsZ = z.object({
   isProfileEditOpen: z.boolean().optional(),
 });
 
+const paymentTransactionZ = z.object({
+  transactionId: z.string().min(3, { message: "Transaction ID cannot be empty" }),
+  paymentProof: z.string().min(3, { message: "Payment proof required" })
+})
+
 export {
   editProfileZ,
   updateUserZ,
@@ -140,4 +145,5 @@ export {
   finalSubmissionZ,
   resumeSubmissionZ,
   appSettingsZ,
+  paymentTransactionZ,
 };
