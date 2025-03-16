@@ -58,13 +58,13 @@ model User {
   teamId          String?
   collegeId       String?
   accounts        Account[]
-  Judges          Judges?
   sessions        Session[]
   College         College?   @relation(fields: [collegeId], references: [id])
   Team            Team?      @relation(fields: [teamId], references: [id])
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
-  Judge           Judge[]
+  Judge           Judge?     @relation(fields: [judgeId], references: [id])
+  judgeId         String?
 
   @@index([collegeId])
   @@index([teamId])
@@ -124,13 +124,6 @@ model IdeaSubmission {
   Team   Team   @relation(fields: [teamId], references: [id])
 }
 
-model Judges {
-  id     String    @id @default(cuid())
-  userId String    @unique
-  type   JudgeType @default(VALIDATOR)
-  User   User      @relation(fields: [userId], references: [id])
-}
-
 model Github {
   id             String   @id @default(cuid())
   githubTeamId   Int
@@ -143,11 +136,10 @@ model Github {
 
 model Judge {
   id     String    @id @default(cuid())
-  userId String
   type   JudgeType
-  User   User      @relation(fields: [userId], references: [id])
   Scores Scores[]
   Remark Remark[]
+  User   User[]
 }
 
 model Criteria {
@@ -202,26 +194,25 @@ model TeamNames {
   name String @unique
 }
 
-
 model AuditLog {
-  id              Int      @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   sessionUser String? // User performing action
-  auditType      String // Type of audit entry
-  dateTime        DateTime @default(now())
-  description     String // Audit details
-}
-model webAnalytics {
-  id           Int      @id @default(autoincrement())
-  sessionUser String? // User session info
-  uniqueId     String // Unique visitor ID
-  routePath    String // Page accessed
-  isChecked    String // Verification status
-  timer        Int? // Time spent
-  startPing    DateTime // Session start
-  lastPing     DateTime // Last activity
-  device       String // User device info
+  auditType   String // Type of audit entry
+  dateTime    DateTime @default(now())
+  description String // Audit details
 }
 
+model webAnalytics {
+  id          Int      @id @default(autoincrement())
+  sessionUser String? // User session info
+  uniqueId    String // Unique visitor ID
+  routePath   String // Page accessed
+  isChecked   String // Verification status
+  timer       Int? // Time spent
+  startPing   DateTime // Session start
+  lastPing    DateTime // Last activity
+  device      String // User device info
+}
 
 enum JudgeType {
   DAY1

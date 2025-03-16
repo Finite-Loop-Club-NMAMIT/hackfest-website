@@ -20,6 +20,8 @@ export default function Organiser() {
   const res = api.team.getTeamsList.useQuery();
   const users = api.user.getAllUsers.useQuery().data;
   const top15 = api.team.top15.useQuery().data;
+  // Add the new statistics query
+  const statistics = api.team.getStatistics.useQuery();
 
   const allTeams = res.data;
   const [selectedTeams, setSelectedTeams] = useState(top15);
@@ -30,6 +32,9 @@ export default function Organiser() {
   const [submissionQuery, setSubmissionQuery] = useState("ALL");
   const [trackQuery, setTrackQuery] = useState("ALL");
 
+  // Calculate dashboard metrics
+  const confirmedTeams = allTeams?.filter(team => team.paymentStatus === "PAID").length ?? 0;
+  
   const filterSheetProps = {
     searchQuery: searchQuery,
     paymentQuery: paymentQuery,
@@ -119,7 +124,7 @@ export default function Organiser() {
 
   return (
     <DashboardLayout>
-      <Tabs defaultValue="teams" className="w-full">
+      <Tabs defaultValue="teams" className="w-full my-14">
         <TabsList className="flex flex-row items-center justify-center">
           <TabsTrigger className="w-full" value="teams">
             Teams
@@ -129,23 +134,90 @@ export default function Organiser() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="teams">
-          <div className="w-full border-b">
+          <div className="w-full">
             <h1 className="py-10 text-center text-4xl font-bold">Organiser</h1>
           </div>
-          <div className="my-5 flex flex-col items-center justify-center gap-10 md:flex-row">
-            <div className="flex flex-col">
-              <span className="text-xl">
-                Number of Logins : {users?.length}
-              </span>
-              <span className="text-xl">
-                Number of Teams : {res?.data?.length}
-              </span>
-              <span className="text-xl">
-                Number of Idea submissions :{" "}
-                {res?.data?.filter((team) => team.IdeaSubmission).length}
-              </span>
+            <div className="w-full py-12">
+              <div className="mx-auto max-w-7xl px-4">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-3 animate-fade-in">
+                  <div className="group rounded-2xl bg-white/10 p-8 backdrop-blur-lg transition-all duration-300 hover:bg-white/15 hover:transform hover:scale-105">
+                    <div className="flex flex-col items-center space-y-2">
+                      <h3 className="text-xl font-semibold text-gray-200">Number of Logins</h3>
+                      <span className="text-4xl font-bold text-purple-400 animate-pulse">
+                        {users?.length ?? 0}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="group rounded-2xl bg-white/10 p-8 backdrop-blur-lg transition-all duration-300 hover:bg-white/15 hover:transform hover:scale-105">
+                    <div className="flex flex-col items-center space-y-2">
+                      <h3 className="text-xl font-semibold text-gray-200">Number of Teams</h3>
+                      <span className="text-4xl font-bold text-purple-400 animate-pulse">
+                        {res?.data?.length ?? 0}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="group rounded-2xl bg-white/10 p-8 backdrop-blur-lg transition-all duration-300 hover:bg-white/15 hover:transform hover:scale-105">
+                    <div className="flex flex-col items-center space-y-2">
+                      <h3 className="text-xl font-semibold text-gray-200">Idea Submissions</h3>
+                      <span className="text-4xl font-bold text-purple-400 animate-pulse">
+                        {res?.data?.filter((team) => team.IdeaSubmission).length ?? 0}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="group rounded-2xl bg-white/10 p-8 backdrop-blur-lg transition-all duration-300 hover:bg-white/15 hover:transform hover:scale-105">
+                    <div className="flex flex-col items-center space-y-2">
+                      <h3 className="text-xl font-semibold text-gray-200">Teams Confirmed</h3>
+                      <span className="text-4xl font-bold text-purple-400 animate-pulse">
+                        {confirmedTeams}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="group rounded-2xl bg-white/10 p-8 backdrop-blur-lg transition-all duration-300 hover:bg-white/15 hover:transform hover:scale-105">
+                    <div className="flex flex-col items-center space-y-2">
+                      <h3 className="text-xl font-semibold text-gray-200">Unique Stats</h3>
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-300">States:</span>
+                          <span className="text-xl font-bold text-purple-400 animate-pulse">
+                            {statistics.data?.uniqueStatesCount ?? 0}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-300">Colleges:</span>
+                          <span className="text-xl font-bold text-purple-400 animate-pulse">
+                            {statistics.data?.uniqueCollegesCount ?? 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="group rounded-2xl bg-white/10 p-8 backdrop-blur-lg transition-all duration-300 hover:bg-white/15 hover:transform hover:scale-105">
+                    <div className="flex flex-col items-center space-y-2">
+                      <h3 className="text-xl font-semibold text-gray-200">Participants</h3>
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-300">Internal:</span>
+                          <span className="text-xl font-bold text-purple-400 animate-pulse">
+                            {statistics.data?.internalCount ?? 0}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-300">External:</span>
+                          <span className="text-xl font-bold text-purple-400 animate-pulse">
+                            {statistics.data?.externalCount ?? 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
           <div className="m-auto overflow-x-scroll md:max-w-screen-xl">
             <h1 className="my-8 text-center text-2xl font-bold">
               Participants

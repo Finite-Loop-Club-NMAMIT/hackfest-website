@@ -1,4 +1,3 @@
-
 import type { TeamNames } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -528,5 +527,44 @@ export const teamRouter = createTRPCRouter({
         },
       },
     });
+  }),
+
+  getStatistics: publicProcedure.query(async ({ ctx }) => {
+    const allTeams = await ctx.db.team.findMany({
+      include: {
+        Members: {
+          include: {
+            College: true,
+          },
+        },
+      },
+    });
+
+    // Count stats
+    const uniqueStates = new Set();
+    const uniqueColleges = new Set();
+    let internalCount = 0;
+    let externalCount = 0;
+    
+    allTeams.forEach(team => {
+      team.Members?.forEach(member => {
+        if (member.state) uniqueStates.add(member.state);
+        if (member.College?.name) uniqueColleges.add(member.College.name);
+        
+        // Count internal vs external participants
+        if (member.College?.name === 'NMAM Institute of Technology') {
+          internalCount++;
+        } else {
+          externalCount++;
+        }
+      });
+    });
+
+    return {
+      uniqueStatesCount: uniqueStates.size,
+      uniqueCollegesCount: uniqueColleges.size,
+      internalCount,
+      externalCount
+    };
   }),
 });
