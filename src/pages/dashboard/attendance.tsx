@@ -1,19 +1,24 @@
 import { useZxing } from "react-zxing";
 import { useState } from "react";
-import { Badge } from "~/components/ui/badge";
 import { api } from "~/utils/api";
-import { Button } from "~/components/ui/button";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import NotFound from "../404";
+import DashboardLayout from "~/components/layout/dashboardLayout";
+import Spinner from "~/components/spinner";
+// Import necessary UI components
+import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+
 export default function Attendance() {
-  const { data: user } = useSession();
-  const [attendedUser, setAttndeduser] = useState<{
-    name: string | null;
-    collegeName: string | undefined;
-    teamName: string | undefined;
-  } | null>(null);
+    const { data: sessionData, status } = useSession();
+    interface AttendedUser {
+        name: string | null;
+        teamName: string | undefined;
+        collegeName: string | undefined;
+    }
+    const [attendedUser, setAttendedUser] = useState<AttendedUser | null>(null);
   const updateAttendance = api.user.markAttendance.useMutation({
     onSuccess: () => {
       toast.dismiss("attendance");
@@ -36,7 +41,10 @@ export default function Attendance() {
       setResult(result.getText());
       stopCamera();
     },
-  });
+    onError: (error) => {
+      console.error("Scanner error:", error);
+    },
+  }) as { ref: React.RefObject<HTMLVideoElement> };
 
   const stopCamera = () => {
     const stream = ref.current?.srcObject as MediaStream;
@@ -56,14 +64,23 @@ export default function Attendance() {
         }
       });
   };
-
-  if (!user || (user?.user.role !== "TEAM" && user?.user.role !== "ADMIN")) {
+    if (status === "loading")
+      return (
+        <DashboardLayout>
+          <div className="flex h-screen w-screen items-center justify-center">
+            <Spinner />
+          </div>
+        </DashboardLayout>
+      );
+  if (
+    !sessionData?.user ||
+    (sessionData.user.role !== "TEAM" && sessionData.user.role !== "ADMIN")
+  ) {
     return <NotFound />;
   }
-
   return (
-    <>
-      {/* <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-slate-950">
+    <DashboardLayout>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-slate-950">
         <video className="w-full rounded-lg border border-gray-400" ref={ref} />
         {!result && (
           <div className="mt-2 text-center text-sm text-gray-400">
@@ -82,7 +99,7 @@ export default function Attendance() {
                   userId: result,
                 })
                 .then((res) => {
-                  setAttndeduser(res);
+                  setAttendedUser(res);
                 });
             }}
           >
@@ -92,7 +109,7 @@ export default function Attendance() {
         {!result && (
           <Button
             onClick={async () => {
-              setAttndeduser(null);
+              setAttendedUser(null);
               await startCamera();
             }}
           >
@@ -111,7 +128,7 @@ export default function Attendance() {
             </CardContent>
           </Card>
         )}
-      </div> */}
-    </>
+      </div>
+    </DashboardLayout>
   );
 }
