@@ -14,6 +14,9 @@ export default function CongratulationMessage() {
         You have already submitted your idea. We wish you to be in the top 60
         teams. Keep an eye on your mail for further updates.
       </p>
+      <p className="text-sm text-orange-500">
+        Note: Top 60 teams will be announced on 27 March 2025{" "}
+      </p>
       <div className="mt-4">
         <svg
           className="h-16 w-16 animate-bounce text-yellow-400"
