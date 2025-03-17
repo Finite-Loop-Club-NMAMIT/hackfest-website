@@ -32,9 +32,6 @@ export default function Organiser() {
   const [submissionQuery, setSubmissionQuery] = useState("ALL");
   const [trackQuery, setTrackQuery] = useState("ALL");
 
-  // Calculate dashboard metrics
-  const confirmedTeams = allTeams?.filter(team => team.paymentStatus === "PAID").length ?? 0;
-  
   const filterSheetProps = {
     searchQuery: searchQuery,
     paymentQuery: paymentQuery,
@@ -129,6 +126,9 @@ export default function Organiser() {
           <TabsTrigger className="w-full" value="teams">
             Teams
           </TabsTrigger>
+          <TabsTrigger className="w-full" value="analytics">
+            Analytics
+          </TabsTrigger>
           <TabsTrigger className="w-full" value="roles">
             Roles
           </TabsTrigger>
@@ -171,7 +171,7 @@ export default function Organiser() {
                     <div className="flex flex-col items-center space-y-2">
                       <h3 className="text-xl font-semibold text-gray-200">Teams Confirmed</h3>
                       <span className="text-4xl font-bold text-purple-400 animate-pulse">
-                        {confirmedTeams}
+                        {statistics.data?.teamsConfirmed ?? 0}
                       </span>
                     </div>
                   </div>
@@ -236,6 +236,15 @@ export default function Organiser() {
             )}
           </div>
           <div></div>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <div className="w-full">
+            <h1 className="py-10 text-center text-4xl font-bold">Analytics Dashboard</h1>
+          </div>
+          <div className="w-full py-12">
+
+          </div>
         </TabsContent>
 
         <TabsContent value="roles">

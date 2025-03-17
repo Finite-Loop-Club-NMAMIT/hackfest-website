@@ -4,13 +4,14 @@ import {
   DialogContent,
   DialogHeader,
 } from "../ui/dialog";
-import { FunctionComponent, useEffect, useState } from "react";
+import type { FunctionComponent } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { api } from "~/utils/api";
 import { Input } from "../ui/input";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { addJudgeZ } from "~/server/schema/zod-schema";
+import { type z } from "zod";
+import { type addJudgeZ } from "~/server/schema/zod-schema";
 import {
   Form,
   FormControl,
@@ -28,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { JudgeType, Tracks, User } from "@prisma/client";
+import type { JudgeType, User } from "@prisma/client";
 import { ScrollArea } from "../ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ChevronDown } from "lucide-react";
@@ -158,7 +159,7 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
                                     variant="ghost"
                                     className={`h-max w-full justify-start text-wrap text-start font-normal ${userId === user.id ? "bg-accent text-accent-foreground group-hover:bg-inherit group-hover:text-inherit group-hover:hover:bg-accent group-hover:hover:text-accent-foreground" : ""}`}
                                     key={user.id}
-                                    onClick={(e) => {
+                                    onClick={(_e) => {
                                       setUserId(user.id);
                                       form.setValue("userId", user.id);
                                       setUserName(user.name);
@@ -202,11 +203,10 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
                             <SelectItem value="DAY1">DAY1</SelectItem>
                             <SelectItem value="DAY2">DAY2</SelectItem>
                             <SelectItem value="DAY3">DAY3</SelectItem>
-
-                            {/* <SelectItem value="VALIDATOR">Validator</SelectItem>
+                            <SelectItem value="VALIDATOR">Validator</SelectItem>
                             <SelectItem value="SUPER_VALIDATOR">
                               Super Validator
-                            </SelectItem> */}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -265,7 +265,7 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
           </Form>
         </DialogContent>
       </Dialog>
-      {/* <JudgesTable data={judgesData} refetch={judgesRefetch} /> */}
+      <JudgesTable data={judgesData} refetch={judgesRefetch} />
     </>
   );
 };

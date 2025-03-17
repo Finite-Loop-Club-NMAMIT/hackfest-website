@@ -533,25 +533,54 @@ export const teamRouter = createTRPCRouter({
     const allTeams = await ctx.db.team.findMany({
       include: {
         Members: {
-          include: {
-            College: true,
+          select: {
+            id: true,
+            name: true,
+            College: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
       },
     });
 
+    // Get unique states from the college table
+    const collegeStates = await ctx.db.college.findMany({
+      select: {
+        state: true
+      },
+    });
+
+    const team = await ctx.db.team.findMany({
+      select: {
+        id: true,
+        isComplete: true,
+      },
+      where: {
+        isComplete: true,
+      },
+    });
     // Count stats
+    const teamsConfirmed = team.length;
     const uniqueStates = new Set();
     const uniqueColleges = new Set();
     let internalCount = 0;
     let externalCount = 0;
+    let totalParticipants = 0;
     
+    // Add states from colleges to uniqueStates set
+    collegeStates.forEach(college => {
+      if (college.state && typeof college.state === 'string' && college.state.trim() !== '') {
+        uniqueStates.add(college.state);
+      }
+    });
+
     allTeams.forEach(team => {
-      team.Members?.forEach(member => {
-        if (member.state) uniqueStates.add(member.state);
-        if (member.College?.name) uniqueColleges.add(member.College.name);
-        
-        // Count internal vs external participants
+      team.Members.forEach(member => {
+        totalParticipants++;        
+        if (member.College?.name) uniqueColleges.add(member.College.name);        
         if (member.College?.name === 'NMAM Institute of Technology') {
           internalCount++;
         } else {
@@ -564,7 +593,10 @@ export const teamRouter = createTRPCRouter({
       uniqueStatesCount: uniqueStates.size,
       uniqueCollegesCount: uniqueColleges.size,
       internalCount,
-      externalCount
+      externalCount,
+      totalParticipants,
+      teamsConfirmed,
+      states: Array.from(uniqueStates)
     };
   }),
 });

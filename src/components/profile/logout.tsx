@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
 import { Button } from "../ui/button";

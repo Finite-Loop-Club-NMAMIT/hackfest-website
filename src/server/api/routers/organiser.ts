@@ -6,7 +6,7 @@ import { addJudgeZ } from "~/server/schema/zod-schema";
 
 export const organiserRouter = createTRPCRouter({
   getJudgesList: adminProcedure.query(async ({ ctx }) => {
-    return await ctx.db.judges.findMany({
+    return await ctx.db.judge.findMany({
       include: {
         User: true,
       },
@@ -18,11 +18,11 @@ export const organiserRouter = createTRPCRouter({
         id: input.userId,
       },
       include: {
-        Judges: true,
+        Judge: true,
       },
     });
 
-    if (!user?.Judges) {
+    if (!user?.Judge) {
       await ctx.db.user.update({
         where: {
           id: input.userId,
@@ -31,9 +31,9 @@ export const organiserRouter = createTRPCRouter({
           role: "JUDGE",
         },
       });
-      await ctx.db.judges.create({
+      await ctx.db.judge.create({
         data: {
-          userId: input.userId,
+          id: input.userId,
           type: input.type,
         },
       });
@@ -46,9 +46,9 @@ export const organiserRouter = createTRPCRouter({
           role: "JUDGE",
         },
       });
-      await ctx.db.judges.update({
+      await ctx.db.judge.update({
         where: {
-          userId: input.userId,
+          id: input.userId,
         },
         data: {
           type: input.type,
@@ -63,9 +63,9 @@ export const organiserRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      await ctx.db.judges.delete({
+      await ctx.db.judge.delete({
         where: {
-          userId: input.userId,
+          id: input.userId,
         },
       });
       await ctx.db.user.update({

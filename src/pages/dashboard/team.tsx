@@ -2,7 +2,7 @@ import DashboardLayout from "~/components/layout/dashboardLayout";
 import FinalParticipantsTable from "~/components/teamDashboard/finalParticipantsTable";
 import { api } from "~/utils/api";
 import { Input } from "~/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Spinner from "~/components/spinner";
 import {
   DropdownMenu,
@@ -20,11 +20,27 @@ import NotFound from "../404";
 export default function Team() {
   const res = api.team.getTeamsList.useQuery();
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [judgeSearchQuery, setJudgeSearchQuery] = useState<string>("");
+  const [isJudgeDropdownOpen, setIsJudgeDropdownOpen] = useState(false);
+  const judgeInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedTeams, setSelectedTeams] = useState(res.data);
   const [paymentQuery, setPaymentQuery] = useState("ALL");
+  const [selectedJudge, setSelectedJudge] = useState("ALL");
 
   const { data, status } = useSession();
+
+  // Simulated judges data (replace with actual API call if available)
+  const judges = [
+    { id: "1", name: "Judge One" },
+    { id: "2", name: "Judge Two" },
+    { id: "3", name: "Judge Three" },
+    { id: "4", name: "Judge Four" },
+  ];
+
+  const filteredJudges = judges.filter(judge => 
+    judge.name.toLowerCase().includes(judgeSearchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     setSelectedTeams(() => {
@@ -43,6 +59,14 @@ export default function Team() {
       );
     });
   }, [res.data, searchQuery, paymentQuery, res]);
+
+  // Handler to prevent dropdown from closing when searching judges
+  const handleJudgeSearchClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (judgeInputRef.current) {
+      judgeInputRef.current.focus();
+    }
+  };
 
   if (status === "loading")
     return (
@@ -109,6 +133,52 @@ export default function Team() {
                   Failed
                 </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {/* Judge Selection Dropdown */}
+          <DropdownMenu open={isJudgeDropdownOpen} onOpenChange={setIsJudgeDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="bg-gradient-to-r from-gray-800 to-gray-700 text-gray-200 border-gray-600 hover:bg-gray-700 transition-all duration-300 hover:border-gray-500">
+                {selectedJudge === "ALL" ? "Select Judge" : `Judge: ${selectedJudge}`}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-gray-800 border-gray-700 text-gray-200" onClick={e => e.stopPropagation()}>
+              <DropdownMenuLabel>Assign Judge</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-gray-700" />
+              <div className="px-2 py-2" onClick={handleJudgeSearchClick}>
+                <Input
+                  ref={judgeInputRef}
+                  placeholder="Search Judges"
+                  className="w-full bg-gray-700 border-gray-600 text-gray-300 focus:border-gray-500"
+                  value={judgeSearchQuery}
+                  onChange={(e) => setJudgeSearchQuery(e.target.value)}
+                  onClick={e => e.stopPropagation()}
+                />
+              </div>
+              <DropdownMenuSeparator className="bg-gray-700" />
+              <div className="max-h-[200px] overflow-y-auto">
+                <DropdownMenuRadioGroup 
+                  value={selectedJudge} 
+                  onValueChange={(value) => {
+                    setSelectedJudge(value);
+                    setIsJudgeDropdownOpen(false);
+                  }}
+                >
+                  <DropdownMenuRadioItem value="ALL" className="hover:bg-gray-700">
+                    All Judges
+                  </DropdownMenuRadioItem>
+                  {filteredJudges.map(judge => (
+                    <DropdownMenuRadioItem 
+                      key={judge.id} 
+                      value={judge.name}
+                      className="hover:bg-gray-700"
+                    >
+                      {judge.name}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

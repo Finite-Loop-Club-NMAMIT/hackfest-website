@@ -21,9 +21,9 @@ export const validatorRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       await ctx.db.$transaction(async (db) => {
         const user = ctx.session.user;
-        const judge = await db.judges.findFirst({
+        const judge = await db.judge.findFirst({
           where: {
-            userId: user.id,
+            id: user.id,
           },
         });
         const criteria = await db.criteria.findUnique({
@@ -41,7 +41,7 @@ export const validatorRouter = createTRPCRouter({
         const oldScoreForCriteria = await db.scores.findFirst({
           where: {
             Judge: {
-              userId: user.id,
+              id: user.id,
             },
             criteriaId: input.criteriaId,
             teamId: input.teamId,
@@ -82,7 +82,7 @@ export const validatorRouter = createTRPCRouter({
             teamId_criteriaId_judgeId: {
               criteriaId: input.criteriaId,
               teamId: input.teamId,
-              judgeId: judge.userId,
+              judgeId: judge.id,
             },
           },
           data: {
