@@ -513,7 +513,7 @@ export const teamRouter = createTRPCRouter({
         },
       });
     }),
-  getTop60: publicProcedure.query(async ({ ctx }) => {
+  getTop60: adminProcedure.query(async ({ ctx }) => {
     return ctx.db.team.findMany({
       where: {
         teamProgress: "SELECTED",

@@ -363,19 +363,21 @@ function PaymentButton() {
               }}
             >
               <FaMoneyBill className="size-6" />
-              Pay Fees
+              Pay Registration Fee
             </Button>
           );
-        }else{
-          return <Badge
-            variant={"default"}
-            className="mx-auto mt-6 w-fit bg-green-500 text-center opacity-80"
-          >
-            Payment{" "}
-            {session.data?.user.team?.paymentStatus === "PAID"
-              ? "success"
-              : "requires verification"}
-          </Badge>
+        } else {
+          return (
+            <Badge
+              variant={"default"}
+              className="mx-auto mt-6 w-fit bg-green-500 text-center opacity-80"
+            >
+              Payment{" "}
+              {session.data?.user.team?.paymentStatus === "PAID"
+                ? "success"
+                : "requires verification"}
+            </Badge>
+          );
         }
       } else {
         if (
