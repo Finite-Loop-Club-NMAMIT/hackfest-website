@@ -1,38 +1,12 @@
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-} from "../ui/dialog";
 import type { FunctionComponent } from "react";
-import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
+import { useEffect, useState, useRef } from "react";
 import { api } from "~/utils/api";
-import { Input } from "../ui/input";
 import { useForm } from "react-hook-form";
 import { type z } from "zod";
 import { type addJudgeZ } from "~/server/schema/zod-schema";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form";
 import { toast } from "sonner";
 import JudgesTable from "./judgesTable";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import type { JudgeType, User } from "@prisma/client";
-import { ScrollArea } from "../ui/scroll-area";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { ChevronDown } from "lucide-react";
+import type { Judge, JudgeType, User } from "@prisma/client";
 
 interface Props {
   users: User[] | undefined;
@@ -41,11 +15,15 @@ interface Props {
 const JudgePanel: FunctionComponent<Props> = ({ users }) => {
   const [judgeType, setJudgeType] = useState<JudgeType>("VALIDATOR");
   const [userQuery, setUserQuery] = useState<string>("");
-  const [openUserList, setOpenUserList] = useState<boolean>(false);
-
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  
   const [selectedUsers, setSelectedUsers] = useState(users);
   const [userName, setUserName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const { data: judgesData, refetch: judgesRefetch } =
     api.organiser.getJudgesList.useQuery();
@@ -80,6 +58,7 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
     await judgesRefetch();
     toast.dismiss();
     toast.success("Added judge successfully");
+    setIsModalOpen(false);
   }
 
   useEffect(() => {
@@ -93,20 +72,68 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
     });
   }, [users, userQuery]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Close modal when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        setIsModalOpen(false);
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isModalOpen]);
+
   return (
     <>
       <div className="w-full border-b">
         <h1 className="py-10 text-center text-4xl font-bold">Judges</h1>
       </div>
-      <Dialog>
-        <DialogTrigger className="my-5 flex w-full items-center justify-center">
-          <button className="rounded-lg bg-white px-4 py-2 text-black">
-            + Add Judge
-          </button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>Add Judge</DialogHeader>
-          <Form {...form}>
+      
+      <div className="my-5 flex w-full items-center justify-center">
+        <button 
+          className="rounded-lg bg-white px-4 py-2 text-black"
+          onClick={() => setIsModalOpen(true)}
+        >
+          + Add Judge
+        </button>
+      </div>
+      
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div 
+            ref={modalRef}
+            className="w-full max-w-md rounded-lg bg-background p-6"
+          >
+            <div className="mb-4 flex justify-between">
+              <h2 className="text-xl font-bold">Add Judge</h2>
+              <button 
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => setIsModalOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+            
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -114,158 +141,106 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
               }}
               className="flex flex-col gap-4"
             >
-              <FormField
-                control={form.control}
-                name="userId"
-                render={({ field }) => {
-                  return (
-                    <FormItem className="w-full">
-                      <FormLabel>User Id/Name</FormLabel>
-                      <FormControl>
-                        <Popover
-                          open={openUserList}
-                          onOpenChange={setOpenUserList}
-                        >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              aria-expanded={openUserList}
-                              className="w-full justify-between overflow-hidden truncate dark:text-white"
-                            >
-                              {userName ? userName : "Select user"}
-                              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="px-3">
-                            <Input
-                              placeholder="Enter User ID/Name"
-                              className="text-white"
-                              value={userQuery}
-                              defaultValue={field.value}
-                              onChange={(e) => {
-                                setUserQuery(e.target.value);
-                              }}
-                            />
-                            <ScrollArea className="h-72 pt-5">
-                              <div className="group">
-                                {selectedUsers?.length === 0 && (
-                                  <div className="text-center text-gray-500">
-                                    No users found
-                                  </div>
-                                )}
-                                {selectedUsers?.map((user) => (
-                                  <Button
-                                    variant="ghost"
-                                    className={`h-max w-full justify-start text-wrap text-start font-normal ${userId === user.id ? "bg-accent text-accent-foreground group-hover:bg-inherit group-hover:text-inherit group-hover:hover:bg-accent group-hover:hover:text-accent-foreground" : ""}`}
-                                    key={user.id}
-                                    onClick={(_e) => {
-                                      setUserId(user.id);
-                                      form.setValue("userId", user.id);
-                                      setUserName(user.name);
-                                      setOpenUserList(false);
-                                      setUserQuery("");
-                                    }}
-                                  >
-                                    {user.name}
-                                  </Button>
-                                ))}
-                              </div>
-                            </ScrollArea>
-                          </PopoverContent>
-                        </Popover>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              ></FormField>
+              {/* User Selection */}
+              <div className="w-full">
+                <label className="mb-2 block text-sm font-medium">User Id/Name</label>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex w-full justify-between rounded-md border border-gray-300 bg-transparent px-4 py-2 text-left focus:border-blue-500 focus:outline-none"
+                  >
+                    <span className="block truncate">{userName ? userName : "Select user"}</span>
+                    <span className="pointer-events-none">▼</span>
+                  </button>
+                  
+                  {isDropdownOpen && (
+                    <div className="absolute z-10 mt-1 max-h-96 w-full overflow-auto rounded-md border border-gray-300 bg-background shadow-lg">
+                      <div className="p-2">
+                        <input
+                          type="text"
+                          placeholder="Enter User ID/Name"
+                          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                          value={userQuery}
+                          onChange={(e) => setUserQuery(e.target.value)}
+                          autoFocus
+                        />
+                      </div>
+                      
+                      <div className="max-h-72 overflow-y-auto">
+                        {selectedUsers?.length === 0 && (
+                          <div className="px-3 py-2 text-center text-gray-500">
+                            No users found
+                          </div>
+                        )}
+                        {selectedUsers?.map((user) => (
+                          <div
+                            key={user.id}
+                            className={`cursor-pointer px-3 py-2 hover:bg-gray-100 ${
+                              userId === user.id ? "bg-gray-200" : ""
+                            }`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setUserId(user.id);
+                              form.setValue("userId", user.id);
+                              setUserName(user.name);
+                              setTimeout(() => {
+                                setIsDropdownOpen(false);
+                                setUserQuery("");
+                              }, 100);
+                            }}
+                          >
+                            {user.name}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {form.formState.errors.userId && (
+                  <p className="mt-1 text-sm text-red-500">{form.formState.errors.userId.message}</p>
+                )}
+              </div>
 
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => {
-                  return (
-                    <FormItem className="w-full">
-                      <FormLabel>Judge Type</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={(e) => {
-                            field.onChange(e);
-                            setJudgeType(e as JudgeType);
-                          }}
-                          defaultValue={field.value}
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder={field.value} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="DAY1">DAY1</SelectItem>
-                            <SelectItem value="DAY2">DAY2</SelectItem>
-                            <SelectItem value="DAY3">DAY3</SelectItem>
-                            <SelectItem value="VALIDATOR">Validator</SelectItem>
-                            <SelectItem value="SUPER_VALIDATOR">
-                              Super Validator
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              ></FormField>
+              {/* Judge Type Selection */}
+              <div className="w-full">
+                <label className="mb-2 block text-sm font-medium">Judge Type</label>
+                <select
+                  className="w-full rounded-md bg-transparent px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  value={form.watch("type")}
+                  onChange={(e) => {
+                    const value = e.target.value as JudgeType;
+                    form.setValue("type", value);
+                    setJudgeType(value);
+                  }}
+                >
+                  <option className="bg-black/50 text-white" value="DAY1">DAY1</option>
+                  <option className="bg-black/50 text-white" value="DAY2">DAY2</option>
+                  <option className="bg-black/50 text-white" value="DAY3">DAY3</option>
+                  <option className="bg-black/50 text-white" value="VALIDATOR">Validator</option>
+                  <option className="bg-black/50 text-white" value="SUPER_VALIDATOR">Super Validator</option>
+                </select>
+                {form.formState.errors.type && (
+                  <p className="mt-1 text-sm text-red-500">{form.formState.errors.type.message}</p>
+                )}
+              </div>
 
-              {/* <FormField
-                control={form.control}
-                name="track"
-                render={({ field }) => {
-                  return (
-                    <FormItem className="w-full">
-                      <FormLabel>Tracks</FormLabel>
-                      <FormControl>
-                        <Select
-                          disabled={judgeType === "VALIDATOR"}
-                          onValueChange={field.onChange}
-                          value={
-                            judgeType !== "SUPER_VALIDATOR" && judgeType !== "VALIDATOR" 
-                              ? "ALL"
-                              : form.getValues().track
-                          }
-                          defaultValue={field.value}
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder={field.value} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ALL">ALL</SelectItem>
-                            <SelectItem value="FINTECH">FINTECH</SelectItem>
-                            <SelectItem value="SUSTAINABLE_DEVELOPMENT">
-                              SUSTAINABLE_DEVELOPMENT
-                            </SelectItem>
-                            <SelectItem value="HEALTHCARE">
-                              HEALTHCARE
-                            </SelectItem>
-                            <SelectItem value="METAVERSE">METAVERSE</SelectItem>
-                            <SelectItem value="LOGISTICS">LOGISTICS</SelectItem>
-                            <SelectItem value="OPEN_INNOVATION">
-                              OPEN_INNOVATION
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              ></FormField> */}
-
-              <Button type="submit">Add Judge</Button>
+              <button 
+                type="submit"
+                className="mt-4 rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+              >
+                Add Judge
+              </button>
             </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-      <JudgesTable data={judgesData} refetch={judgesRefetch} />
+          </div>
+        </div>
+      )}
+      
+      <JudgesTable 
+        data={judgesData as unknown as (Omit<Judge, 'User'> & { User: User })[] | null} 
+        refetch={judgesRefetch} 
+      />
     </>
   );
 };

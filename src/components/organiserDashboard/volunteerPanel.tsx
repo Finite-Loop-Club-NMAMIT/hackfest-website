@@ -4,32 +4,13 @@ import {
     DialogContent,
     DialogHeader,
   } from "../ui/dialog";
-  import { FunctionComponent, useEffect, useState } from "react";
+  import { type FunctionComponent, useEffect, useState } from "react";
   import { Button } from "../ui/button";
   import { api } from "~/utils/api";
-  import { Input } from "../ui/input";
-  import { useForm } from "react-hook-form";
-  import { z } from "zod";
-  import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-  } from "../ui/form";
   import { toast } from "sonner";
   import VolunteersTable from "./volunteerTable";
-  import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "../ui/select";
-  import { JudgeType, Tracks, User } from "@prisma/client";
-  import { ScrollArea } from "../ui/scroll-area";
-  import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+  import type { User } from "@prisma/client";
+  import { Popover, PopoverTrigger } from "../ui/popover";
   import { ChevronDown } from "lucide-react";
   
   interface Props {
@@ -43,6 +24,7 @@ import {
     const [selectedUsers, setSelectedUsers] = useState(users);
     const [userName, setUserName] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
+    const [open, setOpen] = useState(false); // Add this state to control the main dialog
   
     const { data: volunteersData, refetch: volunteersRefetch } =
       api.organiser.getVolunteerList.useQuery();
@@ -51,7 +33,9 @@ import {
       onSuccess: async () => {
         toast.dismiss("addingVolunteer")
         toast.success("Added Volunteer")
-
+        setOpen(false); // Close the dialog on success
+        setUserId(null); // Reset the selected user
+        setUserName(null);
         await volunteersRefetch();
       },
       onError: async () => {
@@ -83,7 +67,7 @@ import {
         <div className="w-full border-b">
           <h1 className="py-10 text-center text-4xl font-bold">Volunteers</h1>
         </div>
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger className="my-5 flex w-full items-center justify-center">
             <button className="rounded-lg bg-white px-4 py-2 text-black">
               + Add Volunteer
@@ -106,28 +90,35 @@ import {
                                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="px-3">
-                              <Input
-                                placeholder="Enter User ID/Name"
-                                className="text-white"
-                                value={userQuery}
-                                onChange={(e) => {
-                                  setUserQuery(e.target.value);
-                                }}
-                              />
-                              <ScrollArea className="h-72 pt-5">
+                            <div 
+                              className={`absolute top-full left-0 mt-1 w-full rounded-md border border-gray-300 bg-white dark:bg-gray-800 shadow-lg z-50 ${!openUserList ? 'hidden' : ''}`}
+                            >
+                              <div className="p-3">
+                                <input
+                                  placeholder="Enter User ID/Name"
+                                  className="w-full border dark:border-gray-600 rounded p-2 text-black dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  value={userQuery}
+                                  onChange={(e) => {
+                                    setUserQuery(e.target.value);
+                                  }}
+                                />
+                              </div>
+                              <div className="max-h-72 overflow-y-auto pt-2 px-3 pb-3">
                                 <div className="group">
                                   {selectedUsers?.length === 0 && (
-                                    <div className="text-center text-gray-500">
+                                    <div className="text-center py-4 text-gray-500 dark:text-gray-400">
                                       No users found
                                     </div>
                                   )}
                                   {selectedUsers?.map((user) => (
-                                    <Button
-                                      variant="ghost"
-                                      className={`h-max w-full justify-start text-wrap text-start font-normal ${userId === user.id ? "bg-accent text-accent-foreground group-hover:bg-inherit group-hover:text-inherit group-hover:hover:bg-accent group-hover:hover:text-accent-foreground" : ""}`}
+                                    <button
+                                      className={`h-max w-full text-left px-3 py-2 rounded-md mb-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                                        userId === user.id 
+                                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" 
+                                          : "text-gray-800 dark:text-gray-200"
+                                      }`}
                                       key={user.id}
-                                      onClick={(e) => {
+                                      onClick={(_e) => {
                                         setUserId(user.id);
                                         setUserName(user.name);
                                         setOpenUserList(false);
@@ -135,11 +126,11 @@ import {
                                       }}
                                     >
                                       {user.name}
-                                    </Button>
+                                    </button>
                                   ))}
                                 </div>
-                              </ScrollArea>
-                            </PopoverContent>
+                              </div>
+                            </div>
                           </Popover>
                           <Button onClick={async () => {await addVolunteer.mutateAsync({
                             id: userId ? userId : ''
@@ -154,4 +145,3 @@ import {
   };
   
   export default VolunteerPanel;
-  

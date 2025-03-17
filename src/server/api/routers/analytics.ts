@@ -91,6 +91,5 @@ export const analyticsRouter = createTRPCRouter({
           lastPing: currentDateAndTime,
         },
       });
-    }),
-    
+    }),    
 });

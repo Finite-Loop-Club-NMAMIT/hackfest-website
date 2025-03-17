@@ -54,6 +54,8 @@
     "clsx": "^2.1.0",
     "cmdk": "^0.2.1",
     "command": "^0.0.1",
+    "d3": "^7.9.0",
+    "date-fns": "^4.1.0",
     "dialog": "^0.3.1",
     "embla-carousel-react": "^8.0.0",
     "formidable": "^3.5.1",
@@ -79,6 +81,7 @@
     "react-pdf": "^9.2.1",
     "react-popover": "^0.5.10",
     "react-zxing": "^2.0.0",
+    "recharts": "^2.15.1",
     "shadcn-ui": "^0.8.0",
     "sonner": "^1.4.0",
     "superjson": "^2.2.1",
@@ -91,6 +94,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/eslint": "^8.56.2",
     "@types/formidable": "^3.4.5",
     "@types/google-libphonenumber": "^7.4.30",

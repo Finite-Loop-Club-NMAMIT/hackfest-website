@@ -63,19 +63,46 @@ export const organiserRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      await ctx.db.judge.delete({
-        where: {
-          id: input.userId,
-        },
-      });
-      await ctx.db.user.update({
-        where: {
-          id: input.userId,
-        },
-        data: {
-          role: "PARTICIPANT",
-        },
-      });
+      try {
+        // First check if the judge exists
+        const judge = await ctx.db.judge.findUnique({
+          where: {
+            id: input.userId,
+          },
+        });
+        
+        if (!judge) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Judge not found",
+          });
+        }
+        
+        // Proceed with deletion in transaction to ensure both operations succeed or fail together
+        return await ctx.db.$transaction(async (tx) => {
+          await tx.judge.delete({
+            where: {
+              id: input.userId,
+            },
+          });
+          
+          return await tx.user.update({
+            where: {
+              id: input.userId,
+            },
+            data: {
+              role: "PARTICIPANT",
+            },
+          });
+        });
+      } catch (error) {
+        console.error("Error removing judge:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "Failed to delete judge",
+          cause: error,
+        });
+      }
     }),
   getVolunteerList: adminProcedure.query(async ({ ctx }) => {
     return await ctx.db.user.findMany({

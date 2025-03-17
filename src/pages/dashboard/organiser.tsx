@@ -1,12 +1,6 @@
 import DashboardLayout from "~/components/layout/dashboardLayout";
 import ParticipantsTable from "~/components/participantsTable";
 import { api } from "~/utils/api";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../components/ui/tabs";
 import { useEffect, useState } from "react";
 import Spinner from "~/components/spinner";
 import { useSession } from "next-auth/react";
@@ -15,7 +9,7 @@ import JudgePanel from "~/components/organiserDashboard/judgePanel";
 import VolunteerPanel from "~/components/organiserDashboard/volunteerPanel";
 import FilterSheet from "~/components/organiserDashboard/filterSheet";
 import GithubSheet from "~/components/organiserDashboard/githubSheet";
-
+import Analytics from "~/components/organiserDashboard/analytics";
 export default function Organiser() {
   const res = api.team.getTeamsList.useQuery();
   const users = api.user.getAllUsers.useQuery().data;
@@ -25,6 +19,7 @@ export default function Organiser() {
 
   const allTeams = res.data;
   const [selectedTeams, setSelectedTeams] = useState(top15);
+  const [activeTab, setActiveTab] = useState("teams");
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [paymentQuery, setPaymentQuery] = useState("ALL");
@@ -46,6 +41,23 @@ export default function Organiser() {
   };
 
   const { data, status } = useSession();
+
+  // Initialize activeTab from localStorage when the component mounts
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedTab = localStorage.getItem('organiserActiveTab');
+      if (storedTab && ['teams', 'analytics', 'roles'].includes(storedTab)) {
+        setActiveTab(storedTab);
+      }
+    }
+  }, []);
+
+  // Save activeTab to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('organiserActiveTab', activeTab);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     setSelectedTeams(() => {
@@ -121,22 +133,47 @@ export default function Organiser() {
 
   return (
     <DashboardLayout>
-      <Tabs defaultValue="teams" className="w-full my-14">
-        <TabsList className="flex flex-row items-center justify-center">
-          <TabsTrigger className="w-full" value="teams">
+      <div className="w-full my-14">
+        {/* Custom Tabs Navigation */}
+        <div className="flex flex-row items-center justify-center border-b">
+          <button
+            onClick={() => setActiveTab("teams")}
+            className={`w-full py-2 px-4 text-center transition-colors ${
+              activeTab === "teams" 
+                ? "border-b-2 border-purple-500 font-bold" 
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
             Teams
-          </TabsTrigger>
-          <TabsTrigger className="w-full" value="analytics">
+          </button>
+          <button
+            onClick={() => setActiveTab("analytics")}
+            className={`w-full py-2 px-4 text-center transition-colors ${
+              activeTab === "analytics" 
+                ? "border-b-2 border-purple-500 font-bold" 
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
             Analytics
-          </TabsTrigger>
-          <TabsTrigger className="w-full" value="roles">
+          </button>
+          <button
+            onClick={() => setActiveTab("roles")}
+            className={`w-full py-2 px-4 text-center transition-colors ${
+              activeTab === "roles" 
+                ? "border-b-2 border-purple-500 font-bold" 
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
             Roles
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="teams">
-          <div className="w-full">
-            <h1 className="py-10 text-center text-4xl font-bold">Organiser</h1>
-          </div>
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "teams" && (
+          <div>
+            <div className="w-full">
+              <h1 className="py-10 text-center text-4xl font-bold">Organiser</h1>
+            </div>
             <div className="w-full py-12">
               <div className="mx-auto max-w-7xl px-4">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-3 animate-fade-in">
@@ -218,40 +255,44 @@ export default function Organiser() {
                 </div>
               </div>
             </div>
-          <div className="m-auto overflow-x-scroll md:max-w-screen-xl">
-            <h1 className="my-8 text-center text-2xl font-bold">
-              Participants
-            </h1>
-            <div className="my-4 flex h-full w-full flex-col items-center justify-around gap-3 md:flex-row">
-              <GithubSheet />
-              <FilterSheet {...filterSheetProps} />
+            <div className="m-auto overflow-x-scroll md:max-w-screen-xl">
+              <h1 className="my-8 text-center text-2xl font-bold">
+                Participants
+              </h1>
+              <div className="my-4 flex h-full w-full flex-col items-center justify-around gap-3 md:flex-row">
+                <GithubSheet />
+                <FilterSheet {...filterSheetProps} />
+              </div>
+              {!res ? (
+                <Spinner size="large" />
+              ) : (
+                <ParticipantsTable
+                  data={selectedTeams}
+                  dataRefecth={res.refetch}
+                />
+              )}
             </div>
-            {!res ? (
-              <Spinner size="large" />
-            ) : (
-              <ParticipantsTable
-                data={selectedTeams}
-                dataRefecth={res.refetch}
-              />
-            )}
           </div>
-          <div></div>
-        </TabsContent>
+        )}
 
-        <TabsContent value="analytics">
-          <div className="w-full">
-            <h1 className="py-10 text-center text-4xl font-bold">Analytics Dashboard</h1>
+        {activeTab === "analytics" && (
+          <div>
+            <div className="w-full">
+              <h1 className="py-10 text-center text-4xl font-bold">Analytics Dashboard</h1>
+            </div>
+            <div className="w-full py-12">
+              <Analytics />
+            </div>
           </div>
-          <div className="w-full py-12">
+        )}
 
+        {activeTab === "roles" && (
+          <div>
+            <JudgePanel users={users} />
+            <VolunteerPanel users={users} />
           </div>
-        </TabsContent>
-
-        <TabsContent value="roles">
-          <JudgePanel users={users} />
-          <VolunteerPanel users={users} />
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </DashboardLayout>
   );
 }

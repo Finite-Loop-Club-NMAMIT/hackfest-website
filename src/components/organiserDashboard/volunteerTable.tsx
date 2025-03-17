@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import type { FunctionComponent } from "react";
 import {
   TableCell,
   TableHead,
@@ -7,9 +7,8 @@ import {
   TableBody,
   TableHeader,
 } from "~/components/ui/table";
-import Spinner from "../spinner";
 import { api } from "~/utils/api";
-import { JudgeType, Judges, Tracks, User } from "@prisma/client";
+import type { User } from "@prisma/client";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 
@@ -62,7 +61,7 @@ const VolunteersTable: FunctionComponent<TableProps> = ({ data, refetch }) => {
                     <TableCell>
                       <Button
                         onClick={() => {
-                          toast.loading("Deleting judge...");
+                          toast.loading("Deleting volunteer...");
                           deleteVolunteer.mutate({
                             userId: volunteer.id,
                           });

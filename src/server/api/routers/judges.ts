@@ -14,7 +14,7 @@ export const JudgeRouter = createTRPCRouter({
         Scores: {
           where: {
             Judge: {
-              userId: user.id,
+              id: user.id,
             },
           },
         },
@@ -50,7 +50,7 @@ export const JudgeRouter = createTRPCRouter({
         Scores: {
           where: {
             Judge: {
-              userId: user.id,
+              id: user.id,
             },
           },
         },
@@ -65,10 +65,12 @@ export const JudgeRouter = createTRPCRouter({
   }),
   getDay: judgeProcedure.query(async ({ ctx }) => {
     const user = ctx.session.user;
-    const judges = await ctx.db.judges.findFirst({
+    const judges = await ctx.db.judge.findFirst({
       where: {
         User: {
-          id: user.id,
+          some: {
+            id: user.id,
+          },
         },
       },
       select: {
@@ -89,9 +91,9 @@ export const JudgeRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       await ctx.db.$transaction(async (db) => {
         const user = ctx.session.user;
-        const judge = await db.judges.findFirst({
+        const judge = await db.judge.findFirst({
           where: {
-            userId: user.id,
+            id: user.id,
           },
         });
         const criteria = await db.criteria.findUnique({
@@ -113,7 +115,7 @@ export const JudgeRouter = createTRPCRouter({
         const oldScoreForCriteria = await db.scores.findFirst({
           where: {
             Judge: {
-              userId: user.id,
+              id: user.id,
             },
             criteriaId: input.criteriaId,
             teamId: input.teamId,
@@ -144,7 +146,7 @@ export const JudgeRouter = createTRPCRouter({
             teamId_criteriaId_judgeId: {
               criteriaId: input.criteriaId,
               teamId: input.teamId,
-              judgeId: judge.userId,
+              judgeId: judge.id,
             },
           },
           data: {
