@@ -54,12 +54,9 @@
     "clsx": "^2.1.0",
     "cmdk": "^0.2.1",
     "command": "^0.0.1",
-<<<<<<< HEAD
     "d3": "^7.9.0",
     "date-fns": "^4.1.0",
-=======
     "csv-stringify": "^6.5.2",
->>>>>>> eb0556f8348b49ab06b626fb191a6771e0762b2f
     "dialog": "^0.3.1",
     "embla-carousel-react": "^8.0.0",
     "formidable": "^3.5.1",
