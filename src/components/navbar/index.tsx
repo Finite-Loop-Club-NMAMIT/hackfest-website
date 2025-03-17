@@ -46,7 +46,7 @@ const NavBar = () => {
             </div>
 
             {/* Mobile Nav toggle */}
-            <div className="flex gap-6 md:hidden">
+            <div className="flex gap-2 md:hidden">
               <AuthButtons />
               <button
                 onClick={() => setIsOpen(!isOpen)}

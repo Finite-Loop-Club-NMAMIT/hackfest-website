@@ -14,6 +14,7 @@ import { ideaRouter } from "./routers/idea";
 import { analyticsRouter } from "./routers/analytics";
 import { auditLog } from "./routers/auditlog";
 import { paymentRouter } from "./routers/payment";
+import { downloadData } from "./routers/downloaddata";
 
 /**
  * This is the primary router for your server.
@@ -36,6 +37,7 @@ export const appRouter = createTRPCRouter({
   remark: remarkRouter,
   idea: ideaRouter,
   payment: paymentRouter,
+  downloadData: downloadData,
 });
 
 // export type definition of API

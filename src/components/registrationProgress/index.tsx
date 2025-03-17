@@ -70,6 +70,9 @@ export default function RegisterCards({
               You have already submitted your idea. We wish you to be in the top
               60 teams.
             </p>
+            <p className="text-sm text-orange-500">
+              Note: Top 60 teams will be announced on 27 March 2025{" "}
+            </p>
             <div className="mt-4">
               <svg
                 className="h-16 w-16 animate-bounce text-yellow-400"
@@ -177,6 +180,9 @@ export default function RegisterCards({
                 <p className="p-4 text-center text-sm text-white md:text-lg">
                   You have already submitted your idea. We wish you to be in the
                   top 60 teams.
+                </p>
+                <p className="text-sm text-orange-500">
+                  Note: Top 60 teams will be announced on 27 March 2025{" "}
                 </p>
                 <div className="mt-4">
                   <svg

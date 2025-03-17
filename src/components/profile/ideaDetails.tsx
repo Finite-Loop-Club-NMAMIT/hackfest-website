@@ -65,20 +65,28 @@ export default function IdeaDetails({ order }: { order: number }) {
                   width={isMobile ? 200 : 300}
                   className="mx-auto w-fit"
                 />
-                <Button variant={"outline"} onClick={() => {
-                  const url = URL.createObjectURL(pdfFile);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `${data.user.team?.name}_idea.pdf`;
-                  a.click();
-                  a.remove();
-                  URL.revokeObjectURL(url);
-                }}>Download</Button>
+                <Button
+                  variant={"outline"}
+                  onClick={() => {
+                    const url = URL.createObjectURL(pdfFile);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${data.user.team?.name}_idea.pdf`;
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  Download
+                </Button>
               </>
             )}
             <p className="w-full max-w-md px-4 text-center text-sm opacity-80 md:text-base">
               You have successfully submitted you idea. We wish you to be in the
               top <span className="font-semibold">60</span>💐
+            </p>
+            <p className="text-sm text-orange-500">
+              Note: Top 60 teams will be announced on 27 March 2025{" "}
             </p>
           </div>
         </div>
