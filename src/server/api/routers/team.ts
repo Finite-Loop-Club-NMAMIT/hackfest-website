@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   adminProcedure,
   createTRPCRouter,
+  dashboardProcedure,
   protectedProcedure,
   publicProcedure,
   teamProcedure,
@@ -395,7 +396,7 @@ export const teamRouter = createTRPCRouter({
       return team;
     }),
 
-  getTeamsList: protectedProcedure.query(async ({ ctx }) => {
+  getTeamsList: dashboardProcedure.query(async ({ ctx }) => {
     return await ctx.db.team.findMany({
       include: {
         Members: {
@@ -549,7 +550,7 @@ export const teamRouter = createTRPCRouter({
     // Get unique states from the college table
     const collegeStates = await ctx.db.college.findMany({
       select: {
-        state: true
+        state: true,
       },
     });
 
@@ -569,19 +570,23 @@ export const teamRouter = createTRPCRouter({
     let internalCount = 0;
     let externalCount = 0;
     let totalParticipants = 0;
-    
+
     // Add states from colleges to uniqueStates set
-    collegeStates.forEach(college => {
-      if (college.state && typeof college.state === 'string' && college.state.trim() !== '') {
+    collegeStates.forEach((college) => {
+      if (
+        college.state &&
+        typeof college.state === "string" &&
+        college.state.trim() !== ""
+      ) {
         uniqueStates.add(college.state);
       }
     });
 
-    allTeams.forEach(team => {
-      team.Members.forEach(member => {
-        totalParticipants++;        
-        if (member.College?.name) uniqueColleges.add(member.College.name);        
-        if (member.College?.name === 'NMAM Institute of Technology') {
+    allTeams.forEach((team) => {
+      team.Members.forEach((member) => {
+        totalParticipants++;
+        if (member.College?.name) uniqueColleges.add(member.College.name);
+        if (member.College?.name === "NMAM Institute of Technology") {
           internalCount++;
         } else {
           externalCount++;
@@ -596,7 +601,7 @@ export const teamRouter = createTRPCRouter({
       externalCount,
       totalParticipants,
       teamsConfirmed,
-      states: Array.from(uniqueStates)
+      states: Array.from(uniqueStates),
     };
   }),
 });
