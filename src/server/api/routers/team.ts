@@ -4,11 +4,10 @@ import { z } from "zod";
 import {
   adminProcedure,
   createTRPCRouter,
-  dashboardProcedure,
   protectedProcedure,
-  publicProcedure,
   teamProcedure,
 } from "~/server/api/trpc";
+import { dashboardProcedure } from "~/server/api/trpc";
 import {
   createTeamZ,
   getTeamDetailsByIdZ,

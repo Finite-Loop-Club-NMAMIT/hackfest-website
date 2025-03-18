@@ -40,9 +40,11 @@ export default function Validator() {
       allScores.forEach(score => {
         // Convert score back to star rating
         let starRating = 0;
-        if (score.score <= 3) starRating = 1;
-        else if (score.score <= 6) starRating = 2;
-        else starRating = 3;
+        if (score.score <= 2) starRating = 1;
+        else if (score.score <= 4) starRating = 2;
+        else if (score.score <= 6) starRating = 3;
+        else if (score.score <= 8) starRating = 4;
+        else starRating = 5;
         
         existingRatings[score.teamId] = starRating;
       });
@@ -61,14 +63,16 @@ export default function Validator() {
       [teamId]: rating
     }));
     
-    // Convert rating to score (1 star = 3, 2 stars = 6, 3 stars = 10)
+    // Convert rating to score (1 star = 2, 2 stars = 4, 3 stars = 6, 4 stars = 8, 5 stars = 10)
     const scoreMap = {
-      1: 3,
-      2: 6,
-      3: 10
+      1: 2,
+      2: 4,
+      3: 6,
+      4: 8,
+      5: 10
     };
     
-    const score = scoreMap[rating as 1|2|3];
+    const score = scoreMap[rating as 1|2|3|4|5];
     
     // Auto-submit on star click
     submitScore.mutate({
@@ -102,9 +106,11 @@ export default function Validator() {
     if (!score) return 0;
     
     // Convert score back to star rating
-    if (score.score <= 3) return 1;
-    if (score.score <= 6) return 2;
-    return 3;
+    if (score.score <= 2) return 1;
+    if (score.score <= 4) return 2;
+    if (score.score <= 6) return 3;
+    if (score.score <= 8) return 4;
+    return 5;
   };
 
   return (
@@ -123,7 +129,7 @@ export default function Validator() {
               Hey there {sessionData.user.name} 👋
             </span>
             <ul className="flex list-disc flex-col text-base text-gray-400 mt-4">
-              <li>Select star rating for each team (1 to 3 stars)</li>
+              <li>Select star rating for each team (1 to 5 stars)</li>
               <li>Ratings are automatically submitted when you click a star</li>
               <li>Submitted ratings will be highlighted in yellow</li>
             </ul>
@@ -172,7 +178,7 @@ export default function Validator() {
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          {[1, 2, 3].map((star) => (
+                          {[1, 2, 3, 4, 5].map((star) => (
                             <button
                               key={star}
                               onClick={() => handleStarClick(team.id, star)}
