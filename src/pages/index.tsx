@@ -59,7 +59,7 @@ export default function Home() {
     const total = Object.values(progress).reduce((acc, curr) => acc + curr, 0);
     setTotalProgress(total / SECTION_COUNT);
     console.log("TOTAL progress", totalProgress);
-  }, [progress]);
+  }, [progress, SECTION_COUNT, totalProgress]);
 
   useEffect(() => {
     if (!showContent) {

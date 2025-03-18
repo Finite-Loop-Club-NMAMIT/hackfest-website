@@ -1,12 +1,12 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
 import {
   DoubleSide,
   Vector3,
-  PointLight,
   BufferGeometry,
   LineBasicMaterial,
   Line,
+  type PointLight,
 } from "three";
 import { useTexture } from "@react-three/drei";
 
@@ -46,7 +46,7 @@ function Scene() {
     setClouds(newClouds);
   }, [width]);
 
-  const createLightningBolt = (): BoltProps => {
+  const createLightningBolt = useCallback((): BoltProps => {
     const points: Vector3[] = [];
     let x = Math.random() * (width ? 125 : 50) - (width ? 12.5 : 25);
     let y = Math.random() * 5 + 5;
@@ -60,9 +60,9 @@ function Scene() {
     }
 
     return { points, opacity: 0.8, id: Math.random() };
-  };
+  }, [width]);
 
-  const triggerFlash = (): void => {
+  const triggerFlash = useCallback((): void => {
     if (!flashRef.current) return;
 
     flashRef.current.intensity = 200;
@@ -74,7 +74,7 @@ function Scene() {
     setTimeout(() => {
       setBolts((prev) => prev.filter((bolt) => bolt.opacity > 0.05));
     }, 500);
-  };
+  }, [width, createLightningBolt]);
 
   useEffect(() => {
     const interval = setInterval(

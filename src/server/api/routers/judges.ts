@@ -140,7 +140,7 @@ export const JudgeRouter = createTRPCRouter({
           }
         }
 
-        const diffScore = input.score - oldScoreForCriteria.score;
+        // const diffScore = input.score - oldScoreForCriteria.score;
         return await db.scores.update({
           where: {
             teamId_criteriaId_judgeId: {

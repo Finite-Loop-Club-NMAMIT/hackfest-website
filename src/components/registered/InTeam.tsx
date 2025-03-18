@@ -1,5 +1,3 @@
-import React, { useEffect, useState } from "react";
-
 import TeamList from "../team/teamList";
 import { Button } from "../ui/button";
 import {

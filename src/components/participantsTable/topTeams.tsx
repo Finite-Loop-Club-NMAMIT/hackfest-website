@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import {
   TableCell,
@@ -14,7 +15,6 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-  getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
   type ColumnDef,
@@ -24,9 +24,8 @@ import {
 } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import { IdeaSubmission, Team, TeamProgress } from "@prisma/client";
-import { Check, X } from "lucide-react";
-import { superValidatorRouter } from "~/server/api/routers/super-validator";
+import type { IdeaSubmission, Team } from "@prisma/client";
+import type { superValidatorRouter } from "~/server/api/routers/super-validator";
 
 interface MembersRow {
   members: { college: { name: string } }[];

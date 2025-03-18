@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { downloadFromUrl } from "~/utils/helper";
-import Image from "next/image";
-import { paymentQRUrl, UPIUser } from "~/constants";
+import {UPIUser } from "~/constants";
 import { QRCodeSVG } from "qrcode.react";
 import { api } from "~/utils/api";
-import { toPng, toJpeg } from "html-to-image"
+import { toPng } from "html-to-image"
 
 
 import { Button } from "~/components/ui/button";
@@ -43,7 +41,7 @@ export default function PaymentComponent() {
       const uri = `upi://pay?pa=${UPIUser.upiId}&am=${teamSizeQuery.data.teamsize * UPIUser.baseAmount}&cu=INR`;
       setUrl(uri);
     }
-  }, [teamSizeQuery.data?.teamsize]);
+  }, [teamSizeQuery.data]);
 
   async function downloadQr() {
     if(qrRef.current){

@@ -1,6 +1,6 @@
 import formidable from 'formidable'
 import {errors} from "formidable";
-import { NextApiRequest } from 'next'
+import { type NextApiRequest } from 'next'
 
 export const decodeForm = async (req: NextApiRequest) => {
     const form = formidable({ multiples: true})

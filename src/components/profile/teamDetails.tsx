@@ -1,5 +1,4 @@
 import { type inferRouterOutputs } from "@trpc/server";
-import router, { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 import { type userRouter } from "~/server/api/routers/user";
 import { api } from "~/utils/api";
@@ -25,6 +24,7 @@ import { Copy } from "lucide-react";
 import { BsWhatsapp } from "react-icons/bs";
 import { FaMoneyBill } from "react-icons/fa";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 interface User {
   name: string | null;
@@ -40,7 +40,6 @@ export default function TeamDetails({
   order: number;
 }) {
   const settings = useContext(settingsCtx);
-  const session = useSession();
   const [teamMembers, setTeamMembers] = useState<{
     leader: User;
     members: User[];

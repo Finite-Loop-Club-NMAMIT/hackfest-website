@@ -2,7 +2,6 @@ import { appSettingsZ } from "~/server/schema/zod-schema";
 import {
   adminProcedure,
   createTRPCRouter,
-  protectedProcedure,
   publicProcedure,
 } from "../trpc";
 

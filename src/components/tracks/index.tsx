@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 import * as THREE from "three";
 import { useEffect, useRef, useState } from "react";
@@ -115,15 +116,15 @@ type FrameProps = Domain & {
 
 function Frame({ isActive, onClick, ...domain }: FrameProps) {
   const image = useRef();
-  const frame = useRef<THREE.Mesh>();
+  // const frame = useRef<THREE.Mesh>();
   const [hovered, hover] = useState(false);
-  const [rnd] = useState(() => Math.random());
+  // const [rnd] = useState(() => Math.random());
   useCursor(hovered);
-  useFrame((state, dt) => {
-    if (image.current) {
-      // Add any necessary frame updates here
-    }
-  });
+  // useFrame((state, dt) => {
+  //   if (image.current) {
+  //     // Add any necessary frame updates here
+  //   }
+  // });
   return (
     <group {...domain}>
       <mesh

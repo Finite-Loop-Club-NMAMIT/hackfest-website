@@ -27,7 +27,7 @@ const ProgressBar = ({ progress }: LoaderProps) => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [baseWidth.sm, baseWidth.md, baseWidth.lg]);
 
   return (
     <div

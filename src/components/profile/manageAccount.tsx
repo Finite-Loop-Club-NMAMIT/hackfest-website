@@ -1,14 +1,11 @@
-import { LogOut, Pencil } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Button } from "../ui/button";
 import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { useContext } from "react";
-import { context as AppSettingsContext } from "../appSettingValidator";
+
 
 export default function ManageAccount() {
   const { status, data } = useSession();
-  const router = useRouter();
-  const settings = useContext(AppSettingsContext);
+
 
   return (
     <div className="mt-4 flex w-full flex-col items-center justify-center gap-4">

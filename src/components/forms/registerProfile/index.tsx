@@ -41,14 +41,11 @@ import { LuChevronsUpDown } from "react-icons/lu";
 import { FaCheck, FaInfoCircle } from "react-icons/fa";
 import { FaCircleCheck } from "react-icons/fa6";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useGSAP } from "@gsap/react";
 
 export default function RegisterProfileForm() {
   const horizontalBar = useRef<HTMLDivElement>(null);
   const { data } = useSession();
-  const router = useRouter();
-
   const colleges = api.college.getColleges.useQuery();
   const updateProfileMutaion = api.user.updateProfile.useMutation({
     onSuccess: () => {
@@ -118,7 +115,7 @@ export default function RegisterProfileForm() {
         }
       }
     }
-  }, []);
+  }, [colleges.data, form]);
 
   function onSubmit(values: z.infer<typeof updateProfileZ>) {
     updateProfileMutaion.mutate(values);
