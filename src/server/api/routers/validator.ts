@@ -10,10 +10,31 @@ export const validatorRouter = createTRPCRouter({
       },
     });
   }),
+  
+  // New query to fetch all scores for the validator judge
+  getAllScores: validatorProcedure.query(async ({ ctx }) => {
+    const user = ctx.session.user;
+    
+    // Get all scores for this validator
+    const scores = await ctx.db.scores.findMany({
+      where: {
+        Judge: {
+          id: user.id,
+        },
+      },
+      include: {
+        Team: true,
+        Criteria: true,
+      }
+    });
+    
+    return scores;
+  }),
+  
   setScore: protectedProcedure
     .input(
       z.object({
-        score: z.number().min(1).max(10), //todo: set limits
+        score: z.number().min(1).max(10),
         teamId: z.string(),
         criteriaId: z.string(),
       }),
@@ -35,7 +56,7 @@ export const validatorRouter = createTRPCRouter({
           throw new TRPCError({
             code: "NOT_FOUND",
             message:
-              "Judge or criteria not found or criteria is not for super validator",
+              "Judge or criteria not found or criteria is not for validator",
           });
 
         const oldScoreForCriteria = await db.scores.findFirst({

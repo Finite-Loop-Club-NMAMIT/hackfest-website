@@ -13,13 +13,13 @@ import { toast } from "sonner";
 import Spinner from "~/components/spinner";
 import NotFound from "../404";
 import { Button } from "~/components/ui/button";
-import { useState } from "react";
-import { FaArrowAltCircleRight } from "react-icons/fa";
+import { useState, useEffect } from "react";
 
 export default function Validator() {
   const { data: sessionData, status } = useSession();
   const teamData = api.team.getTeamsList.useQuery();
   const { data: criteria, isLoading: criteriaLoading } = api.validator.getValidatorCriteria.useQuery();
+  const { data: allScores, isLoading: scoresLoading } = api.validator.getAllScores.useQuery();
   const [selectedRatings, setSelectedRatings] = useState<Record<string, number>>({});
   
   const submitScore = api.validator.setScore.useMutation({
@@ -33,25 +33,35 @@ export default function Validator() {
     },
   });
 
+  // Initialize selectedRatings with existing scores from the database when they load
+  useEffect(() => {
+    if (allScores) {
+      const existingRatings: Record<string, number> = {};
+      allScores.forEach(score => {
+        // Convert score back to star rating
+        let starRating = 0;
+        if (score.score <= 3) starRating = 1;
+        else if (score.score <= 6) starRating = 2;
+        else starRating = 3;
+        
+        existingRatings[score.teamId] = starRating;
+      });
+      setSelectedRatings(existingRatings);
+    }
+  }, [allScores]);
+
   if (submitScore.isLoading) {
     toast.loading("Submitting score", { id: "submitting-score" });
   }
 
-  // Handle star selection
+  // Handle star selection with auto-submit
   const handleStarClick = (teamId: string, rating: number) => {
     setSelectedRatings(prev => ({
       ...prev,
       [teamId]: rating
     }));
-  };
-
-  // Handle submit rating
-  const handleSubmitRating = async (teamId: string) => {
-    const rating = selectedRatings[teamId];
-    if (!rating) return;
     
     // Convert rating to score (1 star = 3, 2 stars = 6, 3 stars = 10)
-    // This ensures the maximum score is 10
     const scoreMap = {
       1: 3,
       2: 6,
@@ -60,14 +70,15 @@ export default function Validator() {
     
     const score = scoreMap[rating as 1|2|3];
     
-    await submitScore.mutateAsync({
+    // Auto-submit on star click
+    submitScore.mutate({
       criteriaId: criteria?.id ?? "",
       teamId: teamId,
       score: score,
     });
   };
 
-  if (status === "loading" || criteriaLoading)
+  if (status === "loading" || criteriaLoading || scoresLoading)
     return (
       <DashboardLayout>
         <div className="flex h-screen w-screen items-center justify-center">
@@ -83,23 +94,17 @@ export default function Validator() {
     return <NotFound />;
   }
 
-  type Team = {
-    Scores: Array<{
-      judgeId: string;
-      score: number;
-    }>;
-  };
-
   // Function to get submitted score for a team
-  const getTeamScore = (team: Team) => {
-    if (team?.Scores[0]?.judgeId === sessionData.user.id) {
-      // Convert score back to star rating
-      const score = team?.Scores[0]?.score;
-      if (score <= 3) return 1;
-      if (score <= 6) return 2;
-      return 3;
-    }
-    return 0;
+  const getTeamScore = (teamId: string) => {
+    if (!allScores) return 0;
+    
+    const score = allScores.find(score => score.teamId === teamId);
+    if (!score) return 0;
+    
+    // Convert score back to star rating
+    if (score.score <= 3) return 1;
+    if (score.score <= 6) return 2;
+    return 3;
   };
 
   return (
@@ -119,8 +124,8 @@ export default function Validator() {
             </span>
             <ul className="flex list-disc flex-col text-base text-gray-400 mt-4">
               <li>Select star rating for each team (1 to 3 stars)</li>
-              <li>Submit your rating by clicking the arrow button</li>
-              <li>Submitted ratings will be highlighted</li>
+              <li>Ratings are automatically submitted when you click a star</li>
+              <li>Submitted ratings will be highlighted in yellow</li>
             </ul>
           </div>
         </div>
@@ -134,14 +139,13 @@ export default function Validator() {
                 <TableHead className="text-gray-300">Team Name</TableHead>
                 <TableHead className="text-gray-300">PPT</TableHead>
                 <TableHead className="text-gray-300">Rating</TableHead>
-                <TableHead className="text-gray-300">Submit</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {teamData.data
                 ?.filter((team) => (team.IdeaSubmission ? true : false))
                 .map((team, index) => {
-                  const submittedScore = getTeamScore(team);
+                  const submittedScore = getTeamScore(team.id);
                   const currentRating = selectedRatings[team.id] ?? submittedScore;
                   
                   return (
@@ -180,14 +184,6 @@ export default function Validator() {
                             </button>
                           ))}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <button
-                          className={`${submittedScore > 0 ? "bg-gradient-to-r from-gray-700 to-gray-600" : "bg-gradient-to-r from-gray-800 to-gray-700"} text-white rounded-full w-10 h-10 flex items-center justify-center hover:shadow-[0_0_10px_rgba(255,255,255,0.2)] transition-all duration-200 hover:scale-110 active:scale-90`}
-                          onClick={() => handleSubmitRating(team.id)}
-                        >
-                          <span><FaArrowAltCircleRight /></span>
-                        </button>
                       </TableCell>
                     </TableRow>
                   );
