@@ -530,7 +530,7 @@ export const teamRouter = createTRPCRouter({
     });
   }),
 
-  getStatistics: publicProcedure.query(async ({ ctx }) => {
+  getStatistics: dashboardProcedure.query(async ({ ctx }) => {
     const allTeams = await ctx.db.team.findMany({
       include: {
         Members: {
