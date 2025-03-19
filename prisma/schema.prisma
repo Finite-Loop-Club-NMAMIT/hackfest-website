@@ -86,24 +86,24 @@ model College {
 }
 
 model Team {
-  id                  String            @id @default(cuid())
-  name                String            @unique
-  teamNo              Int               @default(0)
-  teamProgress        TeamProgress      @default(NOT_SELECTED)
-  isComplete          Boolean           @default(false)
-  referralId          Int?
-  paymentStatus       PaymentStatus     @default(PENDING)
-  attended            Boolean           @default(false)
-  IdeaSubmission      IdeaSubmission?
-  github              Github?
-  paymentProof        String?
-  transactionId       String?
-  Members             User[]
-  VideoSubmission     VideoSubmissions?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  Scores              Scores[]
-  Remark              Remark[]
+  id              String            @id @default(cuid())
+  name            String            @unique
+  teamNo          Int               @default(0)
+  teamProgress    TeamProgress      @default(NOT_SELECTED)
+  isComplete      Boolean           @default(false)
+  referralId      Int?
+  paymentStatus   PaymentStatus     @default(PENDING)
+  attended        Boolean           @default(false)
+  IdeaSubmission  IdeaSubmission?
+  github          Github?
+  paymentProof    String?
+  transactionId   String?
+  Members         User[]
+  VideoSubmission VideoSubmissions?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  Scores          Scores[]
+  Remark          Remark[]
 }
 
 model VideoSubmissions {
@@ -150,7 +150,7 @@ model Criteria {
 model Scores {
   id         Int      @id @default(autoincrement())
   Criteria   Criteria @relation(fields: [criteriaId], references: [id])
-  Judge      Judge    @relation(fields: [judgeId], references: [id])
+  Judge      Judge    @relation(fields: [judgeId], references: [id], onDelete: Cascade)
   score      Int
   Team       Team     @relation(fields: [teamId], references: [id])
   criteriaId String
@@ -177,12 +177,12 @@ model Remark {
   remark String
 
   Team    Team   @relation(fields: [teamId], references: [id])
-  Judge   Judge  @relation(fields: [judgeId], references: [id])
+  Judge   Judge  @relation(fields: [judgeId], references: [id], onDelete: Cascade)
   teamId  String
   judgeId String
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@unique([teamId, judgeId])
 }
