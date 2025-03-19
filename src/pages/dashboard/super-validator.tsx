@@ -83,13 +83,13 @@ export default function Organiser() {
 
       if (submissionQuery !== "ALL") {
         partiallyFiltered = partiallyFiltered?.filter(
-          (team) => !!team.IdeaSubmission === (submissionQuery === "SUBMITTED"),
+          (team) => ("IdeaSubmission" in team && !!team.IdeaSubmission) === (submissionQuery === "SUBMITTED"),
         );
       }
 
       if (trackQuery !== "ALL" && submissionQuery !== "NOT SUBMITTED") {
         partiallyFiltered = partiallyFiltered?.filter(
-          (team) => team.IdeaSubmission?.track === trackQuery,
+          (team) => "IdeaSubmission" in team && team.IdeaSubmission && typeof team.IdeaSubmission === 'object' && team.IdeaSubmission !== null && "track" in team.IdeaSubmission && team.IdeaSubmission.track === trackQuery,
         );
       }
 

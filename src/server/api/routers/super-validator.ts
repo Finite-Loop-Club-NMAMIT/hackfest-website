@@ -8,9 +8,9 @@ export const superValidatorRouter = createTRPCRouter({
       where: {
         OR: [{ teamProgress: "SEMI_SELECTED" }, { teamProgress: "SELECTED" }],
       },
-      orderBy: {
-        validatorScore: "desc",
-      },
+      // orderBy: {
+      //   validatorScore: "desc",
+      // },
       include: {
         Members: true,
         IdeaSubmission: true,
@@ -72,9 +72,9 @@ export const superValidatorRouter = createTRPCRouter({
                 id: input.teamId,
               },
               data: {
-                superValidatorScore: {
-                  increment: input.score,
-                },
+                // superValidatorScore: {
+                //   increment: input.score,
+                // },
               },
             });
           } else {
@@ -104,9 +104,9 @@ export const superValidatorRouter = createTRPCRouter({
             id: input.teamId,
           },
           data: {
-            superValidatorScore: {
-              increment: diffScore,
-            },
+            // superValidatorScore: {
+            //   increment: diffScore,
+            // },
           },
         });
       });

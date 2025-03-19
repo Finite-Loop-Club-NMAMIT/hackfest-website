@@ -84,9 +84,9 @@ export const validatorRouter = createTRPCRouter({
                 id: input.teamId,
               },
               data: {
-                validatorScore: {
-                  increment: input.score,
-                },
+                // validatorScore: {
+                //   increment: input.score,
+                // },
               },
             });
           } else {
@@ -97,7 +97,7 @@ export const validatorRouter = createTRPCRouter({
           }
         }
 
-        const diffScore = input.score - oldScoreForCriteria.score;
+        // const diffScore = input.score - oldScoreForCriteria.score;
         await db.scores.update({
           where: {
             teamId_criteriaId_judgeId: {
@@ -116,9 +116,9 @@ export const validatorRouter = createTRPCRouter({
             id: input.teamId,
           },
           data: {
-            validatorScore: {
-              increment: diffScore,
-            },
+            // validatorScore: {
+            //   increment: diffScore,
+            // },
           },
         });
       });
