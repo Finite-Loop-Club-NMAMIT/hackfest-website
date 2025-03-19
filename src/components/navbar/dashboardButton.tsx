@@ -3,13 +3,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@radix-ui/react-popover";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import { type Role } from "@prisma/client";
 import { Card, CardContent } from "../ui/card";
-export default function DashboardButton({ role }: { role: Role }) {
+
+export default function DashboardButton({ role, currentPath }: { role: Role, currentPath?: string }) {
   const [dashboards, setDashboards] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (role) {
@@ -30,10 +31,19 @@ export default function DashboardButton({ role }: { role: Role }) {
     }
   }, [role]);
 
+  const handleNavigation = (path: string) => {
+    setIsOpen(false);
+    
+    // Force a full page refresh by using window.location
+    if (path !== currentPath) {
+      window.location.href = path;
+    }
+  };
+
   return (
     <>
       {dashboards.length > 1 && (
-        <Popover>
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <Button>Dashboard</Button>
           </PopoverTrigger>
@@ -42,11 +52,13 @@ export default function DashboardButton({ role }: { role: Role }) {
               <CardContent className="pt-6">
                 <div className="flex w-full flex-col gap-2 ">
                   {dashboards.map((item, index) => (
-                    <Link href={`/dashboard/${item}`} key={index}>
-                      <Button className="dark w-full">
-                        {item[0]?.toUpperCase() + item.slice(1)}
-                      </Button>
-                    </Link>
+                    <Button 
+                      key={index} 
+                      className="dark w-full"
+                      onClick={() => handleNavigation(`/dashboard/${item}`)}
+                    >
+                      {item[0]?.toUpperCase() + item.slice(1)}
+                    </Button>
                   ))}
                 </div>
               </CardContent>
@@ -55,9 +67,9 @@ export default function DashboardButton({ role }: { role: Role }) {
         </Popover>
       )}
       {dashboards.length === 1 && (
-        <Link href={`/dashboard/${role?.toLowerCase()}`}>
-          <Button>Dashboard</Button>
-        </Link>
+        <Button onClick={() => handleNavigation(`/dashboard/${dashboards[0]}`)}>
+          Dashboard
+        </Button>
       )}
     </>
   );
