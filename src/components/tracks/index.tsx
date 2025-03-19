@@ -190,6 +190,7 @@ function Frame({ isActive, onClick, ...domain }: FrameProps) {
                   )}
                 </>
               ) : (
+                // eslint-disable-next-line jsx-a11y/alt-text
                 <Image url={domain.image} scale={2} />
               )}
             </RenderTexture>

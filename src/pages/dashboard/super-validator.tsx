@@ -16,7 +16,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { useSession } from "next-auth/react";
 import NotFound from "../404";
-import JudgePanel from "~/components/organiserDashboard/judgePanel";
+
 import VolunteerPanel from "~/components/organiserDashboard/volunteerPanel";
 import {
   Sheet,
@@ -28,6 +28,7 @@ import {
 } from "~/components/ui/sheet";
 import { Label } from "@radix-ui/react-label";
 import DashboardLayout from "~/components/layout/dashboardLayout";
+import JudgePanel from "~/components/organiserDashboard/judgePanel";
 
 export default function Organiser() {
   const res = api.superValidator.getTop100.useQuery();

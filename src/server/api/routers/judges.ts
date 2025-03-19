@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, judgeProcedure } from "../trpc";
 import { z } from "zod";
-import { JudgeType } from "@prisma/client";
+import { JudgeType, Role } from "@prisma/client";
+
 export const JudgeRouter = createTRPCRouter({
   getTeams: judgeProcedure.query(async ({ ctx }) => {
     const user = ctx.session.user;
@@ -153,6 +154,126 @@ export const JudgeRouter = createTRPCRouter({
             score: input.score,
           },
         });
+      });
+    }),
+
+  getAllJudges: judgeProcedure.query(async ({ ctx }) => {
+    const judges = await ctx.db.judge.findMany({
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            image: true,
+          }
+        }
+      }
+    });
+    return judges;
+  }),
+  
+  updateJudge: judgeProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        type: z.nativeEnum(JudgeType),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.db.judge.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          type: input.type,
+        },
+      });
+    }),
+
+  getAllUsers: judgeProcedure.query(async ({ ctx }) => {
+    const users = await ctx.db.user.findMany({
+      where: {
+        role: {
+          not: Role.JUDGE,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        image: true,
+        role: true,
+      },
+    });
+    return users;
+  }),
+  
+  addJudge: judgeProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        type: z.nativeEnum(JudgeType),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        // Create new judge
+        const newJudge = await tx.judge.create({
+          data: {
+            type: input.type,
+            User: {
+              connect: {
+                id: input.userId,
+              },
+            },
+          },
+        });
+        
+        // Update user role
+        await tx.user.update({
+          where: {
+            id: input.userId,
+          },
+          data: {
+            role: Role.JUDGE,
+          },
+        });
+        
+        return newJudge;
+      });
+    }),
+  
+  deleteJudge: judgeProcedure
+    .input(
+      z.object({
+        judgeId: z.string(),
+        userId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        // Update user role back to participant
+        await tx.user.update({
+          where: {
+            id: input.userId,
+          },
+          data: {
+            role: Role.PARTICIPANT,
+            judgeId: null,
+          },
+        });
+        
+        // Delete the judge entry
+        await tx.judge.delete({
+          where: {
+            id: input.judgeId,
+          },
+        });
+        
+        return { success: true };
       });
     }),
 });
