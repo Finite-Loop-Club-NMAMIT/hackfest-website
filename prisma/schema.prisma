@@ -63,7 +63,7 @@ model User {
   Team            Team?      @relation(fields: [teamId], references: [id])
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
-  Judge           Judge?     @relation(fields: [judgeId], references: [id])
+  Judge           Judge?     @relation(fields: [judgeId], references: [id], onDelete: SetNull)
   judgeId         String?
 
   @@index([collegeId])
