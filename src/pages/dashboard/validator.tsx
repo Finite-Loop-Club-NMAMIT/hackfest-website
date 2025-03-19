@@ -14,6 +14,7 @@ import Spinner from "~/components/spinner";
 import NotFound from "../404";
 import { Button } from "~/components/ui/button";
 import { useState, useEffect } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 
 export default function Validator() {
   const { data: sessionData, status } = useSession();
@@ -21,6 +22,16 @@ export default function Validator() {
   const { data: criteria, isLoading: criteriaLoading } = api.validator.getValidatorCriteria.useQuery();
   const { data: allScores, isLoading: scoresLoading } = api.validator.getAllScores.useQuery();
   const [selectedRatings, setSelectedRatings] = useState<Record<string, number>>({});
+  const [selectedTrack, setSelectedTrack] = useState<string>("all");
+  
+  // Get unique tracks from team submissions
+  const tracks = teamData.data ? 
+    Array.from(new Set(
+      teamData.data
+        .filter(team => team.IdeaSubmission?.track)
+        .map(team => team.IdeaSubmission?.track)
+    )).filter(Boolean) as string[] 
+    : [];
   
   const submitScore = api.validator.setScore.useMutation({
     onSuccess: async () => {
@@ -113,6 +124,20 @@ export default function Validator() {
     return 5;
   };
 
+  // Function to handle track filter change
+  const handleTrackChange = (value: string) => {
+    setSelectedTrack(value);
+  };
+
+  // Filter teams based on selected track
+  const filteredTeams = teamData.data?.filter((team) => {
+    // First filter for idea submission
+    if (!team.IdeaSubmission) return false;
+    
+    // Then filter by track if not "all"
+    return selectedTrack === "all" || team.IdeaSubmission.track === selectedTrack;
+  });
+
   return (
     !teamData.isLoading && (
       <DashboardLayout>
@@ -135,6 +160,22 @@ export default function Validator() {
             </ul>
           </div>
         </div>
+        
+        {/* Track Filter */}
+        <div className="flex justify-end mb-4">
+          <Select value={selectedTrack} onValueChange={handleTrackChange}>
+            <SelectTrigger className="w-[180px] bg-gray-800 border-gray-700 text-gray-200">
+              <SelectValue placeholder="Filter by track" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700 text-gray-200">
+              <SelectItem value="all">All Tracks</SelectItem>
+              {tracks.map((track, index) => (
+                <SelectItem key={index} value={track}>{track}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
         <div 
           className="rounded-md border border-gray-700 bg-gradient-to-b from-gray-900 to-gray-800 shadow-md transition-all duration-500 mb-24"
         >
@@ -143,14 +184,14 @@ export default function Validator() {
               <TableRow className="border-b border-gray-700">
                 <TableHead className="text-gray-300">Sl. No.</TableHead>
                 <TableHead className="text-gray-300">Team Name</TableHead>
+                <TableHead className="text-gray-300">Track</TableHead>
                 <TableHead className="text-gray-300">PPT</TableHead>
                 <TableHead className="text-gray-300">Rating</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {teamData.data
-                ?.filter((team) => (team.IdeaSubmission ? true : false))
-                .map((team, index) => {
+              {filteredTeams
+                ?.map((team, index) => {
                   const submittedScore = getTeamScore(team.id);
                   const currentRating = selectedRatings[team.id] ?? submittedScore;
                   
@@ -161,6 +202,7 @@ export default function Validator() {
                     >
                       <TableCell className="text-gray-300">{index + 1}</TableCell>
                       <TableCell className="text-gray-300">{team.name}</TableCell>
+                      <TableCell className="text-gray-300">{team.IdeaSubmission?.track ?? "N/A"}</TableCell>
                       <TableCell>
                         <a
                           href={team.IdeaSubmission?.pptUrl.split(";")[0]}
