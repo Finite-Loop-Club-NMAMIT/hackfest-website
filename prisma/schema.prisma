@@ -93,9 +93,6 @@ model Team {
   isComplete          Boolean           @default(false)
   referralId          Int?
   paymentStatus       PaymentStatus     @default(PENDING)
-  validatorScore      Int               @default(0)
-  superValidatorScore Int               @default(0)
-  judgeScore          Int               @default(0)
   attended            Boolean           @default(false)
   IdeaSubmission      IdeaSubmission?
   github              Github?
