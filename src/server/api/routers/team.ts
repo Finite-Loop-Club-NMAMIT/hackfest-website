@@ -683,4 +683,92 @@ export const teamRouter = createTRPCRouter({
       states: Array.from(uniqueStates),
     };
   }),
+
+  getTeamsByTotalScore: dashboardProcedure.query(async ({ ctx }) => {
+    // Get all teams with their scores
+    const teams = await ctx.db.team.findMany({
+      include: {
+        Members: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            College: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        IdeaSubmission: {
+          select: {
+            track: true,
+          },
+        },
+        Scores: {
+          select: {
+            score: true,
+            Judge: {
+              select: {
+                type: true,
+              },
+            },
+          },
+        },
+        VideoSubmission: true,
+      },
+    });
+
+    // Calculate total scores for each team (only counting VALIDATOR scores)
+    const teamsWithTotalScores = teams.map(team => {
+      const validatorScores = team.Scores.filter(score => 
+        score.Judge.type === "VALIDATOR" || score.Judge.type === "SUPER_VALIDATOR"
+      );
+      
+      const totalScore = validatorScores.reduce((sum, score) => sum + score.score, 0);
+      
+      return {
+        ...team,
+        totalScore,
+      };
+    });
+
+    // Sort teams by total score in descending order
+    teamsWithTotalScores.sort((a, b) => b.totalScore - a.totalScore);
+
+    return teamsWithTotalScores;
+  }),
+
+  getTeamMembersDetails: dashboardProcedure
+    .input(z.object({ teamId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const members = await ctx.db.user.findMany({
+        where: {
+          teamId: input.teamId,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          phone: true,
+          isLeader: true,
+          course: true,
+          tShirtSize: true,
+          state: true,
+          github: true,
+          College: {
+            select: {
+              name: true,
+              state: true,
+            },
+          },
+        },
+        orderBy: {
+          isLeader: 'desc',
+        },
+      });
+
+      return members;
+    }),
 });

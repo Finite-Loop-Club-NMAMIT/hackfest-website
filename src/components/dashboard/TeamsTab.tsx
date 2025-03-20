@@ -5,6 +5,7 @@ import ParticipantsTable from "~/components/participantsTable";
 import Spinner from "~/components/spinner";
 import FilterSheet from "~/components/organiserDashboard/filterSheet";
 import GithubSheet from "~/components/organiserDashboard/githubSheet";
+import TeamLeaderboard from "./TeamLeaderboard";
 
 export default function TeamsTab() {
   const res = api.team.getTeamsList.useQuery();
@@ -34,12 +35,12 @@ export default function TeamsTab() {
       <div className="m-auto overflow-x-scroll md:max-w-screen-xl">
         <div className="my-4 flex h-full w-full flex-col items-center justify-around gap-3 md:flex-row">
           <GithubSheet />
-          <FilterSheet {...filterSheetProps} />
         </div>
         {!res ? (
           <Spinner size="large" />
         ) : (
-          <ParticipantsTable data={selectedTeams} dataRefecth={res.refetch} />
+          // <ParticipantsTable data={selectedTeams} dataRefecth={res.refetch} />
+          <TeamLeaderboard />
         )}
       </div>
     </div>
