@@ -198,7 +198,7 @@ export const userRouter = createTRPCRouter({
   updateProfileProgress: protectedProcedure.mutation(async ({ ctx }) => {
     const user = ctx.session.user;
     try {
-      if (user?.profileProgress !== "SUBMIT_IDEA")
+      if (user?.profileProgress !== "SUBMIT_IDEA"){
         await ctx.db.team.update({
           data: {
             isComplete: true,
@@ -217,6 +217,14 @@ export const userRouter = createTRPCRouter({
             id: user?.team?.id,
           },
         });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "TEAM",
+            description: `Team ${user?.team?.id} has been updated to SubmitIdea`,
+          },
+        });
+      }
       else {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -346,6 +354,13 @@ export const userRouter = createTRPCRouter({
             },
           },
         });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "USER",
+            description: `User ${updatedUser.id} has been marked as attended`,
+          },
+        });
 
         const teamMembers = updatedUser.Team?.Members;
         if (teamMembers?.filter((member) => !member.attended).length === 0) {
@@ -353,6 +368,13 @@ export const userRouter = createTRPCRouter({
             where: { id: updatedUser.Team?.id },
             data: {
               attended: true,
+            },
+          });
+          await ctx.db.auditLog.create({
+            data: {
+              sessionUser: ctx.session.user.email,
+              auditType: "TEAM",
+              description: `Team ${updatedUser.Team?.id} has been marked as attended`,
             },
           });
         }

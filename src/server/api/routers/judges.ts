@@ -125,12 +125,20 @@ export const JudgeRouter = createTRPCRouter({
 
         if (!oldScoreForCriteria) {
           if (input.score <= criteria.maxScore) {
-            return await db.scores.create({
+            
+            await db.scores.create({
               data: {
                 score: input.score,
                 criteriaId: input.criteriaId,
                 teamId: input.teamId,
                 judgeId: judge.id,
+              },
+            });
+            return await ctx.db.auditLog.create({
+              data: {
+                sessionUser: ctx.session.user.email,
+                auditType: "SCORE",
+                description: `  Score of ${input.score} set for team ${input.teamId} for criteria ${input.criteriaId}`,
               },
             });
           } else {
@@ -142,7 +150,7 @@ export const JudgeRouter = createTRPCRouter({
         }
 
         // const diffScore = input.score - oldScoreForCriteria.score;
-        return await db.scores.update({
+         await db.scores.update({
           where: {
             teamId_criteriaId_judgeId: {
               criteriaId: input.criteriaId,
@@ -152,6 +160,13 @@ export const JudgeRouter = createTRPCRouter({
           },
           data: {
             score: input.score,
+          },
+        });
+        return      await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "SCORE",
+            description: `Score of ${input.score} set for team ${input.teamId} for criteria ${input.criteriaId}`,
           },
         });
       });
@@ -182,12 +197,19 @@ export const JudgeRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      return await ctx.db.judge.update({
+      await ctx.db.judge.update({
         where: {
           id: input.id,
         },
         data: {
           type: input.type,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "Role Change",
+          description: `Judge ${input.id} has been updated to ${input.type} `,
         },
       });
     }),
@@ -232,13 +254,23 @@ export const JudgeRouter = createTRPCRouter({
           },
         });
         
-        // Update user role
+        
+        // Update user role and connect to judge
         await tx.user.update({
           where: {
             id: input.userId,
           },
           data: {
             role: Role.JUDGE,
+            judgeId: newJudge.id, // Connect user to judge
+          },
+        });
+
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "Role Change",
+            description: `User ${input.userId} has been assigned as a Judge for ${input.type}`,
           },
         });
         
@@ -272,7 +304,13 @@ export const JudgeRouter = createTRPCRouter({
             id: input.judgeId,
           },
         });
-        
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "Role Change",
+            description: `User ${input.userId} has been removed as a Judge`,
+          },
+        });
         return { success: true };
       });
     }),

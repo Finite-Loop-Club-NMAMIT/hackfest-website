@@ -35,25 +35,37 @@ export const videoRouter = createTRPCRouter({
         });
       }
 
-      ctx.db.videoSubmissions
-        .create({
-          data: {
-            url: input.videoLink,
-            Team: {
-              connect: {
-                id: team.id,
+      try {
+        await ctx.db.videoSubmissions
+          .create({
+            data: {
+              url: input.videoLink,
+              Team: {
+                connect: {
+                  id: team.id,
+                },
               },
             },
-          },
-        })
-        .catch((error) => {
-          console.log(error);
-
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Video link can only be submitted once per team",
           });
+          
+        // Log the successful video submission
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "VIDEO_SUBMISSION",
+            description: `Team ${team.id} has submitted a video link`,
+          },
         });
+        
+        return { success: true };
+      } catch (error) {
+        console.log(error);
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Video link can only be submitted once per team",
+        });
+      }
     }),
 
   isVideoSubmitted: protectedProcedure.query(async ({ ctx }) => {

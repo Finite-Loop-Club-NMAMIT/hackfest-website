@@ -57,6 +57,13 @@ export const ideaRouter = createTRPCRouter({
             id: user.team?.id,
           },
         });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "IDEA_SUBMISSION",
+            description: `Idea submitted by team ${user.team?.id}`,
+          },
+        });
         return { status: "success", message: "Idea has been submitted" };
       } catch (error) {
         console.log(error);

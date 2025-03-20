@@ -84,8 +84,6 @@ export const superValidatorRouter = createTRPCRouter({
             });
           }
         }
-
-        const diffScore = input.score - oldScoreForCriteria.score;
         await db.scores.update({
           where: {
             teamId_criteriaId_judgeId: {

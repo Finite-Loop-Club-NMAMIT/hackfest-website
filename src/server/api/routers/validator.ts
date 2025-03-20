@@ -79,14 +79,11 @@ export const validatorRouter = createTRPCRouter({
                 judgeId: judge.id,
               },
             });
-            return await db.team.update({
-              where: {
-                id: input.teamId,
-              },
+            await db.auditLog.create({
               data: {
-                // validatorScore: {
-                //   increment: input.score,
-                // },
+                sessionUser: ctx.session.user.email,
+                auditType: "SCORE",
+                description: `Score of ${input.score} set for team ${input.teamId} for criteria ${input.criteriaId}`,
               },
             });
           } else {
@@ -110,15 +107,11 @@ export const validatorRouter = createTRPCRouter({
             score: input.score,
           },
         });
-
-        return await db.team.update({
-          where: {
-            id: input.teamId,
-          },
+        await db.auditLog.create({
           data: {
-            // validatorScore: {
-            //   increment: diffScore,
-            // },
+            sessionUser: ctx.session.user.email,
+            auditType: "SCORE",
+            description: `Score of ${input.score} set for team ${input.teamId} for criteria ${input.criteriaId}`,
           },
         });
       });

@@ -165,6 +165,13 @@ export const teamRouter = createTRPCRouter({
             name: input.teamName,
           },
         });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "TEAM",
+            description: `Team ${input.teamName} created by ${user.email} `,
+          },
+        });
         return {
           status: "success",
           message: "Team created successfully",
@@ -214,6 +221,14 @@ export const teamRouter = createTRPCRouter({
           IdeaSubmission: true,
         },
       });
+
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${team?.name} joined by ${user.email} `,
+        },
+      });
       if (!team) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Team not found" });
       }
@@ -252,6 +267,14 @@ export const teamRouter = createTRPCRouter({
         },
       });
 
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${team?.name} joined by ${user.email} `,
+        },
+      });
+
       const isComplete = res.Members.length === 3 || res.Members.length === 4;
       const joinedTeam = await ctx.db.team.update({
         where: {
@@ -261,6 +284,7 @@ export const teamRouter = createTRPCRouter({
           isComplete,
         },
       });
+      
       return {
         status: "success",
         message: "Joined team successfully",
@@ -293,6 +317,13 @@ export const teamRouter = createTRPCRouter({
           Members: true,
         },
       });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `User ${user?.id} has left team ${team?.name} `,
+        },
+      });
       const isComplete =
         team?.Members.length === 3 || team?.Members.length === 4;
       if (!isComplete) {
@@ -312,6 +343,13 @@ export const teamRouter = createTRPCRouter({
           },
           data: {
             isComplete,
+          },
+        });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "TEAM",
+            description: `Team ${team?.name} is incomplete`,
           },
         });
       }
@@ -358,6 +396,13 @@ export const teamRouter = createTRPCRouter({
       await ctx.db.team.delete({
         where: {
           id: user.team?.id,
+        },
+      });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${user.team?.id} has been deleted`,
         },
       });
 
@@ -443,6 +488,13 @@ export const teamRouter = createTRPCRouter({
           teamProgress: "SEMI_SELECTED",
         },
       });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${input.teamId} has been moved to Top 100`,
+        },
+      });
     }),
   moveToTop60: adminProcedure
     .input(
@@ -457,6 +509,13 @@ export const teamRouter = createTRPCRouter({
         },
         data: {
           teamProgress: "SELECTED",
+        },
+      });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${input.teamId} has been moved to Top 60`,
         },
       });
     }),
@@ -475,6 +534,13 @@ export const teamRouter = createTRPCRouter({
           teamProgress: "NOT_SELECTED",
         },
       });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${input.teamId} has been reset`,
+        },
+      });
     }),
   resetToTop100: adminProcedure
     .input(
@@ -489,6 +555,13 @@ export const teamRouter = createTRPCRouter({
         },
         data: {
           teamProgress: "SEMI_SELECTED",
+        },
+      });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${input.teamId} has been reset to Top 100`,
         },
       });
     }),
@@ -510,6 +583,13 @@ export const teamRouter = createTRPCRouter({
         },
         data: {
           attended: !team?.attended,
+        },
+      });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Attendance for team ${input.teamId} has been updated`,
         },
       });
     }),

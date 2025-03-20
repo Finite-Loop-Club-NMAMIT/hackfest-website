@@ -17,10 +17,17 @@ export const appSettingsRouter = createTRPCRouter({
         Object.entries(input).filter(([_, value]) => value !== null),
       );
 
-      return ctx.db.appSettings.update({
+       await ctx.db.appSettings.update({
         where: { id: 1 },
         data: {
           ...filteredInput,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "App Settings",
+          description: `App settings have been updated`,
         },
       });
     }),

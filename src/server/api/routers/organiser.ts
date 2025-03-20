@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { addJudgeZ } from "~/server/schema/zod-schema";
+import { Role } from "@prisma/client";
 
 export const organiserRouter = createTRPCRouter({
   getJudgesList: adminProcedure.query(async ({ ctx }) => {
@@ -17,44 +18,91 @@ export const organiserRouter = createTRPCRouter({
       where: {
         id: input.userId,
       },
-      include: {
+      select: {
+        id: true,
+        role: true,
         Judge: true,
       },
     });
 
-    if (!user?.Judge) {
+    if (!user) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User not found",
+      });
+    }
+    if (input.type === "VALIDATOR")
+    {
       await ctx.db.user.update({
         where: {
           id: input.userId,
         },
         data: {
-          role: "JUDGE",
+          role: Role.VALIDATOR,          
+          Judge: {
+            create: {
+              type: input.type, 
+              id: input.userId,
+            }
+          },
         },
       });
-      await ctx.db.judge.create({
+      await ctx.db.auditLog.create({
         data: {
-          id: input.userId,
-          type: input.type,
-        },
-      });
-    } else {
-      await ctx.db.user.update({
-        where: {
-          id: input.userId,
-        },
-        data: {
-          role: "JUDGE",
-        },
-      });
-      await ctx.db.judge.update({
-        where: {
-          id: input.userId,
-        },
-        data: {
-          type: input.type,
+          sessionUser: ctx.session.user.email,
+          auditType: "Role Change",
+          description: `User ${input.userId} has been assigned as a Validator`,
         },
       });
     }
+    if (input.type === "SUPER_VALIDATOR")
+      {
+        await ctx.db.user.update({
+          where: {
+            id: input.userId,
+          },
+          data: {
+            role: Role.SUPER_VALIDATOR,
+          },
+        });
+        await ctx.db.judge.create({
+          data: {
+            type: input.type,
+            id: input.userId,
+            User: {
+              connect: {  
+                id: input.userId,
+              },
+            },
+          },
+        });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "Role Change",
+            description: `User ${input.userId} has been assigned as a Super Validator`,
+          },
+        });
+      }
+
+    if ((input.type==="DAY1"||input.type==="DAY2"||input.type ==="DAY3" )) {
+      await ctx.db.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {
+          role: Role.JUDGE,
+        },
+      });
+
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "Role Change",
+          description: `User ${input.userId} has been assigned as a Judge for ${input.type}`,
+        },
+      });
+    } 
   }),
   removeJudge: adminProcedure
     .input(
@@ -85,6 +133,13 @@ export const organiserRouter = createTRPCRouter({
               id: input.userId,
             },
           });
+          await ctx.db.auditLog.create({
+            data: {
+              sessionUser: ctx.session.user.email,
+              auditType: "Role Change",
+              description: `User ${input.userId} has been removed as a Judge`,
+            },
+          });
           
           return await tx.user.update({
             where: {
@@ -94,6 +149,7 @@ export const organiserRouter = createTRPCRouter({
               role: "PARTICIPANT",
             },
           });
+          
         });
       } catch (error) {
         console.error("Error removing judge:", error);
@@ -126,6 +182,13 @@ export const organiserRouter = createTRPCRouter({
           role: "TEAM",
         },
       });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "Role Change",
+          description: `User ${input.id} has been assigned as a Volunteer`,
+        },
+      });
     }),
   removeVolunteer: adminProcedure
     .input(
@@ -140,6 +203,13 @@ export const organiserRouter = createTRPCRouter({
         },
         data: {
           role: "PARTICIPANT",
+        },
+      });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "Role Change",
+          description: `User ${input.userId} has been removed as a Volunteer`,
         },
       });
     }),
@@ -173,6 +243,13 @@ export const organiserRouter = createTRPCRouter({
         },
         data: {
           teamProgress: input.progress,
+        },
+      });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM_PROGRESS",
+          description: `Team ${input.teamId} progress has been updated to ${input.progress}`,
         },
       });
       return updatedTeam;

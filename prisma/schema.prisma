@@ -160,6 +160,7 @@ model Scores {
   teamId     String
 
   @@unique([teamId, criteriaId, judgeId])
+  @@index([judgeId])
 }
 
 model AppSettings {

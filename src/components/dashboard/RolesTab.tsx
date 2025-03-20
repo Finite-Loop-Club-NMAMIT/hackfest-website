@@ -8,12 +8,12 @@ interface RolesTabProps {
 
 export default function RolesTab({ users }: RolesTabProps) {
   return (
-    <div className="w-full px-4">
-      <div className="flex w-full gap-8">
-        <div className="flex-1">
+    <div className="w-full px-4 max-w-full overflow-hidden">
+      <div className="flex w-full flex-col md:flex-row gap-8">
+        <div className="w-full md:flex-1 max-w-full">
           <JudgePanel users={users} />
         </div>
-        <div className="flex-1">
+        <div className="w-full md:flex-1 max-w-full">
           <VolunteerPanel users={users} />
         </div>
       </div>
