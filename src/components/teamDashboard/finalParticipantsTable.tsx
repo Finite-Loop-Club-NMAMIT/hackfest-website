@@ -27,6 +27,7 @@ import { Button } from "../ui/button";
 import { toast } from "sonner";
 import type { Team } from "@prisma/client";
 import { Check, X } from "lucide-react";
+import { TickButton, WrongButton } from "~/components/ui/monochrome-buttons";
 
 interface MembersRow {
   members: { college: { name: string } }[];
@@ -72,53 +73,45 @@ export default function FinalParticipantsTable({
   >[] = [
     {
       accessorKey: "name",
-      header: "Team Name",
+      header: "ID",
     },
     {
       accessorKey: "members",
-      header: "College",
-      cell: (members) => (
-        <span>
-          {(members.row.original as MembersRow).members[0]!.college.name}
-        </span>
-      ),
+      header: "Team Name",
+      cell: (members) => {
+        const team = members.row.original as MembersRow;
+        return (
+          <span>
+            {team.members && team.members.length > 0
+              ? team.members[0]?.college?.name
+              : "No college"}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "",
-      header: "Attendance",
+      header: "College",
       cell: (cell) => {
+        const team = cell.cell.row.original as Team;
         return (
-          <>
-            <div className="flex">
-              {!(cell.cell.row.original as Team).attended ? (
-                <div className="inline-block rounded-lg bg-green-500 p-2">
-                  <span
-                    className=" cursor-pointer text-white"
-                    onClick={async () => {
-                      await ToggleAttendance(
-                        `${(cell.cell.row.original as Team).id}`,
-                      );
-                    }}
-                  >
-                    <Check />
-                  </span>
-                </div>
-              ) : (
-                <div className="inline-block rounded-lg bg-red-500 p-2">
-                  <span
-                    className=" cursor-pointer text-white"
-                    onClick={async () => {
-                      await ToggleAttendance(
-                        `${(cell.cell.row.original as Team).id}`,
-                      );
-                    }}
-                  >
-                    <X />
-                  </span>
-                </div>
-              )}
-            </div>
-          </>
+          <div className="flex">
+            {!team.attended ? (
+              <TickButton
+                onClick={async () => {
+                  await ToggleAttendance(team.id);
+                }}
+                active={false}
+              />
+            ) : (
+              <WrongButton
+                onClick={async () => {
+                  await ToggleAttendance(team.id);
+                }}
+                active={false}
+              />
+            )}
+          </div>
         );
       },
     },

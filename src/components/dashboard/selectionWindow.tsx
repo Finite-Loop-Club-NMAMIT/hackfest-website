@@ -19,6 +19,9 @@ import { ChevronUp, ChevronDown } from "lucide-react";
 const SelectionWindow = () => {
   const teamData = api.team.getTeamsList.useQuery();
   const [selectedTrack, setSelectedTrack] = useState<string>("all");
+  const [notSelectedPage, setNotSelectedPage] = useState(1);
+  const [semiSelectedPage, setSemiSelectedPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // Get unique tracks from team submissions
   const tracks = teamData.data ? 
@@ -144,8 +147,15 @@ const SelectionWindow = () => {
       .join(" | ");
   };
 
+  // Add pagination helper function
+  const paginateTeams = (teams: typeof teamData.data, page: number) => {
+    if (!teams) return [];
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    return teams.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  };
+
   // Render table for a specific team progress status
-  const renderTeamTable = (teams: typeof teamData.data, title: string, status: string) => (
+  const renderTeamTable = (teams: typeof teamData.data, title: string, status: string, currentPage?: number, setPage?: (page: number) => void) => (
     <Card className="w-full h-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>{title}</CardTitle>
@@ -170,9 +180,11 @@ const SelectionWindow = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {teams?.map((team, index) => (
+            {(currentPage ? paginateTeams(teams, currentPage) : teams)?.map((team, index) => (
               <TableRow key={index}>
-                <TableCell className="font-medium">{index + 1}</TableCell>
+                <TableCell className="font-medium">
+                  {currentPage ? (currentPage - 1) * ITEMS_PER_PAGE + index + 1 : index + 1}
+                </TableCell>
                 <TableCell>{team.name}</TableCell>
                 <TableCell>{team.IdeaSubmission?.track ?? "N/A"}</TableCell>
                 <TableCell>
@@ -235,6 +247,29 @@ const SelectionWindow = () => {
             )}
           </TableBody>
         </Table>
+        {currentPage && setPage && teams && teams.length > ITEMS_PER_PAGE && (
+          <div className="flex justify-end items-center space-x-2 mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm">
+              Page {currentPage} of {Math.ceil((teams?.length || 0) / ITEMS_PER_PAGE)}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(currentPage + 1)}
+              disabled={currentPage >= Math.ceil((teams?.length || 0) / ITEMS_PER_PAGE)}
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -277,10 +312,10 @@ const SelectionWindow = () => {
             <div className="flex flex-col space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="w-full">
-                  {renderTeamTable(notSelectedTeams, "Not Selected Teams", "NOT_SELECTED")}
+                  {renderTeamTable(notSelectedTeams, "Not Selected Teams", "NOT_SELECTED", notSelectedPage, setNotSelectedPage)}
                 </div>
                 <div className="w-full">
-                  {renderTeamTable(semiSelectedTeams, "Top 100 Teams", "SEMI_SELECTED")}
+                  {renderTeamTable(semiSelectedTeams, "Top 100 Teams", "SEMI_SELECTED", semiSelectedPage, setSemiSelectedPage)}
                 </div>
               </div>
             </div>

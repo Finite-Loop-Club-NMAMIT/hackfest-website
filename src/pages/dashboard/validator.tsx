@@ -15,6 +15,7 @@ import NotFound from "../404";
 import { Button } from "~/components/ui/button";
 import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 export default function Validator() {
   const { data: sessionData, status } = useSession();
@@ -140,106 +141,103 @@ export default function Validator() {
 
   return (
     !teamData.isLoading && (
-      <DashboardLayout>
-        <div 
-          className="flex w-full flex-col items-center justify-center gap-6 py-4 opacity-100 transition-opacity duration-600"
-        >
-          <h1 className="text-3xl font-semibold md:text-5xl bg-gradient-to-r from-gray-300 to-white bg-clip-text text-transparent mt-24 mb-8">
-            Validator Dashboard
-          </h1>
-          <div 
-            className="flex w-full flex-col items-center justify-center gap-y-2 bg-gradient-to-b from-gray-900 to-gray-800 p-6 rounded-lg shadow-md transition-shadow duration-300 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] text-gray-200 my-8"
-          >
-            <span className="text-xl">
-              Hey there {sessionData.user.name} 👋
-            </span>
-            <ul className="flex list-disc flex-col text-base text-gray-400 mt-4">
-              <li>Select star rating for each team (1 to 5 stars)</li>
-              <li>Ratings are automatically submitted when you click a star</li>
-              <li>Submitted ratings will be highlighted in yellow</li>
-            </ul>
-          </div>
-        </div>
+      <div className="container mx-auto">      
+        <Card className="w-full max-w-[1500px] mx-auto mb-4">
+          <CardHeader>
+            <CardTitle className="text-3xl">Validator Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="text-muted-foreground">
+                <p>Hey there {sessionData.user.name} 👋</p>
+                <ul className="list-disc pl-6 mt-2 space-y-1">
+                  <li>Select star rating for each team (1 to 5 stars)</li>
+                  <li>Ratings are automatically submitted when you click a star</li>
+                  <li>Submitted ratings will be highlighted in yellow</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
-        {/* Track Filter */}
-        <div className="flex justify-end mb-4">
-          <Select value={selectedTrack} onValueChange={handleTrackChange}>
-            <SelectTrigger className="w-[180px] bg-gray-800 border-gray-700 text-gray-200">
-              <SelectValue placeholder="Filter by track" />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700 text-gray-200">
-              <SelectItem value="all">All Tracks</SelectItem>
-              {tracks.map((track, index) => (
-                <SelectItem key={index} value={track}>{track}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div 
-          className="rounded-md border border-gray-700 bg-gradient-to-b from-gray-900 to-gray-800 shadow-md transition-all duration-500 mb-24"
-        >
-          <Table>
-            <TableHeader className="bg-gray-800">
-              <TableRow className="border-b border-gray-700">
-                <TableHead className="text-gray-300">Sl. No.</TableHead>
-                <TableHead className="text-gray-300">Team Name</TableHead>
-                <TableHead className="text-gray-300">Track</TableHead>
-                <TableHead className="text-gray-300">PPT</TableHead>
-                <TableHead className="text-gray-300">Rating</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTeams
-                ?.map((team, index) => {
-                  const submittedScore = getTeamScore(team.id);
-                  const currentRating = selectedRatings[team.id] ?? submittedScore;
-                  
-                  return (
-                    <TableRow 
-                      key={index}
-                      className="hover:bg-gray-800 transition-colors duration-200 border-b border-gray-700"
-                    >
-                      <TableCell className="text-gray-300">{index + 1}</TableCell>
-                      <TableCell className="text-gray-300">{team.name}</TableCell>
-                      <TableCell className="text-gray-300">{team.IdeaSubmission?.track ?? "N/A"}</TableCell>
-                      <TableCell>
-                        <a
-                          href={team.IdeaSubmission?.pptUrl.split(";")[0]}
-                          target="_blank"
-                        >
-                          <div className="transition-transform duration-200 hover:scale-105 active:scale-95">
-                            <Button 
-                              variant="outline" 
-                              className="bg-gradient-to-r from-gray-800 to-gray-700 text-gray-200 border-gray-600 hover:bg-gray-700 transition-all duration-300 hover:border-gray-500"
-                            >
-                              View PDF
-                            </Button>
+        <Card className="w-full max-w-[1500px] mx-auto">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Team Submissions</CardTitle>
+            <Select value={selectedTrack} onValueChange={handleTrackChange}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by track" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tracks</SelectItem>
+                {tracks.map((track, index) => (
+                  <SelectItem key={index} value={track}>{track}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <div className="min-w-[1000px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">Sl. No.</TableHead>
+                    <TableHead>Team Name</TableHead>
+                    <TableHead>Track</TableHead>
+                    <TableHead className="text-center">PPT</TableHead>
+                    <TableHead>Rating</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredTeams?.map((team, index) => {
+                    const submittedScore = getTeamScore(team.id);
+                    const currentRating = selectedRatings[team.id] ?? submittedScore;
+                    
+                    return (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{index + 1}</TableCell>
+                        <TableCell>{team.name}</TableCell>
+                        <TableCell>{team.IdeaSubmission?.track ?? "N/A"}</TableCell>
+                        <TableCell className="text-center">
+                          <Button 
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(team.IdeaSubmission?.pptUrl.split(";")[0], "_blank")}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            View PDF
+                          </Button>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                onClick={() => handleStarClick(team.id, star)}
+                                className="focus:outline-none transition-colors"
+                              >
+                                <span className={`text-2xl ${currentRating >= star ? 'text-yellow-400' : 'text-muted-foreground'}`}>
+                                  ★
+                                </span>
+                              </button>
+                            ))}
                           </div>
-                        </a>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              onClick={() => handleStarClick(team.id, star)}
-                              className="text-3xl focus:outline-none transition-transform duration-200 hover:scale-110 active:scale-90"
-                            >
-                              <span className={`${currentRating >= star ? 'text-yellow-400' : 'text-gray-600'} drop-shadow-md transition-all duration-300`}>
-                                ★
-                              </span>
-                            </button>
-                          ))}
-                        </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {filteredTeams?.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-4">
+                        No teams found for the selected track
                       </TableCell>
                     </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
-        </div>
-      </DashboardLayout>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>  
     )
   );
 }

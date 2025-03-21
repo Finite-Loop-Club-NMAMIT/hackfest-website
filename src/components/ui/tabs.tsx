@@ -50,4 +50,35 @@ const TabsContent = React.forwardRef<
 ))
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
+interface Tab {
+  id: string;
+  label: string;
+}
+
+interface DashboardTabsProps {
+  tabs: Tab[];
+  activeTab: string;
+  onTabChange: (tabId: string) => void;
+}
+
+export function DashboardTabs({ tabs, activeTab, onTabChange }: DashboardTabsProps) {
+  return (
+    <div className="flex flex-row items-center justify-center border-b mb-6">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => onTabChange(tab.id)}
+          className={`w-full py-2 px-4 text-center transition-colors ${
+            activeTab === tab.id
+              ? "border-b-2 border-purple-500 font-bold"
+              : "text-gray-400 hover:text-white"
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export { Tabs, TabsList, TabsTrigger, TabsContent }

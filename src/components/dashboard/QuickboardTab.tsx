@@ -1,9 +1,17 @@
 import { api } from "~/utils/api";
 
 export default function QuickboardTab() {
-  const users = api.user.getAllUsers.useQuery().data;
+  const users = api.user.getAllUsers.useQuery();
   const res = api.team.getTeamsList.useQuery();
   const statistics = api.team.getStatistics.useQuery();
+
+  if (users.isLoading || res.isLoading || statistics.isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-2xl text-gray-200">Loading statistics...</div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -17,7 +25,7 @@ export default function QuickboardTab() {
               <div className="flex flex-col items-center space-y-2">
                 <h3 className="text-xl font-semibold text-gray-200">Number of Logins</h3>
                 <span className="text-4xl font-bold text-purple-400 animate-pulse">
-                  {users?.length ?? 0}
+                  {users.data?.length ?? 0}
                 </span>
               </div>
             </div>
@@ -26,7 +34,7 @@ export default function QuickboardTab() {
               <div className="flex flex-col items-center space-y-2">
                 <h3 className="text-xl font-semibold text-gray-200">Number of Teams</h3>
                 <span className="text-4xl font-bold text-purple-400 animate-pulse">
-                  {res?.data?.length ?? 0}
+                  {res.data?.length ?? 0}
                 </span>
               </div>
             </div>
@@ -35,7 +43,7 @@ export default function QuickboardTab() {
               <div className="flex flex-col items-center space-y-2">
                 <h3 className="text-xl font-semibold text-gray-200">Idea Submissions</h3>
                 <span className="text-4xl font-bold text-purple-400 animate-pulse">
-                  {res?.data?.filter((team) => team.IdeaSubmission).length ?? 0}
+                  {res.data?.filter((team) => team.IdeaSubmission).length ?? 0}
                 </span>
               </div>
             </div>
