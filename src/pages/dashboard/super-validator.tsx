@@ -16,38 +16,83 @@ import {
 import { Button } from "~/components/ui/button";
 import { useSession } from "next-auth/react";
 import NotFound from "../404";
-
-import VolunteerPanel from "~/components/organiserDashboard/volunteerPanel";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet";
 import { Label } from "@radix-ui/react-label";
-import DashboardLayout from "~/components/layout/dashboardLayout";
-import JudgePanel from "~/components/organiserDashboard/judgePanel";
+import { Download, FileSpreadsheet } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
-export default function Organiser() {
+interface Team {
+  id: string;
+  name: string;
+  paymentStatus: string;
+  IdeaSubmission: {
+    track: string;
+    pptUrl: string;
+  } | null;
+  members?: {
+    email: string;
+  }[];
+}
+
+const downloadCSV = (teams: Team[]) => {
+  const headers = ['Team ID', 'Team Name', 'Payment Status', 'Track', 'Members'];
+  const csvData = teams.map(team => [
+    team.id,
+    team.name,
+    team.paymentStatus,
+    team.IdeaSubmission?.track ?? 'N/A',
+    team.members?.map((m: { email: string }) => m.email).join('; ') ?? ''
+  ]);
+  
+  const csvContent = [
+    headers.join(','),
+    ...csvData.map(row => row.join(','))
+  ].join('\n');
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'teams_export.csv';
+  link.click();
+};
+
+const downloadExcel = (teams: Team[]) => {
+  const headers = ['Team ID', 'Team Name', 'Payment Status', 'Track', 'Members'];
+  const data = teams.map(team => [
+    team.id,
+    team.name,
+    team.paymentStatus,
+    team.IdeaSubmission?.track ?? 'N/A',
+    team.members?.map((m: { email: string }) => m.email).join('; ') ?? ''
+  ]);
+  
+  const worksheet = [
+    headers.join('\t'),
+    ...data.map(row => row.join('\t'))
+  ].join('\n');
+  
+  const blob = new Blob([worksheet], { type: 'application/vnd.ms-excel' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'teams_export.xls';
+  link.click();
+};
+
+export default function SuperVaildator() {
   const res = api.superValidator.getTop100.useQuery();
-  const users = api.user.getAllUsers.useQuery().data;
-
   const allTeams = res.data;
   const [selectedTeams, setSelectedTeams] = useState(res.data);
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [paymentQuery, setPaymentQuery] = useState("ALL");
-  const [top60Query, setTop60Query] = useState("ALL");
-  const [submissionQuery, setSubmissionQuery] = useState("ALL");
   const [trackQuery, setTrackQuery] = useState("ALL");
 
   const { data, status } = useSession();
 
   useEffect(() => {
     setSelectedTeams(() => {
-      let partiallyFiltered = allTeams;
+      let partiallyFiltered = allTeams?.filter(team => 
+        "IdeaSubmission" in team && team.IdeaSubmission !== null
+      );
 
       const newSearchQuery = searchQuery.trim().toLowerCase();
       if (newSearchQuery !== "") {
@@ -66,28 +111,7 @@ export default function Organiser() {
         );
       }
 
-      if (top60Query !== "ALL") {
-        partiallyFiltered = partiallyFiltered?.filter((team) => {
-          const temp =
-            top60Query === "NOT SELECTED"
-              ? "NOT_SELECTED"
-              : top60Query === "TOP 100"
-                ? "SEMI_SELECTED"
-                : top60Query === "TOP 60"
-                  ? "SELECTED"
-                  : "";
-
-          return team.teamProgress === temp;
-        });
-      }
-
-      if (submissionQuery !== "ALL") {
-        partiallyFiltered = partiallyFiltered?.filter(
-          (team) => ("IdeaSubmission" in team && !!team.IdeaSubmission) === (submissionQuery === "SUBMITTED"),
-        );
-      }
-
-      if (trackQuery !== "ALL" && submissionQuery !== "NOT SUBMITTED") {
+      if (trackQuery !== "ALL") {
         partiallyFiltered = partiallyFiltered?.filter(
           (team) => "IdeaSubmission" in team && team.IdeaSubmission && typeof team.IdeaSubmission === 'object' && team.IdeaSubmission !== null && "track" in team.IdeaSubmission && team.IdeaSubmission.track === trackQuery,
         );
@@ -99,19 +123,15 @@ export default function Organiser() {
     res.data,
     searchQuery,
     paymentQuery,
-    top60Query,
-    submissionQuery,
     trackQuery,
     allTeams,
   ]);
 
   if (status === "loading")
     return (
-      <DashboardLayout>
         <div className="flex h-screen w-screen items-center justify-center">
           <Spinner />
         </div>
-      </DashboardLayout>
     );
 
   if (!data || !data.user || data.user.role !== "ADMIN") {
@@ -119,219 +139,150 @@ export default function Organiser() {
   }
 
   return (
-    <DashboardLayout>
+    <div>
       <Tabs defaultValue="teams" className="w-full">
         <TabsContent value="teams">
-          <div className="w-full border-b">
-            <h1 className="py-10 text-center text-4xl font-bold">
-              Super - Validator
-            </h1>
-          </div>
-          <div className="m-auto overflow-x-scroll md:max-w-screen-xl">
-            <h1 className="my-8 text-center text-2xl font-bold">
-              Teams in top 100
-            </h1>
-            <div className="my-4 flex h-full w-full flex-col items-center justify-around gap-3 md:flex-row">
-              <Sheet>
-                <SheetTrigger>
-                  <Button>
-                    Filters
-                    {(searchQuery !== "" ||
-                      paymentQuery !== "ALL" ||
-                      top60Query !== "ALL" ||
-                      submissionQuery !== "ALL" ||
-                      trackQuery !== "ALL") &&
-                      " (Applied)"}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent className="bg-slate-950 ">
-                  <SheetHeader>
-                    <SheetTitle className="text-white">Filters</SheetTitle>
-                    <SheetDescription className="flex flex-col items-center justify-center gap-10">
-                      <div className="flex flex-col items-center justify-center gap-3">
-                        <Label>Team ID/Name</Label>
-                        <Input
-                          placeholder="Search Team ID/Name"
-                          className="w-52"
-                          value={searchQuery}
-                          onChange={(e) => {
-                            setSearchQuery(e.target.value);
-                          }}
-                        />
-                      </div>
-                      <div className="flex flex-col items-center justify-center gap-3">
-                        <Label>Idea Submission Status</Label>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline">{submissionQuery}</Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>
-                              Submission Status
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuRadioGroup
-                              value={submissionQuery}
-                              onValueChange={(value: string) =>
-                                setSubmissionQuery(value)
-                              }
-                            >
-                              <DropdownMenuRadioItem value="ALL">
-                                All
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="SUBMITTED">
-                                Submitted
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="NOT SUBMITTED">
-                                Not Submitted
-                              </DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                      <div className="flex flex-col items-center justify-center gap-3">
-                        <Label>
-                          Track Choosen
-                          {submissionQuery === "NOT SUBMITTED" && " (N A)"}
-                        </Label>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            asChild
-                            disabled={submissionQuery === "NOT SUBMITTED"}
-                          >
-                            <Button variant="outline">{trackQuery}</Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>
-                              Submission Status
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuRadioGroup
-                              value={trackQuery}
-                              onValueChange={(value: string) =>
-                                setTrackQuery(value)
-                              }
-                            >
-                              <DropdownMenuRadioItem value="ALL">
-                                All
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="FINTECH">
-                                Fintech
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="SUSTAINABLE_DEVELOPMENT">
-                                Sustainable Development
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="HEALTHCARE">
-                                Healthcare
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="METAVERSE">
-                                Metaverse
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="LOGISTICS">
-                                Logistics
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="OPEN_INNOVATION">
-                                Open Innovation
-                              </DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                      <div className="flex flex-col items-center justify-center gap-3">
-                        <Label>Selection of Teams</Label>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline">{top60Query}</Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>
-                              Shortlist Status
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuRadioGroup
-                              value={top60Query}
-                              onValueChange={(value: string) =>
-                                setTop60Query(value)
-                              }
-                            >
-                              <DropdownMenuRadioItem value="ALL">
-                                All
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="TOP 60">
-                                Top 60
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="TOP 100">
-                                Top 100
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="NOT SELECTED">
-                                Not Selected
-                              </DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                      <div className="flex flex-col items-center justify-center gap-3">
-                        <Label>Payment Status</Label>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline">{paymentQuery}</Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>Payment Staus</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuRadioGroup
-                              value={paymentQuery}
-                              onValueChange={(value: string) =>
-                                setPaymentQuery(value)
-                              }
-                            >
-                              <DropdownMenuRadioItem value="ALL">
-                                All
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="PAID">
-                                Paid
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="PENDING">
-                                Pending
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="FAILED">
-                                Failed
-                              </DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                      <Button
-                        variant="destructive"
-                        onClick={() => {
-                          setPaymentQuery("ALL");
-                          setSearchQuery("");
-                          setSubmissionQuery("ALL");
-                          setTop60Query("ALL");
-                          setTrackQuery("ALL");
-                        }}
-                      >
-                        RESET
-                      </Button>
-                    </SheetDescription>
-                  </SheetHeader>
-                </SheetContent>
-              </Sheet>
-            </div>
-            {!res ? (
-              <Spinner size="large" />
-            ) : (
-              <TopTeams data={selectedTeams} dataRefecth={res.refetch} />
-            )}
-          </div>
-          <div></div>
-        </TabsContent>
+          <Card className="w-full max-w-[1500px] mx-auto mb-4">
+            <CardHeader className="pb-3">
+              <CardTitle>Super - Validator</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Team ID/Name</Label>
+                  <Input
+                    placeholder="Search Team ID/Name"
+                    className="w-full"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
 
-        <TabsContent value="roles">
-          <JudgePanel users={users} />
-          <VolunteerPanel users={users} />
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Track</Label>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="w-full justify-between">{trackQuery}</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuLabel>
+                        Submission Status
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuRadioGroup
+                        value={trackQuery}
+                        onValueChange={(value: string) =>
+                          setTrackQuery(value)
+                        }
+                      >
+                        <DropdownMenuRadioItem value="ALL">
+                          All
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="FINTECH">
+                          Fintech
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="SUSTAINABLE_DEVELOPMENT">
+                          Sustainable Development
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="HEALTHCARE">
+                          Healthcare
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="LOGISTICS">
+                          Logistics
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="OPEN_INNOVATION">
+                          Open Innovation
+                        </DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Payment Status</Label>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="w-full justify-between">{paymentQuery}</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuLabel>Payment Staus</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuRadioGroup
+                        value={paymentQuery}
+                        onValueChange={(value: string) =>
+                          setPaymentQuery(value)
+                        }
+                      >
+                        <DropdownMenuRadioItem value="ALL">
+                          All
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="PAID">
+                          Paid
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="PENDING">
+                          Pending
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="FAILED">
+                          Failed
+                        </DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                {(searchQuery !== "" || paymentQuery !== "ALL" || trackQuery !== "ALL") && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      setPaymentQuery("ALL");
+                      setSearchQuery("");
+                      setTrackQuery("ALL");
+                    }}
+                  >
+                    Reset Filters
+                  </Button>
+                )}
+                
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-1"
+                  onClick={() => selectedTeams && downloadCSV(selectedTeams)}
+                >
+                  <Download className="h-4 w-4" />
+                  CSV
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-1"
+                  onClick={() => selectedTeams && downloadExcel(selectedTeams)}
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Excel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="w-full max-w-[1500px] mx-auto">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Teams in top 100</CardTitle>
+              <div className="text-sm text-muted-foreground">
+                {selectedTeams?.length ?? 0} teams
+              </div>
+            </CardHeader>
+            <CardContent>
+              {!res ? (
+                <Spinner size="large" />
+              ) : (
+                <TopTeams data={selectedTeams} dataRefecth={res.refetch} />
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
-    </DashboardLayout>
+    </div>
   );
 }

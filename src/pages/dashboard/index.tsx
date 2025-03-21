@@ -7,6 +7,7 @@ import Spinner from "~/components/spinner";
 import Validator from "./validator";
 import Organiser from "./organiser";
 import TeamAttendance from "./team";
+import SuperVaildator from "./super-validator";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -56,9 +57,11 @@ export default function Dashboard() {
     
     switch (session.user.role) {
       case "ADMIN":
-        return ["organiser", "team", "validator"];  // Changed order to make organiser first
+        return ["organiser", "team", "validator"];
       case "VALIDATOR":
         return ["validator"];
+      case "SUPER_VALIDATOR":
+        return ["superValidator"];
       case "TEAM":
         return ["team"];
       default:
@@ -75,6 +78,8 @@ export default function Dashboard() {
         return "organiser";
       case "VALIDATOR":
         return "validator";
+      case "SUPER_VALIDATOR":
+        return "superValidator";
       case "TEAM":
         return "team";
       default:
@@ -177,6 +182,7 @@ export default function Dashboard() {
         {activeTab === "team" && <TeamAttendance />}
         {activeTab === "organiser" && <Organiser />}
         {activeTab === "validator" && <Validator />}
+        {activeTab === "superValidator" && <SuperVaildator />}
       </div>
     </DashboardLayout>
   );
