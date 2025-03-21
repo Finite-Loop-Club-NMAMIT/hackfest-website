@@ -223,3 +223,13 @@ input[type="number"] {
 .gradient-text {
   @apply bg-gradient-to-b bg-clip-text text-transparent from-neutral-50 via-neutral-500 to-neutral-300;
 }
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

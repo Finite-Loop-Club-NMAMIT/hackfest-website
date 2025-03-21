@@ -89,6 +89,7 @@
     "react-zxing": "^2.0.0",
     "recharts": "^2.15.1",
     "shadcn-ui": "^0.8.0",
+    "sharp": "^0.33.5",
     "sonner": "^1.4.0",
     "superjson": "^2.2.1",
     "tailwind-merge": "^2.2.0",

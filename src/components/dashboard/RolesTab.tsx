@@ -10,7 +10,7 @@ interface RolesTabProps {
 
 export default function RolesTab({ users }: RolesTabProps) {
   return (
-    <div className="w-full px-4 max-w-full overflow-hidden">
+    <div className="w-full px-4 md:px-0 max-w-full overflow-x-hidden">
       <Card className="w-full max-w-full mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Roles Management</CardTitle>

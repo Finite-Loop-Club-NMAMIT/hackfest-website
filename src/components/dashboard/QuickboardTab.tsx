@@ -14,12 +14,12 @@ export default function QuickboardTab() {
   }
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       <div className="w-full">
         <h1 className="py-10 text-center text-4xl font-bold">Quick Statistics</h1>
       </div>
       <div className="w-full py-12">
-        <div className="mx-auto max-w-7xl px-4">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3 animate-fade-in">
             <div className="group rounded-2xl bg-white/10 p-8 backdrop-blur-lg transition-all duration-300 hover:bg-white/15 hover:transform hover:scale-105">
               <div className="flex flex-col items-center space-y-2">

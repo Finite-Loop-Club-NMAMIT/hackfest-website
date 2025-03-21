@@ -129,60 +129,64 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      {/* Enhanced Google-style Clock with Internet Time */}
-      <div className="flex justify-center items-center mb-8">
-        <div className="rounded-2xl shadow-lg p-6 backdrop-blur-lg min-w-[320px]">
-          {isLoadingTime ? (
-            <div className="flex flex-col items-center justify-center">
-              <div className="text-xl text-gray-400 mb-1">Fetching internet time...</div>
-              <Spinner />
-            </div>
-          ) : (
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-200 mb-1">
-                {currentTime.toLocaleDateString([], { weekday: 'long' })}
+      <div className="max-w-[100vw] overflow-x-hidden">
+        {/* Enhanced Google-style Clock with Internet Time */}
+        <div className="flex justify-center items-center mb-8">
+          <div className="rounded-2xl shadow-lg p-6 backdrop-blur-lg min-w-[320px]">
+            {isLoadingTime ? (
+              <div className="flex flex-col items-center justify-center">
+                <div className="text-xl text-gray-400 mb-1">Fetching internet time...</div>
+                <Spinner />
               </div>
-              <div className="text-5xl font-bold text-white mb-2 tracking-wider">
-                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+            ) : (
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-200 mb-1">
+                  {currentTime.toLocaleDateString([], { weekday: 'long' })}
+                </div>
+                <div className="text-5xl font-bold text-white mb-2 tracking-wider">
+                  {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+                </div>
+                <div className="text-xl font-medium text-gray-300 mb-2">
+                  {currentTime.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })}
+                </div>
+                <div className="flex items-center justify-center gap-2 text-xs text-purple-400 mt-2">
+                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                  {internetTime ? 
+                    "Internet Time • Last synced: " + new Date(internetTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true}) : 
+                    "Using local time"
+                  }
+                </div>
               </div>
-              <div className="text-xl font-medium text-gray-300 mb-2">
-                {currentTime.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })}
-              </div>
-              <div className="flex items-center justify-center gap-2 text-xs text-purple-400 mt-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                {internetTime ? 
-                  "Internet Time • Last synced: " + new Date(internetTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true}) : 
-                  "Using local time"
-                }
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
 
-      {availableTabs.length > 1 && (
-        <div className="flex flex-row items-center justify-center border-b mb-6">
-          {availableTabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => handleTabChange(tab)}
-              className={`w-full py-2 px-4 text-center transition-colors ${
-                activeTab === tab
-                  ? "border-b-2 border-purple-500 font-bold"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              {tab[0]?.toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+        {availableTabs.length > 1 && (
+          <div className="relative mb-6 border-b">
+            <div className="flex overflow-x-auto no-scrollbar items-center justify-start md:justify-center">
+              {availableTabs.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => handleTabChange(tab)}
+                  className={`whitespace-nowrap flex-shrink-0 py-2 px-4 text-center transition-colors ${
+                    activeTab === tab
+                      ? "border-b-2 border-purple-500 font-bold"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  {tab[0]?.toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-6">
+          {activeTab === "team" && <TeamAttendance />}
+          {activeTab === "organiser" && <Organiser />}
+          {activeTab === "validator" && <Validator />}
+          {activeTab === "superValidator" && <SuperVaildator />}
         </div>
-      )}
-
-      <div className="mt-6">
-        {activeTab === "team" && <TeamAttendance />}
-        {activeTab === "organiser" && <Organiser />}
-        {activeTab === "validator" && <Validator />}
-        {activeTab === "superValidator" && <SuperVaildator />}
       </div>
     </DashboardLayout>
   );

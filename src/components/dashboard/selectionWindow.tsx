@@ -280,7 +280,7 @@ const SelectionWindow = () => {
   );
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-hidden">
       <Card className="w-full max-w-[1500px] mx-auto mb-4">
         <CardHeader className="pb-3">
           <CardTitle>Filter Teams by Track</CardTitle>

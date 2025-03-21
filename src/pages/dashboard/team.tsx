@@ -77,13 +77,13 @@ export default function TeamAttendance() {
   }
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       <div className="flex w-full flex-col items-center justify-center gap-6 py-4 opacity-100 transition-opacity duration-600">
         <h1 className="text-3xl font-semibold md:text-5xl bg-gradient-to-r from-gray-300 to-white bg-clip-text text-transparent">
           Volunteer Dashboard
         </h1>
       </div>
-      <div className="m-auto md:max-w-[1500px] mb-24">
+      <div className="m-auto px-4 md:px-0 md:max-w-[1500px] mb-24">
         <Card className="w-full mx-auto mb-4">
           <CardHeader className="pb-3">
             <CardTitle>Search & Filter Teams</CardTitle>
