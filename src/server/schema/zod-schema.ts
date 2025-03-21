@@ -96,17 +96,9 @@ const getTeamDetailsByIdZ = z.object({
   teamId: z.string().min(1, { message: "Team ID cannot be empty" }),
 });
 
-const addJudgeZ = z.object({
+const addJudge = z.object({
   userId: z.string(),
   type: z.nativeEnum(JudgeType),
-  track: z.enum([
-    "FINTECH",
-    "SUSTAINABLE_DEVELOPMENT",
-    "HEALTHCARE",
-    "LOGISTICS",
-    "OPEN_INNOVATION",
-    "ALL",
-  ]),
 });
 
 const finalSubmissionZ = z.object({
@@ -141,7 +133,7 @@ export {
   joinTeamZ,
   createCollegeZ,
   getTeamDetailsByIdZ,
-  addJudgeZ,
+  addJudge,
   finalSubmissionZ,
   resumeSubmissionZ,
   appSettingsZ,

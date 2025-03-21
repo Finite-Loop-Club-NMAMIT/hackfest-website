@@ -1,147 +1,184 @@
+import { type FunctionComponent, useEffect, useState, useRef } from "react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { api } from "~/utils/api";
+import { toast } from "sonner";
+import VolunteersTable from "./volunteerTable";
+import type { User } from "@prisma/client";
 import {
-    Dialog,
-    DialogTrigger,
-    DialogContent,
-    DialogHeader,
-  } from "../ui/dialog";
-  import { type FunctionComponent, useEffect, useState } from "react";
-  import { Button } from "../ui/button";
-  import { api } from "~/utils/api";
-  import { toast } from "sonner";
-  import VolunteersTable from "./volunteerTable";
-  import type { User } from "@prisma/client";
-  import { Popover, PopoverTrigger } from "../ui/popover";
-  import { ChevronDown } from "lucide-react";
-  
-  interface Props {
-    users: User[] | undefined;
-  }
-  
-  const VolunteerPanel: FunctionComponent<Props> = ({ users }) => {
-    const [userQuery, setUserQuery] = useState<string>("");
-    const [openUserList, setOpenUserList] = useState<boolean>(false);
-  
-    const [selectedUsers, setSelectedUsers] = useState(users);
-    const [userName, setUserName] = useState<string | null>(null);
-    const [userId, setUserId] = useState<string | null>(null);
-    const [open, setOpen] = useState(false); // Add this state to control the main dialog
-  
-    const { data: volunteersData, refetch: volunteersRefetch } =
-      api.organiser.getVolunteerList.useQuery();
-  
-    const addVolunteer = api.organiser.addVolunteer.useMutation({
-      onSuccess: async () => {
-        toast.dismiss("addingVolunteer")
-        toast.success("Added Volunteer")
-        setOpen(false); // Close the dialog on success
-        setUserId(null); // Reset the selected user
-        setUserName(null);
-        await volunteersRefetch();
-      },
-      onError: async () => {
-        toast.dismiss();
-        toast.error("Error adding volunteer");
-      },
-    });
-  
-    
-  if(addVolunteer.isLoading){
-    toast.loading("Adding Volunteer",{id:"addingVolunteer"});
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { ChevronDown } from "lucide-react";
 
+interface Props {
+  users: User[] | undefined;
+}
+
+const VolunteerPanel: FunctionComponent<Props> = ({ users }) => {
+  const [userQuery, setUserQuery] = useState<string>("");
+  const [openUserList, setOpenUserList] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
+
+  const [selectedUsers, setSelectedUsers] = useState(users);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  const {refetch: volunteersRefetch } =
+    api.organiser.getVolunteerList.useQuery();
+
+  const addVolunteer = api.organiser.addVolunteer.useMutation({
+    onSuccess: async () => {
+      toast.dismiss("addingVolunteer");
+      toast.success("Volunteer added successfully");
+      setOpen(false);
+      setUserId(null);
+      setUserName(null);
+      await volunteersRefetch();
+    },
+    onError: async () => {
+      toast.dismiss();
+      toast.error("Error adding volunteer");
+    },
+  });
+
+  if(addVolunteer.isLoading){
+    toast.loading("Adding Volunteer", {id:"addingVolunteer"});
   }
-    
-  
-    useEffect(() => {
-      if (!users) return;
-      setSelectedUsers(() => {
-        return users.filter(
-          (user) =>
-            user.id.toLowerCase().includes(userQuery.toLocaleLowerCase()) ||
-            user.name?.toLowerCase().includes(userQuery.toLowerCase()),
-        );
-      });
-    }, [users, userQuery]);
-  
-    return (
-      <>
-        <div className="w-full border-b">
-          <h1 className="py-10 text-center text-4xl font-bold">Volunteers</h1>
-        </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="my-5 flex w-full items-center justify-center">
-            <button className="rounded-lg bg-white px-4 py-2 text-black">
-              + Add Volunteer
-            </button>
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        setOpenUserList(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!users) return;
+    setSelectedUsers(() => {
+      return users.filter(
+        (user) =>
+          user.id.toLowerCase().includes(userQuery.toLocaleLowerCase()) ||
+          user.name?.toLowerCase().includes(userQuery.toLowerCase()),
+      );
+    });
+  }, [users, userQuery]);
+
+  return (
+    <>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Volunteers Management</h2>
+        <Dialog
+          open={open}
+          onOpenChange={(value) => {
+            setOpen(value);
+            if (!value) {
+              setUserId(null);
+              setUserName(null);
+              setUserQuery("");
+            }
+          }}
+        >
+          <DialogTrigger asChild>
+            <Button>+ Add Volunteer</Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>Add Volunteer</DialogHeader>
-            <Popover
-                            open={openUserList}
-                            onOpenChange={setOpenUserList}
-                          >
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={openUserList}
-                                className="w-full justify-between overflow-hidden truncate dark:text-white"
-                              >
-                                {userName ? userName : "Select user"}
-                                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </PopoverTrigger>
-                            <div 
-                              className={`absolute top-full left-0 mt-1 w-full rounded-md border border-gray-300 bg-white dark:bg-gray-800 shadow-lg z-50 ${!openUserList ? 'hidden' : ''}`}
+          <DialogContent
+            onInteractOutside={(e) => {
+              // Prevent dialog from closing when clicking popover
+              if (openUserList) {
+                e.preventDefault();
+              }
+            }}
+            className="sm:max-w-md"
+          >
+            <DialogHeader>
+              <DialogTitle>Add Volunteer</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 py-4">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="user-select" className="text-sm font-medium text-white">
+                  Select User
+                </label>
+                <div className="relative" ref={popupRef}>
+                  <Button
+                    id="user-select"
+                    variant="outline"
+                    role="combobox"
+                    onClick={() => setOpenUserList(!openUserList)}
+                    className="w-full justify-between text-white"
+                  >
+                    {userName ? userName : "Select user"}
+                    <ChevronDown className={`ml-2 h-4 w-4 shrink-0 opacity-50 transition-transform ${openUserList ? 'rotate-180' : ''}`} />
+                  </Button>
+                  {openUserList && (
+                    <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg animate-in fade-in-0 zoom-in-95">
+                      <div className="p-2">
+                        <Input
+                          placeholder="Search users..."
+                          className="w-full text-white"
+                          value={userQuery}
+                          onChange={(e) => setUserQuery(e.target.value)}
+                        />
+                      </div>
+                      <div className="max-h-72 overflow-y-auto">
+                        {selectedUsers?.length === 0 ? (
+                          <div className="p-2 text-center text-sm text-white">
+                            No users found
+                          </div>
+                        ) : (
+                          selectedUsers?.map((user) => (
+                            <button
+                              key={user.id}
+                              className={`w-full px-4 py-2 text-left text-white hover:bg-accent hover:text-accent-foreground ${
+                                userId === user.id ? "bg-accent" : ""
+                              }`}
+                              onClick={() => {
+                                setUserId(user.id);
+                                setUserName(user.name);
+                                setOpenUserList(false);
+                                setUserQuery("");
+                              }}
                             >
-                              <div className="p-3">
-                                <input
-                                  placeholder="Enter User ID/Name"
-                                  className="w-full border dark:border-gray-600 rounded p-2 text-black dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  value={userQuery}
-                                  onChange={(e) => {
-                                    setUserQuery(e.target.value);
-                                  }}
-                                />
-                              </div>
-                              <div className="max-h-72 overflow-y-auto pt-2 px-3 pb-3">
-                                <div className="group">
-                                  {selectedUsers?.length === 0 && (
-                                    <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                                      No users found
-                                    </div>
-                                  )}
-                                  {selectedUsers?.map((user) => (
-                                    <button
-                                      className={`h-max w-full text-left px-3 py-2 rounded-md mb-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                                        userId === user.id 
-                                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" 
-                                          : "text-gray-800 dark:text-gray-200"
-                                      }`}
-                                      key={user.id}
-                                      onClick={(_e) => {
-                                        setUserId(user.id);
-                                        setUserName(user.name);
-                                        setOpenUserList(false);
-                                        setUserQuery("");
-                                      }}
-                                    >
-                                      {user.name}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          </Popover>
-                          <Button onClick={async () => {await addVolunteer.mutateAsync({
-                            id: userId ? userId : ''
-                          })}} >
-                            Submit
-                          </Button>
+                              {user.name}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button 
+                onClick={async () => {
+                  if (!userId) return toast.error("Please select a user");
+                  await addVolunteer.mutateAsync({ id: userId });
+                }}
+              >
+                Add Volunteer
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
-        <VolunteersTable data={volunteersData} refetch={volunteersRefetch} />
-      </>
-    );
-  };
-  
-  export default VolunteerPanel;
+      </div>
+      
+      <div className="w-full overflow-x-auto">
+        <div className="w-full">
+          <VolunteersTable />
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default VolunteerPanel;

@@ -1,28 +1,31 @@
 import { TeamProgress } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
-import { addJudgeZ } from "~/server/schema/zod-schema";
+import { adminProcedure, createTRPCRouter, dashboardProcedure } from "~/server/api/trpc";
+import { addJudge } from "~/server/schema/zod-schema";
 import { Role } from "@prisma/client";
 
 export const organiserRouter = createTRPCRouter({
   getJudgesList: adminProcedure.query(async ({ ctx }) => {
     return await ctx.db.judge.findMany({
-      include: {
-        User: true,
+      select: {
+        id: true,
+        type: true,
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
       },
     });
   }),
-  addJudge: adminProcedure.input(addJudgeZ).mutation(async ({ input, ctx }) => {
+  addJudge: adminProcedure.input(addJudge).mutation(async ({ input, ctx }) => {
     const user = await ctx.db.user.findUnique({
-      where: {
-        id: input.userId,
-      },
-      select: {
-        id: true,
-        role: true,
-        Judge: true,
-      },
+      where: { id: input.userId },
+      select: { id: true, role: true, Judge: true },
     });
 
     if (!user) {
@@ -31,92 +34,58 @@ export const organiserRouter = createTRPCRouter({
         message: "User not found",
       });
     }
-    if (input.type === "VALIDATOR")
-    {
-      await ctx.db.user.update({
-        where: {
-          id: input.userId,
-        },
+
+    // Create judge record and update user role in a transaction
+    await ctx.db.$transaction(async (tx) => {
+      // Create judge record
+      await tx.judge.create({
         data: {
-          role: Role.VALIDATOR,          
-          Judge: {
-            create: {
-              type: input.type, 
-              id: input.userId,
-            }
-          },
-        },
+          type: input.type,
+          User: {
+            connect: { id: input.userId }
+          }
+        }
       });
-      await ctx.db.auditLog.create({
+
+      // Update user role based on judge type
+      const role = input.type === "VALIDATOR" 
+        ? Role.VALIDATOR 
+        : input.type === "SUPER_VALIDATOR"
+          ? Role.SUPER_VALIDATOR
+          : Role.JUDGE;
+
+      await tx.user.update({
+        where: { id: input.userId },
+        data: { role }
+      });
+
+      // Create audit log
+      await tx.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
           auditType: "Role Change",
-          description: `User ${input.userId} has been assigned as a Validator`,
-        },
+          description: `User ${input.userId} has been assigned as a ${input.type}`
+        }
       });
-    }
-    if (input.type === "SUPER_VALIDATOR")
-      {
-        await ctx.db.user.update({
-          where: {
-            id: input.userId,
-          },
-          data: {
-            role: Role.SUPER_VALIDATOR,
-          },
-        });
-        await ctx.db.judge.create({
-          data: {
-            type: input.type,
-            id: input.userId,
-            User: {
-              connect: {  
-                id: input.userId,
-              },
-            },
-          },
-        });
-        await ctx.db.auditLog.create({
-          data: {
-            sessionUser: ctx.session.user.email,
-            auditType: "Role Change",
-            description: `User ${input.userId} has been assigned as a Super Validator`,
-          },
-        });
-      }
-
-    if ((input.type==="DAY1"||input.type==="DAY2"||input.type ==="DAY3" )) {
-      await ctx.db.user.update({
-        where: {
-          id: input.userId,
-        },
-        data: {
-          role: Role.JUDGE,
-        },
-      });
-
-      await ctx.db.auditLog.create({
-        data: {
-          sessionUser: ctx.session.user.email,
-          auditType: "Role Change",
-          description: `User ${input.userId} has been assigned as a Judge for ${input.type}`,
-        },
-      });
-    } 
+    });
   }),
-  removeJudge: adminProcedure
+  removeJudge: dashboardProcedure
     .input(
       z.object({
         userId: z.string(),
+        judgeId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        // First check if the judge exists
-        const judge = await ctx.db.judge.findUnique({
+        // Find the judge record first with User relation
+        const judge = await ctx.db.judge.findFirst({
           where: {
-            id: input.userId,
+            id: input.judgeId,
           },
+          include: {
+            User: true
+          }
         });
         
         if (!judge) {
@@ -126,30 +95,46 @@ export const organiserRouter = createTRPCRouter({
           });
         }
         
-        // Proceed with deletion in transaction to ensure both operations succeed or fail together
-        return await ctx.db.$transaction(async (tx) => {
+        // Proceed with deletion in transaction
+         await ctx.db.$transaction(async (tx) => {
+            // Then update the user role if needed
+            const user = await ctx.db.user.findUnique({
+              where: { id: input.userId },
+              select: { role: true }
+              });
+              if (!user) {
+                throw new Error("User not found");
+              }
+  
+              if (user?.role !== Role.PARTICIPANT) {
+              await ctx.db.user.update({
+                where: {
+                id: input.userId,
+                },
+                data: {
+                role: Role.PARTICIPANT,
+                },
+              });
+              }
+
+
+          // Delete the judge record first
           await tx.judge.delete({
             where: {
-              id: input.userId,
+              id: input.judgeId,
             },
           });
-          await ctx.db.auditLog.create({
+
+
+
+          // Create audit log
+          return await ctx.db.auditLog.create({
             data: {
               sessionUser: ctx.session.user.email,
               auditType: "Role Change",
               description: `User ${input.userId} has been removed as a Judge`,
             },
           });
-          
-          return await tx.user.update({
-            where: {
-              id: input.userId,
-            },
-            data: {
-              role: "PARTICIPANT",
-            },
-          });
-          
         });
       } catch (error) {
         console.error("Error removing judge:", error);

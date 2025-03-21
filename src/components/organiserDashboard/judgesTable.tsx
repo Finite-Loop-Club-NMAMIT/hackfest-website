@@ -9,24 +9,22 @@ import {
 } from "~/components/ui/table";
 import Spinner from "../spinner";
 import { api } from "~/utils/api";
-import type { Judge, User } from "@prisma/client";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
 
-interface TableProps {
-  data: (Omit<Judge, 'User'> & { User: User })[] | null;
-  refetch: () => void;
-}
 
-const JudgesTable: FunctionComponent<TableProps> = ({ data, refetch }) => {
+const JudgesTable: FunctionComponent = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const { data, refetch } = api.organiser.getJudgesList.useQuery();
+
   const deleteJudge = api.organiser.removeJudge.useMutation({
     onSuccess: () => {
       toast.dismiss();
       toast.success("Judge deleted");
       setDeletingId(null);
-      refetch();
+      void refetch();
     },
     onError: (error) => {
       toast.dismiss();
@@ -36,61 +34,61 @@ const JudgesTable: FunctionComponent<TableProps> = ({ data, refetch }) => {
   });
   
   return (
-    <div className="flex w-full items-center justify-center">
-      <div className="h-full max-w-screen-2xl rounded-md border p-10">
-        {!data ? (
-          <Table>
-            <TableBody>
-              <TableRow>
-                <Spinner size="large" />
-              </TableRow>
-            </TableBody>
-          </Table>
-        ) : (
-          <Table>
+    <div className="w-full">
+      {!data ? (
+        <div className="flex justify-center py-8">
+          <Spinner size="large" />
+        </div>
+      ) : (
+        <div className="w-full overflow-x-auto">
+          <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Delete</TableHead>
+                <TableHead className="w-1/4">Name</TableHead>
+                <TableHead className="w-1/4">Role</TableHead>
+                <TableHead className="w-1/4">Contact</TableHead>
+                <TableHead className="w-1/4">Delete</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map((judge) => {
                 return (
-                  <TableRow key={judge.User.id}>
-                    <TableCell>{judge.User.name}</TableCell>
+                  <TableRow key={judge.id}>
+                    <TableCell>{judge.User[0]?.name}</TableCell>
                     <TableCell>{judge.type}</TableCell>
                     <TableCell>
-                      {judge.User.phone ?? judge.User.email}
+                      {judge.User[0]?.phone ?? judge.User[0]?.email}
                     </TableCell>
                     <TableCell>
-                        <Button
+                      <Button
                         onClick={() => {
+                          if (!judge.User[0]?.id) return;
                           toast.loading("Deleting judge...");
-                          setDeletingId(judge.User.id);
+                          setDeletingId(judge.id);
                           deleteJudge.mutate({
-                          userId: judge.User.id,
+                            userId: judge.User[0].id,
+                            judgeId: judge.id,
                           });
                         }}
-                        disabled={deletingId === judge.User.id}
-                        >
-                        {deletingId === judge.User.id ? "Deleting..." : "Delete"}
-                        </Button>
+                        disabled={deletingId === judge.User[0]?.id}
+                      >
+                        {deletingId === judge.User[0]?.id ? "Deleting..." : "Delete"}
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );
               })}
+              {data?.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8">
+                    No judges found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
-        )}
-        {data?.length === 0 && (
-          <div className="flex w-full justify-center p-5">
-            No Data To Display
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
