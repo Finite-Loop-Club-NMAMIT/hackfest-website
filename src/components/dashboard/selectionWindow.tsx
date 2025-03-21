@@ -17,7 +17,7 @@ import { toast } from '../ui/toast';
 import { ChevronUp, ChevronDown } from "lucide-react";
 
 const SelectionWindow = () => {
-  const teamData = api.team.getTeamsList.useQuery();
+  const teamData = api.team.getTeamsByTotalScore.useQuery();
   const [selectedTrack, setSelectedTrack] = useState<string>("all");
   const [notSelectedPage, setNotSelectedPage] = useState(1);
   const [semiSelectedPage, setSemiSelectedPage] = useState(1);
@@ -91,7 +91,7 @@ const SelectionWindow = () => {
 
   // Filter teams based on selected track and team progress
   const getFilteredTeams = (progressStatus: string) => {
-    return teamData.data?.filter((team) => {
+    const filtered = teamData.data?.filter((team) => {
       // First filter for idea submission
       if (!team.IdeaSubmission) return false;
       
@@ -103,6 +103,9 @@ const SelectionWindow = () => {
       
       return matchesTrack && matchesProgress;
     });
+
+    // Sort teams by total score in descending order
+    return filtered?.sort((a, b) => (b.totalScore ?? 0) - (a.totalScore ?? 0));
   };
 
   const notSelectedTeams = getFilteredTeams("NOT_SELECTED");
@@ -176,6 +179,7 @@ const SelectionWindow = () => {
               <TableHead>Team Name</TableHead>
               <TableHead>Track</TableHead>
               <TableHead>Submission</TableHead>
+              <TableHead className="text-right">Score</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -197,6 +201,7 @@ const SelectionWindow = () => {
                     </Button>
                   </a>
                 </TableCell>
+                <TableCell className="text-right font-bold">{team.totalScore}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     {status === "NOT_SELECTED" && (

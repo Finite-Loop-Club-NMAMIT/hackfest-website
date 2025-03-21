@@ -110,11 +110,9 @@ export default function Dashboard() {
 
   if (status === "loading") {
     return (
-      <DashboardLayout>
         <div className="flex h-screen items-center justify-center">
           <Spinner />
         </div>
-      </DashboardLayout>
     );
   }
 

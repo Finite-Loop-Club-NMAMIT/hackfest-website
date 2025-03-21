@@ -10,8 +10,20 @@ import {
 import { api } from "~/utils/api";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { Input } from "../ui/input";
 
 const VolunteersTable: FunctionComponent = () => {
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
   const { data, refetch } = api.organiser.getVolunteerList.useQuery();
 
   const deleteVolunteer = api.organiser.removeVolunteer.useMutation({
@@ -24,9 +36,55 @@ const VolunteersTable: FunctionComponent = () => {
       toast.error("Error adding Volunteer");
     },
   });
-  
+
+  const handleDeleteClick = (userId: string) => {
+    setSelectedUserId(userId);
+    setConfirmDialogOpen(true);
+    setConfirmText("");
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedUserId) return;
+    if (confirmText !== "CONFIRM") {
+      toast.error("Please type CONFIRM to delete");
+      return;
+    }
+
+    toast.loading("Deleting volunteer...");
+    deleteVolunteer.mutate({
+      userId: selectedUserId,
+    });
+    setConfirmDialogOpen(false);
+    setConfirmText("");
+    setSelectedUserId(null);
+  };
+
   return (
     <div className="w-full">
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <p className="text-white">Type CONFIRM to delete this volunteer</p>
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Type CONFIRM"
+            />
+          </div>
+          <div className="flex justify-end gap-4">
+            <Button className="text-white" variant="outline" onClick={() => setConfirmDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmDelete}>
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {!data ? (
         <div className="flex justify-center py-8">
           Loading...
@@ -53,12 +111,7 @@ const VolunteersTable: FunctionComponent = () => {
                     </TableCell>
                     <TableCell>
                       <Button
-                        onClick={() => {
-                          toast.loading("Deleting volunteer...");
-                          deleteVolunteer.mutate({
-                            userId: volunteer.id,
-                          });
-                        }}
+                        onClick={() => handleDeleteClick(volunteer.id)}
                       >
                         Delete
                       </Button>

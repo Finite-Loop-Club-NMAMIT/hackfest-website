@@ -116,4 +116,35 @@ export const validatorRouter = createTRPCRouter({
         });
       });
     }),
+
+  clearScore: protectedProcedure
+    .input(
+      z.object({
+        teamId: z.string(),
+        criteriaId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db.$transaction(async (db) => {
+        const user = ctx.session.user;
+        
+        await db.scores.deleteMany({
+          where: {
+            teamId: input.teamId,
+            criteriaId: input.criteriaId,
+            Judge: {
+              id: user.id,
+            },
+          },
+        });
+        
+        await db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "SCORE",
+            description: `Score cleared for team ${input.teamId} for criteria ${input.criteriaId}`,
+          },
+        });
+      });
+    }),
 });

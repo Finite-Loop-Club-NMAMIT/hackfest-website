@@ -24,8 +24,14 @@ export const organiserRouter = createTRPCRouter({
   }),
   addJudge: adminProcedure.input(addJudge).mutation(async ({ input, ctx }) => {
     const user = await ctx.db.user.findUnique({
-      where: { id: input.userId },
-      select: { id: true, role: true, Judge: true },
+      where: {
+         id: input.userId 
+        },
+      select: { 
+        id: true, 
+        role: true, 
+        Judge: true 
+      },
     });
 
     if (!user) {
@@ -40,6 +46,7 @@ export const organiserRouter = createTRPCRouter({
       // Create judge record
       await tx.judge.create({
         data: {
+          id: input.userId,
           type: input.type,
           User: {
             connect: { id: input.userId }
@@ -55,8 +62,12 @@ export const organiserRouter = createTRPCRouter({
           : Role.JUDGE;
 
       await tx.user.update({
-        where: { id: input.userId },
-        data: { role }
+        where: { 
+          id: input.userId 
+        },
+        data: { 
+          role
+         }
       });
 
       // Create audit log

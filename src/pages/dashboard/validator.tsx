@@ -7,7 +7,6 @@ import {
   TableCell,
 } from "~/components/ui/table";
 import { api } from "~/utils/api";
-import DashboardLayout from "~/components/layout/dashboardLayout";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import Spinner from "~/components/spinner";
@@ -21,7 +20,7 @@ export default function Validator() {
   const { data: sessionData, status } = useSession();
   const teamData = api.team.getTeamsList.useQuery();
   const { data: criteria, isLoading: criteriaLoading } = api.validator.getValidatorCriteria.useQuery();
-  const { data: allScores, isLoading: scoresLoading } = api.validator.getAllScores.useQuery();
+  const { data: allScores, isLoading: scoresLoading, refetch: refetchScores } = api.validator.getAllScores.useQuery();
   const [selectedRatings, setSelectedRatings] = useState<Record<string, number>>({});
   const [selectedTrack, setSelectedTrack] = useState<string>("all");
   
@@ -45,6 +44,32 @@ export default function Validator() {
     },
   });
 
+  const clearScore = api.validator.clearScore.useMutation({
+    onSuccess: async () => {
+      toast.success("Score cleared");
+      await Promise.all([
+        teamData.refetch(),
+        refetchScores(),
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleClearRating = (teamId: string) => {
+    setSelectedRatings(prev => {
+      const newRatings = { ...prev };
+      delete newRatings[teamId];
+      return newRatings;
+    });
+
+    clearScore.mutate({
+      criteriaId: criteria?.id ?? "",
+      teamId: teamId,
+    });
+  };
+
   // Initialize selectedRatings with existing scores from the database when they load
   useEffect(() => {
     if (allScores) {
@@ -63,10 +88,6 @@ export default function Validator() {
       setSelectedRatings(existingRatings);
     }
   }, [allScores]);
-
-  if (submitScore.isLoading) {
-    toast.loading("Submitting score", { id: "submitting-score" });
-  }
 
   // Handle star selection with auto-submit
   const handleStarClick = (teamId: string, rating: number) => {
@@ -96,11 +117,9 @@ export default function Validator() {
 
   if (status === "loading" || criteriaLoading || scoresLoading)
     return (
-      <DashboardLayout>
         <div className="flex h-screen w-screen items-center justify-center">
           <Spinner />
         </div>
-      </DashboardLayout>
     );
 
   if (
@@ -208,18 +227,30 @@ export default function Validator() {
                           </Button>
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                onClick={() => handleStarClick(team.id, star)}
-                                className="focus:outline-none transition-colors"
+                          <div className="flex items-center space-x-4">
+                            <div className="flex space-x-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                  key={star}
+                                  onClick={() => handleStarClick(team.id, star)}
+                                  className="focus:outline-none transition-colors"
+                                >
+                                  <span className={`text-2xl ${currentRating >= star ? 'text-yellow-400' : 'text-muted-foreground'}`}>
+                                    ★
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                            {selectedRatings[team.id] && (
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => handleClearRating(team.id)}
+                                className="text-red-600 hover:text-red-800"
                               >
-                                <span className={`text-2xl ${currentRating >= star ? 'text-yellow-400' : 'text-muted-foreground'}`}>
-                                  ★
-                                </span>
-                              </button>
-                            ))}
+                                Clear
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>

@@ -1,9 +1,15 @@
 import React from 'react'
-
+import { useSession } from 'next-auth/react'
 import { LayoutDashboard } from 'lucide-react';
 import { Button } from '@headlessui/react';
 
-const DashButtom = () => {
+const DashboardButton = () => {
+  const { data: session } = useSession();
+  
+  if (!session?.user || session.user.role === 'PARTICIPANT') {
+    return null;
+  }
+
   const handleNavigation = () => {
     window.location.href = '/dashboard';
   };
@@ -15,4 +21,4 @@ const DashButtom = () => {
   );
 }
 
-export default DashButtom
+export default DashboardButton
