@@ -98,6 +98,7 @@
     "toast": "^0.5.4",
     "toaster": "^0.1.2",
     "uuid": "^11.1.0",
+    "xlsx": "^0.18.5",
     "zod": "^3.22.4"
   },
   "devDependencies": {

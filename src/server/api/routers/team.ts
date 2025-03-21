@@ -692,7 +692,10 @@ export const teamRouter = createTRPCRouter({
           select: {
             id: true,
             name: true,
+            isLeader : true,
             image: true,
+            phone: true,
+            email: true,
             College: {
               select: {
                 name: true,
@@ -703,6 +706,7 @@ export const teamRouter = createTRPCRouter({
         IdeaSubmission: {
           select: {
             track: true,
+            pptUrl: true,
           },
         },
         Scores: {

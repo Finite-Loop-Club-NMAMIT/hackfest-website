@@ -8,6 +8,7 @@ import QuickboardTab from "~/components/dashboard/QuickboardTab";
 import TeamsTab from "~/components/dashboard/TeamsTab";
 import AnalyticsTab from "~/components/dashboard/AnalyticsTab";
 import RolesTab from "~/components/dashboard/RolesTab";
+import SelectionWindow from "~/components/dashboard/selectionWindow";
 
 export default function Organiser() {
   const users = api.user.getAllUsers.useQuery().data;
@@ -169,6 +170,16 @@ export default function Organiser() {
           >
             Roles
           </button>
+          <button
+            onClick={() => setActiveTab("selectionwindow")}
+            className={`w-full py-2 px-4 text-center transition-colors ${
+              activeTab === "selectionwindow" 
+                ? "border-b-2 border-purple-500 font-bold" 
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            Selection Window
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -176,6 +187,7 @@ export default function Organiser() {
         {activeTab === "teams" && <TeamsTab />}
         {activeTab === "analytics" && <AnalyticsTab />}
         {activeTab === "roles" && <RolesTab users={users} />}
+        {activeTab === "selectionwindow" && <SelectionWindow />}
       </div>
     </DashboardLayout>
   );

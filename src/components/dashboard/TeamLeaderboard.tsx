@@ -25,6 +25,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import MemberDetailsDialog from "./MemberDetailsDialog";
+import { Download, FileSpreadsheet } from "lucide-react";
+import * as XLSX from 'xlsx';
 
 const trackColors: Record<Tracks, string> = {
   FINTECH: "bg-blue-100 text-blue-800",
@@ -46,6 +48,122 @@ export default function TeamLeaderboard() {
   const [memberDialogOpen, setMemberDialogOpen] = useState(false);
 
   const { data: teams, isLoading } = api.team.getTeamsByTotalScore.useQuery();
+
+  // Function to handle opening the PDF in a new tab with correct URL
+  const handleViewPdf = (url: string | undefined) => {
+    if (url) {
+      // Ensure the URL is not malformed by removing any unwanted parts
+      const cleanUrl = url.split(';')[0]; // Take only the part before any semicolon
+      window.open(cleanUrl, "_blank");
+    }
+  };
+
+  // Function to convert filtered teams data to CSV
+  const convertToCSV = (teams: typeof filteredTeams) => {
+    if (!teams || teams.length === 0) return "";
+    
+    // Define CSV headers
+    const headers = [
+      "Rank",
+      "Team ID",
+      "Team Name",
+      "College",
+      "Track",
+      "Payment Status",
+      "Selection Status",
+      "Total Score",
+      "Member Names",
+      "Member Emails",
+      "Team Leader Contact"
+    ];
+    
+    // Create CSV content
+    const csvRows = teams.map((team, index) => {
+      const memberNames = team.Members.map(member => member.name ?? "Unknown").join("; ");
+      const memberEmails = team.Members.map(member => member.email ?? "Unknown").join("; ");
+      const teamLeaderContact = team.Members.find(member => member.isLeader)?.phone ?? "Not provided";
+      
+      return [
+        index + 1,
+        team.id,
+        team.name,
+        team.Members[0]?.College?.name ?? "Unknown",
+        team.IdeaSubmission?.track ?? "Not Submitted",
+        team.paymentStatus,
+        team.teamProgress === "SELECTED" ? "TOP 60" : 
+          team.teamProgress === "SEMI_SELECTED" ? "TOP 100" : "Not Selected",
+        team.totalScore,
+        memberNames,
+        memberEmails,
+        teamLeaderContact
+      ];
+    });
+    
+    // Convert to CSV string
+    const csvContent = [
+      headers.join(","),
+      ...csvRows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+    
+    return csvContent;
+  };
+  
+  // Function to download CSV file
+  const downloadCSV = () => {
+    if (!filteredTeams || filteredTeams.length === 0) return;
+    
+    const csvContent = convertToCSV(filteredTeams);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `teams-export-${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = "hidden";
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Function to download Excel file
+  const downloadExcel = () => {
+    if (!filteredTeams || filteredTeams.length === 0) return;
+    
+    // Create worksheet data
+    const worksheetData = filteredTeams.map((team, index) => {
+      const memberNames = team.Members.map(member => member.name ?? "Unknown").join("; ");
+      const memberEmails = team.Members.map(member => member.email ?? "Unknown").join("; ");
+      const teamLeaderContact = team.Members.find(member => member.isLeader)?.phone ?? "Not provided";
+      
+      return {
+        "Rank": index + 1,
+        "Team ID": team.id,
+        "Team Name": team.name,
+        "College": team.Members[0]?.College?.name ?? "Unknown",
+        "Track": team.IdeaSubmission?.track ?? "Not Submitted",
+        "Payment Status": team.paymentStatus,
+        "Selection Status": team.teamProgress === "SELECTED" ? "TOP 60" : 
+          team.teamProgress === "SEMI_SELECTED" ? "TOP 100" : "Not Selected",
+        "Total Score": team.totalScore,
+        "Member Names": memberNames,
+        "Member Emails": memberEmails,
+        "Team Leader Contact": teamLeaderContact
+      };
+    });
+    
+    // Create workbook and add worksheet
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const workbook = XLSX.utils.book_new();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData as XLSX.Sheet2JSONOpts[]);
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Teams");
+    
+    // Generate Excel file and trigger download
+    XLSX.writeFile(workbook, `teams-export-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
 
   if (isLoading) {
     return <LeaderboardSkeleton />;
@@ -210,7 +328,7 @@ export default function TeamLeaderboard() {
                   <SelectGroup>
                     <SelectLabel>Status</SelectLabel>
                     <SelectItem value="ALL">All</SelectItem>
-                    <SelectItem value="PAID">Paid</SelectItem>
+                    <SelectItem value="PAID">Paid</SelectItem>            
                     <SelectItem value="PENDING">Pending</SelectItem>
                     <SelectItem value="VERIFY">Verify</SelectItem>
                   </SelectGroup>
@@ -219,16 +337,36 @@ export default function TeamLeaderboard() {
             </div>
           </div>
           
-          {(searchQuery !== "" || paymentQuery !== "ALL" || top60Query !== "ALL" || submissionQuery !== "ALL" || trackQuery !== "ALL") && (
-            <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex justify-end gap-2">
+            {(searchQuery !== "" || paymentQuery !== "ALL" || top60Query !== "ALL" || submissionQuery !== "ALL" || trackQuery !== "ALL") && (
               <Button
                 variant="destructive"
                 onClick={handleReset}
               >
                 Reset Filters
               </Button>
-            </div>
-          )}
+            )}
+            
+            <Button
+              variant="outline"
+              onClick={downloadCSV}
+              disabled={!filteredTeams || filteredTeams.length === 0}
+              className="flex items-center gap-1"
+            >
+              <Download className="h-4 w-4" />
+              CSV
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={downloadExcel}
+              disabled={!filteredTeams || filteredTeams.length === 0}
+              className="flex items-center gap-1"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              Excel
+            </Button>
+          </div>
         </CardContent>
       </Card>
       
@@ -251,6 +389,9 @@ export default function TeamLeaderboard() {
                   <TableHead>Track</TableHead>
                   <TableHead>Payment</TableHead>
                   <TableHead>Selection</TableHead>
+                  {submissionQuery === "SUBMITTED" && (
+                    <TableHead className="text-center">Actions</TableHead>
+                  )}
                   <TableHead className="text-right">Total Score</TableHead>
                 </TableRow>
               </TableHeader>
@@ -307,12 +448,27 @@ export default function TeamLeaderboard() {
                          team.teamProgress === "SEMI_SELECTED" ? "TOP 100" : "Not Selected"}
                       </Badge>
                     </TableCell>
+                    {submissionQuery === "SUBMITTED" && (
+                      <TableCell className="text-center">
+                        {team.IdeaSubmission?.pptUrl && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleViewPdf(team.IdeaSubmission?.pptUrl)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            View PDF
+                          </Button>
+                        )}
+                      </TableCell>
+                    )}
                     <TableCell className="text-right font-bold">{team.totalScore}</TableCell>
+
                   </TableRow>
                 ))}
                 {filteredTeams?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-4">
+                    <TableCell colSpan={submissionQuery === "SUBMITTED" ? 9 : 8} className="text-center py-4">
                       No teams found matching the filter criteria
                     </TableCell>
                   </TableRow>

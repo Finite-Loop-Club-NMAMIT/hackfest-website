@@ -30,7 +30,7 @@ export default function TeamsTab() {
   return (
     <div>
       <div className="w-full">
-        <h1 className="py-10 text-center text-4xl font-bold">Participants</h1>
+        <h1 className="py-10 text-center text-4xl font-bold">Teams and Members</h1>
       </div>
       <div className="m-auto overflow-x-scroll md:max-w-screen-xl">
         <div className="my-4 flex h-full w-full flex-col items-center justify-around gap-3 md:flex-row">
