@@ -128,6 +128,22 @@ const SelectionWindow = () => {
     );
   }
 
+  // Function to count teams by track and generate summary
+  const getTrackCountSummary = (teams: typeof teamData.data) => {
+    if (!teams || teams.length === 0) return "";
+    
+    const trackCounts: Record<string, number> = {};
+    
+    teams.forEach(team => {
+      const track = team.IdeaSubmission?.track ?? "Unknown";
+      trackCounts[track] = (trackCounts[track] ?? 0) + 1;
+    });
+    
+    return Object.entries(trackCounts)
+      .map(([track, count]) => `${track}: ${count}`)
+      .join(" | ");
+  };
+
   // Render table for a specific team progress status
   const renderTeamTable = (teams: typeof teamData.data, title: string, status: string) => (
     <Card className="w-full h-full">
@@ -138,6 +154,11 @@ const SelectionWindow = () => {
         </div>
       </CardHeader>
       <CardContent className="overflow-x-auto">
+        {teams && teams.length > 0 && (
+          <div className="text-xs text-muted-foreground mb-2">
+            {getTrackCountSummary(teams)}
+          </div>
+        )}
         <Table>
           <TableHeader>
             <TableRow>
