@@ -57,7 +57,7 @@ export default function Dashboard() {
     
     switch (session.user.role) {
       case "ADMIN":
-        return ["organiser", "team", "validator","superValidator"];
+        return ["organiser", "team", "validator"];
       case "VALIDATOR":
         return ["validator"];
       case "SUPER_VALIDATOR":
