@@ -122,7 +122,7 @@ export default function SuperVaildator() {
         </div>
     );
 
-  if (!data || !data.user || data.user.role !== "ADMIN") {
+  if (!data || !data.user || data.user.role !== "SUPER_VALIDATOR") {
     return <NotFound />;
   }
 
