@@ -1,4 +1,4 @@
-import TopTeams from "~/components/participantsTable/topTeams";
+import TopTeamsWithPdf from "~/components/participantsTable/topTeamsWithPdf";
 import { api } from "~/utils/api";
 import { Tabs, TabsContent } from "../../components/ui/tabs";
 import { Input } from "~/components/ui/input";
@@ -26,7 +26,7 @@ interface Team {
   paymentStatus: string;
   IdeaSubmission: {
     track: string;
-    pptUrl: string;
+    pptUrl: string;  // Added pptUrl property to match the structure in selectionWindow
   } | null;
   members?: {
     email: string;
@@ -34,11 +34,9 @@ interface Team {
 }
 
 const downloadCSV = (teams: Team[]) => {
-  const headers = ['Team ID', 'Team Name', 'Payment Status', 'Track', 'Members'];
+  const headers = ['Team Name', 'Track', 'Members'];
   const csvData = teams.map(team => [
-    team.id,
     team.name,
-    team.paymentStatus,
     team.IdeaSubmission?.track ?? 'N/A',
     team.members?.map((m: { email: string }) => m.email).join('; ') ?? ''
   ]);
@@ -56,11 +54,9 @@ const downloadCSV = (teams: Team[]) => {
 };
 
 const downloadExcel = (teams: Team[]) => {
-  const headers = ['Team ID', 'Team Name', 'Payment Status', 'Track', 'Members'];
+  const headers = ['Team Name', 'Track', 'Members'];
   const data = teams.map(team => [
-    team.id,
     team.name,
-    team.paymentStatus,
     team.IdeaSubmission?.track ?? 'N/A',
     team.members?.map((m: { email: string }) => m.email).join('; ') ?? ''
   ]);
@@ -83,7 +79,6 @@ export default function SuperVaildator() {
   const [selectedTeams, setSelectedTeams] = useState(res.data);
 
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [paymentQuery, setPaymentQuery] = useState("ALL");
   const [trackQuery, setTrackQuery] = useState("ALL");
 
   const { data, status } = useSession();
@@ -105,12 +100,6 @@ export default function SuperVaildator() {
         });
       }
 
-      if (paymentQuery !== "ALL") {
-        partiallyFiltered = partiallyFiltered?.filter(
-          (team) => team.paymentStatus === paymentQuery,
-        );
-      }
-
       if (trackQuery !== "ALL") {
         partiallyFiltered = partiallyFiltered?.filter(
           (team) => "IdeaSubmission" in team && team.IdeaSubmission && typeof team.IdeaSubmission === 'object' && team.IdeaSubmission !== null && "track" in team.IdeaSubmission && team.IdeaSubmission.track === trackQuery,
@@ -122,7 +111,6 @@ export default function SuperVaildator() {
   }, [
     res.data,
     searchQuery,
-    paymentQuery,
     trackQuery,
     allTeams,
   ]);
@@ -147,7 +135,7 @@ export default function SuperVaildator() {
               <CardTitle>Super - Validator</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Team ID/Name</Label>
                   <Input
@@ -197,46 +185,13 @@ export default function SuperVaildator() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Payment Status</Label>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">{paymentQuery}</Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      <DropdownMenuLabel>Payment Staus</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuRadioGroup
-                        value={paymentQuery}
-                        onValueChange={(value: string) =>
-                          setPaymentQuery(value)
-                        }
-                      >
-                        <DropdownMenuRadioItem value="ALL">
-                          All
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="PAID">
-                          Paid
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="PENDING">
-                          Pending
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="FAILED">
-                          Failed
-                        </DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
               </div>
 
               <div className="mt-4 flex justify-end gap-2">
-                {(searchQuery !== "" || paymentQuery !== "ALL" || trackQuery !== "ALL") && (
+                {(searchQuery !== "" || trackQuery !== "ALL") && (
                   <Button
                     variant="destructive"
                     onClick={() => {
-                      setPaymentQuery("ALL");
                       setSearchQuery("");
                       setTrackQuery("ALL");
                     }}
@@ -268,16 +223,16 @@ export default function SuperVaildator() {
 
           <Card className="w-full max-w-[1500px] mx-auto">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Teams in top 100</CardTitle>
-              <div className="text-sm text-muted-foreground">
-                {selectedTeams?.length ?? 0} teams
-              </div>
+              <CardTitle>Team Selection Window</CardTitle>
             </CardHeader>
             <CardContent>
               {!res ? (
                 <Spinner size="large" />
               ) : (
-                <TopTeams data={selectedTeams} dataRefecth={res.refetch} />
+                <TopTeamsWithPdf 
+                  data={selectedTeams} 
+                  dataRefetch={res.refetch}
+                />
               )}
             </CardContent>
           </Card>

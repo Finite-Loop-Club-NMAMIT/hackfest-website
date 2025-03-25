@@ -111,4 +111,66 @@ export const superValidatorRouter = createTRPCRouter({
         });
       });
     }),
+
+  moveToSelected: superValidatorProcedure
+    .input(
+      z.object({
+        teamId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const team = await ctx.db.team.findUnique({
+        where: { id: input.teamId },
+      });
+
+      if (!team) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Team not found",
+        });
+      }
+
+      if (team.teamProgress === "SEMI_SELECTED") {
+        return await ctx.db.team.update({
+          where: { id: input.teamId },
+          data: { teamProgress: "SELECTED" },
+        });
+      } else {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Team must be in Top 100 to move to Top 60",
+        });
+      }
+    }),
+
+  resetToTop100: superValidatorProcedure
+    .input(
+      z.object({
+        teamId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const team = await ctx.db.team.findUnique({
+        where: { id: input.teamId },
+      });
+
+      if (!team) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Team not found",
+        });
+      }
+
+      if (team.teamProgress === "SELECTED") {
+        return await ctx.db.team.update({
+          where: { id: input.teamId },
+          data: { teamProgress: "SEMI_SELECTED" },
+        });
+      } else {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Team must be in Top 60 to move back to Top 100",
+        });
+      }
+    }),
 });
