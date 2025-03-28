@@ -179,7 +179,7 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
                                 setUserQuery("");
                               }}
                             >
-                              {user.name}
+                              {user.name} {user.email}
                             </button>
                           ))
                         )}
