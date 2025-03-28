@@ -162,8 +162,8 @@ export default function RegisterCards({
               ) : session.user.team?.teamProgress === "SELECTED" ? (
                 <RegistrationClosed
                   session={session}
-                  message="Payment submission is now closed"
-                  heading="Too Late!"
+                  message="We'll get in touch with you regarding the payment soon!"
+                  heading="Congratulations!"
                 />
               ) : (
                 <RegistrationClosed
