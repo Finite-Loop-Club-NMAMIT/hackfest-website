@@ -33,6 +33,96 @@ export const appSettingsRouter = createTRPCRouter({
       });
     }),
   
+  setRegistrationStatus: adminProcedure
+    .input(z.boolean())
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.appSettings.update({
+        where: { id: 1 },
+        data: {
+          isRegistrationOpen: input,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "App Settings",
+          description: `Registration ${input ? "opened" : "closed"}`,
+        },
+      });
+    }),
+    
+  setPaymentStatus: adminProcedure
+    .input(z.boolean())
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.appSettings.update({
+        where: { id: 1 },
+        data: {
+          isPaymentOpen: input,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "App Settings",
+          description: `Payment ${input ? "opened" : "closed"}`,
+        },
+      });
+    }),
+    
+  setProfileEditStatus: adminProcedure
+    .input(z.boolean())
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.appSettings.update({
+        where: { id: 1 },
+        data: {
+          isProfileEditOpen: input,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "App Settings",
+          description: `Profile editing ${input ? "enabled" : "disabled"}`,
+        },
+      });
+    }),
+    
+  setTop60ValidationStatus: adminProcedure
+    .input(z.boolean())
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.appSettings.update({
+        where: { id: 1 },
+        data: {
+          isTop60Validated: input,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "App Settings",
+          description: `Top 60 validation status set to ${input ? "validated" : "not validated"}`,
+        },
+      });
+    }),
+    
+  setEventStatus: adminProcedure
+    .input(z.boolean())
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.appSettings.update({
+        where: { id: 1 },
+        data: {
+          isEventStarted: input,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "App Settings",
+          description: `Event status set to ${input ? "started" : "not started"}`,
+        },
+      });
+    }),
+  
   updateAppSettings: adminProcedure
     .input(appSettingsZ)
     .mutation(async ({ ctx, input }) => {

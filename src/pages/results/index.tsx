@@ -119,20 +119,20 @@ export default function Results() {
   if (appSettings.data === false) {
     return (
       <RootLayout>
-        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#060e3c] via-[#052d4f] to-[#001933] px-4 text-center">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#060e3c] via-[#052d4f] to-[#001933] px-4 pt-16 md:pt-24 text-center">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="relative mb-8"
+            className="relative mb-8 mt-8 md:mt-0"
           >
-            <div className="relative rounded-lg px-8 py-6 backdrop-blur-sm">
-              <h1 className="relative text-4xl font-bold md:text-6xl">
+            <div className="relative rounded-lg px-6 py-6 md:px-8 backdrop-blur-sm">
+              <h1 className="relative text-3xl font-bold md:text-5xl lg:text-6xl">
                 <span className="bg-gradient-to-r from-blue-300 via-white to-teal-300 bg-clip-text text-transparent">
                   Results Coming Soon
                 </span>
-                <div className="absolute -right-6 -top-6 text-2xl animate-bounce">🎉</div>
-                <div className="absolute -left-6 bottom-0 text-2xl animate-bounce" style={{ animationDelay: '0.5s' }}>🚀</div>
+                <div className="absolute -right-4 md:-right-6 -top-6 text-2xl animate-bounce">🎉</div>
+                <div className="absolute -left-4 md:-left-6 bottom-0 text-2xl animate-bounce" style={{ animationDelay: '0.5s' }}>🚀</div>
               </h1>
             </div>
           </motion.div>
@@ -141,13 +141,13 @@ export default function Results() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="mb-12 max-w-2xl text-xl"
+            className="mb-10 md:mb-12 max-w-md md:max-w-2xl text-lg md:text-xl px-4"
           >
             <p className="bg-gradient-to-r from-blue-400 via-white to-teal-400 bg-clip-text text-transparent font-medium">
               The Hackfest team is finalizing the results.
             </p>
             <p className="mt-4 text-white/80">Just a little more patience, we promise it&apos;ll be worth the wait!</p>
-            <div className="mt-6 flex justify-center space-x-2">
+            <div className="mt-6 flex justify-center space-x-1 md:space-x-2">
               {["H", "A", "C", "K", "F", "E", "S", "T"].map((letter, i) => (
                 <motion.span 
                   key={i}
@@ -159,7 +159,7 @@ export default function Results() {
                     delay: i * 0.1,
                     ease: "easeInOut" 
                   }}
-                  className="inline-block rounded bg-gradient-to-br from-blue-500 to-teal-500 px-2 py-1 text-sm font-bold shadow-lg"
+                  className="inline-block rounded bg-gradient-to-br from-blue-500 to-teal-500 px-1.5 md:px-2 py-1 text-xs md:text-sm font-bold shadow-lg"
                 >
                   {letter}
                 </motion.span>
@@ -174,20 +174,20 @@ export default function Results() {
             className="relative"
           >
             <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-500 to-teal-500 opacity-70 blur-md"></div>
-            <div className="relative flex h-40 w-40 flex-col items-center justify-center rounded-full bg-gradient-to-b from-black/80 to-black/95 backdrop-blur-sm">
+            <div className="relative flex h-32 w-32 md:h-40 md:w-40 flex-col items-center justify-center rounded-full bg-gradient-to-b from-black/80 to-black/95 backdrop-blur-sm">
               <div className="flex flex-col items-center">
-                <div className="text-2xl font-bold text-white">Coming</div>
+                <div className="text-xl md:text-2xl font-bold text-white">Coming</div>
                 <motion.div 
                   animate={{ 
                     rotate: 360, 
                     transition: { duration: 20, repeat: Infinity, ease: "linear" } 
                   }}
-                  className="relative h-14 w-14 mt-1"
+                  className="relative h-12 w-12 md:h-14 md:w-14 mt-1"
                 >
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-12 w-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
+                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center text-xl">
+                  <div className="absolute inset-0 flex items-center justify-center text-lg md:text-xl">
                     ⏱️
                   </div>
                 </motion.div>
@@ -199,7 +199,7 @@ export default function Results() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.9 }}
-            className="mt-12 max-w-md text-center text-white/60"
+            className="mt-10 md:mt-12 max-w-xs md:max-w-md text-center text-white/60 px-4"
           >
             <p>We&apos;re excited to announce the teams that will be joining us at NMAMIT for Hackfest 2025.</p>
             <p className="mt-4">Check back soon!</p>
@@ -211,18 +211,18 @@ export default function Results() {
 
   return (
     <RootLayout>
-      <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-[#060e3c] via-[#052d4f] to-[#001933] py-10 text-center">
+      <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-[#060e3c] via-[#052d4f] to-[#001933] py-10 text-center pt-16 md:pt-24">
         {topTeams && (
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="flex flex-col gap-4 pb-6 pt-24 mt-10"
+            className="flex flex-col gap-4 pb-6 pt-12 md:pt-20 mt-4 md:mt-10 px-4"
           >
-            <div className="px-4 text-4xl font-bold md:text-6xl">
+            <div className="text-3xl md:text-4xl lg:text-6xl font-bold">
               Congratulations!
             </div>
-            <div className="mx-auto max-w-2xl px-4 text-lg opacity-80">
+            <div className="mx-auto max-w-2xl px-4 text-base md:text-lg opacity-80">
               Here are the top teams selected for Hackfest 2025, See y&apos;all
               at NMAMIT!
             </div>
