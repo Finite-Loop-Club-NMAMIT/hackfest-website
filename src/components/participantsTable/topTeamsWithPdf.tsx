@@ -18,6 +18,11 @@ interface Team {
   name: string;
   paymentStatus: string;
   teamProgress?: string;
+  Members: {
+    College: {
+      name: string;
+    };
+  }[];
   IdeaSubmission: {
     track: string;
     pptUrl: string;
@@ -94,6 +99,18 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
   
   const trackCounts = getTrackCounts();
 
+  // Get unique college names for a team
+  const getTeamColleges = (team: Team) => {
+    const collegeNames = team.Members
+      ?.map(member => member.College?.name)
+      .filter((name): name is string => !!name);
+    
+    // Get unique college names
+    const uniqueColleges = [...new Set(collegeNames)];
+    
+    return uniqueColleges.join(", ") || "N/A";
+  };
+
   return (
     <div className="space-y-4">
       {/* Stats Section - Redesigned to be more minimal */}
@@ -123,6 +140,7 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
               <TableHeader>
                 <TableRow>
                   <TableHead>Team Name</TableHead>
+                  <TableHead>College</TableHead>
                   <TableHead>Track</TableHead>
                   <TableHead>Submission</TableHead>
                   <TableHead>Actions</TableHead>
@@ -133,6 +151,7 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
                   top100Teams.map((team) => (
                     <TableRow key={team.id}>
                       <TableCell>{team.name}</TableCell>
+                      <TableCell>{getTeamColleges(team)}</TableCell>
                       <TableCell>{team.IdeaSubmission?.track ?? "N/A"}</TableCell>
                       <TableCell>
                         {team.IdeaSubmission?.pptUrl ? (
@@ -164,7 +183,7 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">
+                    <TableCell colSpan={5} className="text-center">
                       No teams found in Top 100
                     </TableCell>
                   </TableRow>
@@ -185,6 +204,7 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
               <TableHeader>
                 <TableRow>
                   <TableHead>Team Name</TableHead>
+                  <TableHead>College</TableHead>
                   <TableHead>Track</TableHead>
                   <TableHead>Submission</TableHead>
                   <TableHead>Actions</TableHead>
@@ -195,6 +215,7 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
                   top60Teams.map((team) => (
                     <TableRow key={team.id}>
                       <TableCell>{team.name}</TableCell>
+                      <TableCell>{getTeamColleges(team)}</TableCell>
                       <TableCell>{team.IdeaSubmission?.track ?? "N/A"}</TableCell>
                       <TableCell>
                         {team.IdeaSubmission?.pptUrl ? (
@@ -226,7 +247,7 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">
+                    <TableCell colSpan={5} className="text-center">
                       No teams found in Top 60
                     </TableCell>
                   </TableRow>

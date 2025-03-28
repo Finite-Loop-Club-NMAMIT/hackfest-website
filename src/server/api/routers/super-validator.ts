@@ -9,7 +9,15 @@ export const superValidatorRouter = createTRPCRouter({
         OR: [{ teamProgress: "SEMI_SELECTED" }, { teamProgress: "SELECTED" }],
       },
       include: {
-        Members: true,
+        Members: {
+          include: {
+            College:{
+              select:{
+                name:true
+              }
+            },
+          },
+        },
         IdeaSubmission: {
           select: {
             pptUrl: true,

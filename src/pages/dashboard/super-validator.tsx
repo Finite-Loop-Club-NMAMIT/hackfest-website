@@ -20,20 +20,38 @@ import { Label } from "@radix-ui/react-label";
 import { Download, FileSpreadsheet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
-interface Team {
+// Use this interface for local operations
+interface LocalTeam {
   id: string;
   name: string;
   paymentStatus: string;
   IdeaSubmission: {
     track: string;
-    pptUrl: string;  // Added pptUrl property to match the structure in selectionWindow
+    pptUrl: string;
   } | null;
+  Members: {
+    id: string;
+    email: string | null;
+    name: string | null;
+    College: {
+      name: string;
+    } | null;
+  }[];
+  Scores: {
+    id: number;
+    score: number;
+    criteriaId: string;
+    judgeId: string;
+    createdAt: Date;
+    updatedAt: Date;
+    teamId: string;
+  }[];
   members?: {
     email: string;
   }[];
 }
 
-const downloadCSV = (teams: Team[]) => {
+const downloadCSV = (teams: LocalTeam[]) => {
   const headers = ['Team Name', 'Track', 'Members'];
   const csvData = teams.map(team => [
     team.name,
@@ -53,7 +71,7 @@ const downloadCSV = (teams: Team[]) => {
   link.click();
 };
 
-const downloadExcel = (teams: Team[]) => {
+const downloadExcel = (teams: LocalTeam[]) => {
   const headers = ['Team Name', 'Track', 'Members'];
   const data = teams.map(team => [
     team.name,
@@ -122,7 +140,7 @@ export default function SuperVaildator() {
         </div>
     );
 
-  if (!data || !data.user || data.user.role !== "SUPER_VALIDATOR") {
+  if (!data || !data.user || data.user.role !== "ADMIN") {
     return <NotFound />;
   }
 
@@ -230,7 +248,13 @@ export default function SuperVaildator() {
                 <Spinner size="large" />
               ) : (
                 <TopTeamsWithPdf 
-                  data={selectedTeams} 
+                  data={selectedTeams ? selectedTeams.map(team => ({
+                    ...team,
+                    Members: team.Members.map(member => ({
+                      ...member,
+                      College: member.College ?? { name: 'Unknown' } // Ensure College is never null
+                    }))
+                  })) : null} 
                   dataRefetch={res.refetch}
                 />
               )}
