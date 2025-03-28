@@ -3,6 +3,7 @@ import VolunteerPanel from "~/components/organiserDashboard/volunteerPanel";
 import { type User } from "@prisma/client";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { ResultsVisibilityToggle } from "~/components/ResultsVisibilityToggle";
 
 interface RolesTabProps {
   users: User[] | undefined;
@@ -17,9 +18,10 @@ export default function RolesTab({ users }: RolesTabProps) {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="judges" className="w-full">
-            <TabsList className="mb-6 grid w-full grid-cols-2">
+            <TabsList className="mb-6 grid w-full grid-cols-3">
               <TabsTrigger value="judges">Judges</TabsTrigger>
               <TabsTrigger value="volunteers">Volunteers</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
             
             <TabsContent value="judges" className="w-full">
@@ -34,6 +36,15 @@ export default function RolesTab({ users }: RolesTabProps) {
               <Card className="w-full">
                 <CardContent className="pt-6 w-full p-0 sm:p-6">
                   <VolunteerPanel users={users} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="settings" className="w-full">
+              <Card className="w-full">
+                <CardContent className="pt-6 w-full p-0 sm:p-6">
+                  <h2 className="text-xl font-bold mb-4">Application Settings</h2>
+                  <ResultsVisibilityToggle />
                 </CardContent>
               </Card>
             </TabsContent>

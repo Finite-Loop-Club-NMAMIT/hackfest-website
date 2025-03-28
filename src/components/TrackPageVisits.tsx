@@ -67,7 +67,7 @@ const TrackPageVisits = () => {
     if (!deviceType) return;
     
     const currentPath = router.asPath;
-    const allowedPaths = ["/contact", "/about", "/profile", "/register", "/timeline"];
+    const allowedPaths = ["/contact", "/about", "/profile", "/register", "/timeline", "/results"];
     const isAllowedPath = currentPath === "/" || allowedPaths.some((path) => currentPath.startsWith(path));
     
     // Only proceed if it's an allowed path and different from the current one

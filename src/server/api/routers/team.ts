@@ -5,6 +5,7 @@ import {
   adminProcedure,
   createTRPCRouter,
   protectedProcedure,
+  publicProcedure,
   teamProcedure,
 } from "~/server/api/trpc";
 import { dashboardProcedure } from "~/server/api/trpc";
@@ -593,6 +594,7 @@ export const teamRouter = createTRPCRouter({
         },
       });
     }),
+
   getTop60: dashboardProcedure.query(async ({ ctx }) => {
     return ctx.db.team.findMany({
       where: {
@@ -609,6 +611,29 @@ export const teamRouter = createTRPCRouter({
     });
   }),
 
+  getTop60Selected: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.team.findMany({
+      where: {
+        teamProgress: "SELECTED",
+      },
+      include: {
+        IdeaSubmission:{
+          select:{
+            track:true,
+          }
+        },
+        Members: {
+          select: {
+            College: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }),
   getStatistics: dashboardProcedure.query(async ({ ctx }) => {
     const allTeams = await ctx.db.team.findMany({
       include: {

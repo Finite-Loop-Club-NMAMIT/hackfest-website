@@ -171,6 +171,7 @@ model AppSettings {
   isProfileEditOpen     Boolean @default(true)
   isTop60Validated      Boolean @default(false)
   isEventStarted        Boolean @default(false)
+  isResultOpen          Boolean @default(false)
 }
 
 model Remark {

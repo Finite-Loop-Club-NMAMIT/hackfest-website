@@ -141,7 +141,7 @@ export default function SuperVaildator() {
         </div>
     );
 
-  if (!data || !data.user || data.user.role !== "SUPER_VALIDATOR") {
+  if (!data?.user?.role || !["SUPER_VALIDATOR", "ADMIN"].includes(data.user.role)) {
     return <NotFound />;
   }
 
