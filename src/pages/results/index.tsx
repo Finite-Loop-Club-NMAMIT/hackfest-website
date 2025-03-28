@@ -51,7 +51,7 @@ export default function Results() {
               Congratulations!
             </div>
             <div className="px-4 text-sm opacity-60">
-              Here are the top teams selected for Hackfest 2024, See y&apos;all
+              Here are the top teams selected for Hackfest 2025, See y&apos;all
               at NMAMIT!
             </div>
           </div>
@@ -88,7 +88,7 @@ export default function Results() {
             innovation, creative features, relevance to track, market fit,
             feasibility, existing solution comparision etc. If your team
             didn&apos;t make it to top, don&apos;t worry, bounce back stronger
-            at Hackfest 2025! See you there.
+            at Hackfest 2026! See you there.
           </div>
         )}
       </div>
