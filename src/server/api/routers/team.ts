@@ -473,7 +473,7 @@ export const teamRouter = createTRPCRouter({
       },
     });
   }),
-  moveToTop100: adminProcedure
+  moveToTop100: dashboardProcedure
     .input(
       z.object({
         teamId: z.string(),
@@ -496,7 +496,7 @@ export const teamRouter = createTRPCRouter({
         },
       });
     }),
-  moveToTop60: adminProcedure
+  moveToTop60: dashboardProcedure
     .input(
       z.object({
         teamId: z.string(),
@@ -542,7 +542,7 @@ export const teamRouter = createTRPCRouter({
         },
       });
     }),
-  resetToTop100: adminProcedure
+  resetToTop100: dashboardProcedure
     .input(
       z.object({
         teamId: z.string(),
@@ -593,7 +593,7 @@ export const teamRouter = createTRPCRouter({
         },
       });
     }),
-  getTop60: adminProcedure.query(async ({ ctx }) => {
+  getTop60: dashboardProcedure.query(async ({ ctx }) => {
     return ctx.db.team.findMany({
       where: {
         teamProgress: "SELECTED",
