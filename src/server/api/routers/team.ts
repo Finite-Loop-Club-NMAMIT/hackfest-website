@@ -519,7 +519,7 @@ export const teamRouter = createTRPCRouter({
         },
       });
     }),
-  resetTeamProgress: adminProcedure
+  resetTeamProgress: dashboardProcedure
     .input(
       z.object({
         teamId: z.string(),

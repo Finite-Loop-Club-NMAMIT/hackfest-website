@@ -25,6 +25,7 @@ interface LocalTeam {
   id: string;
   name: string;
   paymentStatus: string;
+  totalScore?: number; // Add totalScore property
   IdeaSubmission: {
     track: string;
     pptUrl: string;
@@ -38,13 +39,13 @@ interface LocalTeam {
     } | null;
   }[];
   Scores: {
-    id: number;
     score: number;
-    criteriaId: string;
-    judgeId: string;
-    createdAt: Date;
-    updatedAt: Date;
-    teamId: string;
+    id?: number; // Make the other properties optional since they're not used in the component
+    criteriaId?: string;
+    judgeId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    teamId?: string;
   }[];
   members?: {
     email: string;
@@ -140,7 +141,7 @@ export default function SuperVaildator() {
         </div>
     );
 
-  if (!data || !data.user || data.user.role !== "ADMIN") {
+  if (!data || !data.user || data.user.role !== "SUPER_VALIDATOR") {
     return <NotFound />;
   }
 

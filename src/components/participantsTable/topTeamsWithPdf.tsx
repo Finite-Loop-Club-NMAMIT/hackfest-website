@@ -12,12 +12,13 @@ import { api } from "~/utils/api";
 import { toast } from "~/components/ui/toast";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
-// Define a proper Team interface to avoid using 'any'
+// Updated Team interface with totalScore property
 interface Team {
   id: string;
   name: string;
   paymentStatus: string;
   teamProgress?: string;
+  totalScore?: number; // We'll use this for sorting but not display it
   Members: {
     College: {
       name: string;

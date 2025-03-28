@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 
 export const superValidatorRouter = createTRPCRouter({
   getTop100: superValidatorProcedure.query(async ({ ctx }) => {
-    return await ctx.db.team.findMany({
+    const teams = await ctx.db.team.findMany({
       where: {
         OR: [{ teamProgress: "SEMI_SELECTED" }, { teamProgress: "SELECTED" }],
       },
@@ -24,9 +24,22 @@ export const superValidatorRouter = createTRPCRouter({
             track: true,
           },
         },
-        Scores: true,
+        Scores: {
+          select: {
+            score: true,
+          },
+        },
       },
     });
+    
+    // Calculate total score for each team and sort
+    return teams.map(team => {
+      const totalScore = team.Scores.reduce((sum, scoreRecord) => sum + scoreRecord.score, 0);
+      return {
+        ...team,
+        totalScore // Add total score property for sorting (won't be displayed in UI)
+      };
+    }).sort((a, b) => b.totalScore - a.totalScore); // Sort in descending order
   }),
 
   setScore: superValidatorProcedure
