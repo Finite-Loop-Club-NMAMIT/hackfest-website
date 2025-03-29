@@ -133,41 +133,49 @@ export const superValidatorRouter = createTRPCRouter({
       });
     }),
 
-  moveToSelected: superValidatorProcedure
+    moveToSelected: superValidatorProcedure
     .input(
       z.object({
-        teamId: z.string(),
+      teamId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.db.appSettings.findFirst();
+      if (settings?.isResultOpen) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Cannot modify team status while results are published",
+      });
+      }
+
       const team = await ctx.db.team.findUnique({
-        where: { id: input.teamId },
+      where: { id: input.teamId },
       });
 
       if (!team) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Team not found",
-        });
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Team not found",
+      });
       }
 
       if (team.teamProgress === "SEMI_SELECTED") {
-        return await ctx.db.team.update({
-          where: { id: input.teamId },
-          data: { teamProgress: "SELECTED" },
-        });
+      return await ctx.db.team.update({
+        where: { id: input.teamId },
+        data: { teamProgress: "SELECTED" },
+      });
       } else {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Team must be in Top 100 to move to Top 60",
-        });
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Team must be in Top 100 to move to Top 60",
+      });
       }
     }),
 
-  resetToTop100: superValidatorProcedure
+    resetToTop100: superValidatorProcedure
     .input(
       z.object({
-        teamId: z.string(),
+      teamId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {

@@ -481,6 +481,13 @@ export const teamRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.db.appSettings.findFirst();
+      if (settings?.isResultOpen) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Cannot modify team status while results are published",
+      });
+      }
       await ctx.db.team.update({
         where: {
           id: input.teamId,
@@ -504,6 +511,13 @@ export const teamRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.db.appSettings.findFirst();
+      if (settings?.isResultOpen) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Cannot modify team status while results are published",
+      });
+      }
       await ctx.db.team.update({
         where: {
           id: input.teamId,
@@ -527,6 +541,13 @@ export const teamRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.db.appSettings.findFirst();
+      if (settings?.isResultOpen) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Cannot modify team status while results are published",
+      });
+      }
       await ctx.db.team.update({
         where: {
           id: input.teamId,
@@ -550,6 +571,13 @@ export const teamRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.db.appSettings.findFirst();
+      if (settings?.isResultOpen) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Cannot modify team status while results are published",
+      });
+      }
       await ctx.db.team.update({
         where: {
           id: input.teamId,
