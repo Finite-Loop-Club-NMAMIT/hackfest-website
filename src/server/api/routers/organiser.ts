@@ -416,6 +416,8 @@ export const organiserRouter = createTRPCRouter({
               name: true,
               email: true,
               phone: true,
+              tShirtSize: true,
+              github: true,
               isLeader: true,
               College: {
                 select: {
