@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   TableHeader,
   TableRow,
@@ -11,6 +11,16 @@ import { Button } from "~/components/ui/button";
 import { api } from "~/utils/api";
 import { toast } from "~/components/ui/toast";
 import { ChevronUp, ChevronDown } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 
 // Updated Team interface with totalScore property
 interface Team {
@@ -36,6 +46,12 @@ interface TopTeamsWithPdfProps {
 }
 
 const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) => {
+  // Add state for confirmation dialog
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"moveToTop60" | "moveBackToTop100">();
+  const [selectedTeamId, setSelectedTeamId] = useState<string>("");
+  const [selectedTeamName, setSelectedTeamName] = useState<string>("");
+
   // Mutation for moving team to Top 60
   const moveToTop60 = api.team.moveToTop60.useMutation({
     onSuccess: () => {
@@ -72,14 +88,47 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
     },
   });
 
-  // Handle moving a team to top 60
-  const handleMoveToTop60 = (teamId: string) => {
-    moveToTop60.mutate({ teamId });
+  // Modified handlers to open confirmation dialog
+  const handleMoveToTop60 = (teamId: string, teamName: string) => {
+    setSelectedTeamId(teamId);
+    setSelectedTeamName(teamName);
+    setConfirmAction("moveToTop60");
+    setIsConfirmOpen(true);
   };
 
-  // Handle moving a team back to top 100
-  const handleMoveBackToTop100 = (teamId: string) => {
-    moveBackToTop100.mutate({ teamId });
+  const handleMoveBackToTop100 = (teamId: string, teamName: string) => {
+    setSelectedTeamId(teamId);
+    setSelectedTeamName(teamName);
+    setConfirmAction("moveBackToTop100");
+    setIsConfirmOpen(true);
+  };
+
+  // Function to handle confirmation
+  const handleConfirm = () => {
+    if (!selectedTeamId) return;
+
+    switch (confirmAction) {
+      case "moveToTop60":
+        moveToTop60.mutate({ teamId: selectedTeamId });
+        break;
+      case "moveBackToTop100":
+        moveBackToTop100.mutate({ teamId: selectedTeamId });
+        break;
+    }
+
+    setIsConfirmOpen(false);
+  };
+
+  // Get confirmation message based on action
+  const getConfirmationMessage = () => {
+    switch (confirmAction) {
+      case "moveToTop60":
+        return `Are you sure you want to move "${selectedTeamName}" to Top 60?`;
+      case "moveBackToTop100":
+        return `Are you sure you want to move "${selectedTeamName}" back to Top 100?`;
+      default:
+        return "Are you sure you want to perform this action?";
+    }
   };
 
   // Filter teams for Top 100 and Top 60 tables
@@ -89,15 +138,15 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
   // Count teams by track for selected teams (Top 60)
   const getTrackCounts = () => {
     const trackCounts: Record<string, number> = {};
-    
+
     top60Teams.forEach(team => {
       const track = team.IdeaSubmission?.track ?? "Unspecified";
       trackCounts[track] = (trackCounts[track] ?? 0) + 1;
     });
-    
+
     return trackCounts;
   };
-  
+
   const trackCounts = getTrackCounts();
 
   // Get unique college names for a team
@@ -105,22 +154,38 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
     const collegeNames = team.Members
       ?.map(member => member.College?.name)
       .filter((name): name is string => !!name);
-    
+
     // Get unique college names
     const uniqueColleges = [...new Set(collegeNames)];
-    
+
     return uniqueColleges.join(", ") || "N/A";
   };
 
   return (
     <div className="space-y-4">
+      {/* Confirmation Dialog */}
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Action</AlertDialogTitle>
+            <AlertDialogDescription>
+              {getConfirmationMessage()}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirm}>Yes, proceed</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Stats Section - Redesigned to be more minimal */}
       <div className="border-b border-border pb-2 text-sm">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
           <span className="text-muted-foreground">
             Selected: <span className="font-medium text-foreground">{top60Teams.length}</span>
           </span>
-          
+
           {Object.entries(trackCounts).map(([track, count]) => (
             <span key={track} className="text-muted-foreground">
               {track}: <span className="font-medium text-foreground">{count}</span>
@@ -128,14 +193,14 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
           ))}
         </div>
       </div>
-      
+
       <div className="flex flex-col md:flex-row gap-8 w-full">
         {/* Top 100 Teams Table */}
         <div className="w-full md:w-1/2">
           <h2 className="text-xl font-bold mb-4">Top 100 Teams</h2>
-            <div className="text-sm text-muted-foreground">
-                {top100Teams?.length ?? 0} teams
-            </div>
+          <div className="text-sm text-muted-foreground">
+            {top100Teams?.length ?? 0} teams
+          </div>
           <div className="w-full overflow-x-auto">
             <Table>
               <TableHeader>
@@ -170,10 +235,10 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
                         )}
                       </TableCell>
                       <TableCell>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="icon"
-                          onClick={() => handleMoveToTop60(team.id)}
+                          onClick={() => handleMoveToTop60(team.id, team.name)}
                           disabled={moveToTop60.isLoading}
                           title="Move to Top 60"
                         >
@@ -198,8 +263,8 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
         <div className="w-full md:w-1/2">
           <h2 className="text-xl font-bold mb-4">Top 60 Teams</h2>
           <div className="text-sm text-muted-foreground">
-                {top60Teams?.length ?? 0} teams
-            </div>
+            {top60Teams?.length ?? 0} teams
+          </div>
           <div className="w-full overflow-x-auto">
             <Table>
               <TableHeader>
@@ -234,10 +299,10 @@ const TopTeamsWithPdf: React.FC<TopTeamsWithPdfProps> = ({ data, dataRefetch }) 
                         )}
                       </TableCell>
                       <TableCell>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="icon"
-                          onClick={() => handleMoveBackToTop100(team.id)}
+                          onClick={() => handleMoveBackToTop100(team.id, team.name)}
                           disabled={moveBackToTop100.isLoading}
                           title="Move back to Top 100"
                         >

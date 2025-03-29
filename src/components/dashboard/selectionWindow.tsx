@@ -15,6 +15,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { toast } from '../ui/toast';
 import { ChevronUp, ChevronDown } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 
 const SelectionWindow = () => {
   const teamData = api.team.getTeamsByTotalScore.useQuery();
@@ -22,6 +32,12 @@ const SelectionWindow = () => {
   const [notSelectedPage, setNotSelectedPage] = useState(1);
   const [semiSelectedPage, setSemiSelectedPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
+
+  // Add state for confirmation dialog
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"moveToTop100" | "resetToTop100" | "resetTeamProgress">();
+  const [selectedTeamId, setSelectedTeamId] = useState<string>("");
+  const [selectedTeamName, setSelectedTeamName] = useState<string>("");
 
   // Get unique tracks from team submissions
   const tracks = teamData.data ? 
@@ -31,7 +47,6 @@ const SelectionWindow = () => {
         .map(team => team.IdeaSubmission?.track)
     )).filter(Boolean) as string[] 
     : [];
-
 
   const moveToTop100 = api.team.moveToTop100.useMutation({
     onSuccess: () => {
@@ -112,18 +127,59 @@ const SelectionWindow = () => {
   const semiSelectedTeams = getFilteredTeams("SEMI_SELECTED");
   const selectedTeams = getFilteredTeams("SELECTED");
 
-  // Handlers for moving teams between states
-  const handleMoveToTop100 = (teamId: string) => {
-    moveToTop100.mutate({ teamId });
+  // Updated handlers to open confirmation dialog
+  const handleMoveToTop100 = (teamId: string, teamName: string) => {
+    setSelectedTeamId(teamId);
+    setSelectedTeamName(teamName);
+    setConfirmAction("moveToTop100");
+    setIsConfirmOpen(true);
   };
 
-
-  const handleMoveBackToTop100 = (teamId: string) => {
-    resetToTop100.mutate({ teamId });
+  const handleMoveBackToTop100 = (teamId: string, teamName: string) => {
+    setSelectedTeamId(teamId);
+    setSelectedTeamName(teamName);
+    setConfirmAction("resetToTop100");
+    setIsConfirmOpen(true);
   };
 
-  const handleRemoveFromSelection = (teamId: string) => {
-    resetTeamProgress.mutate({ teamId });
+  const handleRemoveFromSelection = (teamId: string, teamName: string) => {
+    setSelectedTeamId(teamId);
+    setSelectedTeamName(teamName);
+    setConfirmAction("resetTeamProgress");
+    setIsConfirmOpen(true);
+  };
+
+  // Function to handle confirmation
+  const handleConfirm = () => {
+    if (!selectedTeamId) return;
+    
+    switch (confirmAction) {
+      case "moveToTop100":
+        moveToTop100.mutate({ teamId: selectedTeamId });
+        break;
+      case "resetToTop100":
+        resetToTop100.mutate({ teamId: selectedTeamId });
+        break;
+      case "resetTeamProgress":
+        resetTeamProgress.mutate({ teamId: selectedTeamId });
+        break;
+    }
+    
+    setIsConfirmOpen(false);
+  };
+
+  // Get confirmation message based on action
+  const getConfirmationMessage = () => {
+    switch (confirmAction) {
+      case "moveToTop100":
+        return `Are you sure you want to move "${selectedTeamName}" to Top 100?`;
+      case "resetToTop100":
+        return `Are you sure you want to move "${selectedTeamName}" back to Top 100?`;
+      case "resetTeamProgress":
+        return `Are you sure you want to remove "${selectedTeamName}" from selection?`;
+      default:
+        return "Are you sure you want to perform this action?";
+    }
   };
 
   if (teamData.isLoading) {
@@ -208,7 +264,7 @@ const SelectionWindow = () => {
                       <Button 
                         variant="outline" 
                         size="icon"
-                        onClick={() => handleMoveToTop100(team.id)}
+                        onClick={() => handleMoveToTop100(team.id, team.name)}
                         disabled={moveToTop100.isLoading}
                         title="Move to Top 100"
                       >
@@ -220,7 +276,7 @@ const SelectionWindow = () => {
                       <Button 
                         variant="outline" 
                         size="icon"
-                        onClick={() => handleRemoveFromSelection(team.id)}
+                        onClick={() => handleRemoveFromSelection(team.id, team.name)}
                         disabled={resetTeamProgress.isLoading}
                         title="Remove from Selection"
                       >
@@ -232,7 +288,7 @@ const SelectionWindow = () => {
                       <Button 
                         variant="outline" 
                         size="icon"
-                        onClick={() => handleMoveBackToTop100(team.id)}
+                        onClick={() => handleMoveBackToTop100(team.id, team.name)}
                         disabled={resetToTop100.isLoading}
                         title="Move back to Top 100"
                       >
@@ -281,6 +337,22 @@ const SelectionWindow = () => {
 
   return (
     <div className="w-full overflow-x-hidden">
+      {/* Confirmation Dialog */}
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Action</AlertDialogTitle>
+            <AlertDialogDescription>
+              {getConfirmationMessage()}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirm}>Yes, proceed</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Card className="w-full max-w-[1500px] mx-auto mb-4">
         <CardHeader className="pb-3">
           <CardTitle>Filter Teams by Track</CardTitle>
