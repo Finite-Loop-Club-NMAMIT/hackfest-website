@@ -342,7 +342,7 @@ function PaymentButton() {
   const router = useRouter();
 
   if (settings.settings?.isTop60Validated) {
-    if (session.data?.user.team?.teamProgress === "NOT_SELECTED") {
+    if (session.data?.user.team?.teamProgress === "NOT_SELECTED" || session.data?.user.team?.teamProgress === "SEMI_SELECTED") {
       return (
         <Badge
           variant={"destructive"}
