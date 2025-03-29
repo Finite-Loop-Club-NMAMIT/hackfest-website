@@ -1,4 +1,3 @@
-
 import { adminProcedure, createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 import { db } from "~/server/db";
@@ -239,7 +238,7 @@ export const analyticsRouter = createTRPCRouter({
         }
         const userDates = userVisitMap.get(entry.sessionUser);
         if (userDates) {
-          userDates.add(entry.startPing.toISOString().split('T')[0]);
+          userDates.add(entry.startPing?.toISOString().split('T')[0] ?? "unknown");
         }
       }
     });
@@ -366,7 +365,7 @@ export const analyticsRouter = createTRPCRouter({
         }
         const userDates = routeData.userVisits.get(sessionUser);
         if (userDates) {
-          userDates.add(entry.startPing.toISOString().split('T')[0]);
+          userDates.add(entry.startPing?.toISOString().split('T')[0] ?? "unknown");
         }
       } else {
         routeData.anonymous.visits++;
