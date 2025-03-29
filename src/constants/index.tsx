@@ -14,10 +14,10 @@ export const paymentQRUrl =
 
 export const UPIUser = {
   name: "Hackfest",
-  phone: "+91 1234567890",
-  upiId: "amarnathpramodini@okicici&pn=Pramodini",
-  baseAmount: 350
-}
+  phone: "+91 7411709904",
+  upiId: "prathamajs@okhdfcbank&pn=Prathama%20S%20J",
+  baseAmount: 350,
+};
 
 export const dates: [Date, Date, Date] = [
   new Date("2024-4-5"),
