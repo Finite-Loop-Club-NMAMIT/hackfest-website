@@ -13,7 +13,7 @@ export const paymentQRUrl =
   "https://res.cloudinary.com/dwwno9ngw/image/upload/v1741614504/n2yaizaraqftwrkwheq6.png";
 
 export const UPIUser = {
-  name: "Hackfest",
+  name: "Prathama S J",
   phone: "+91 7411709904",
   upiId: "prathamajs@okhdfcbank&pn=Prathama%20S%20J",
   baseAmount: 350,
