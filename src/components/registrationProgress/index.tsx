@@ -160,11 +160,28 @@ export default function RegisterCards({
                   paymentStatus={session.user.team.paymentStatus}
                 />
               ) : session.user.team?.teamProgress === "SELECTED" ? (
-                <RegistrationClosed
-                  session={session}
-                  message="Payment submission is now closed"
-                  heading="Too Late!"
-                />
+                <>
+                  <div className="flex h-full w-full items-center justify-center">
+                    <div className="mx-4 h-fit w-full max-w-[70rem] rounded-xl border border-white/20 bg-black/50 p-10 text-center text-white">
+                      <h1 className="text-5xl font-bold text-transparent text-white md:text-8xl">
+                        Congratulations!
+                      </h1>
+                      <p className="mt-8 md:text-xl">
+                        You have been selected in the top 60 teams. We will get
+                        back to you regarding the payment details soon!
+                      </p>
+                      <Button
+                        className="mt-8"
+                        variant="outline"
+                        onClick={() => {
+                          void router.push("/");
+                        }}
+                      >
+                        Home
+                      </Button>
+                    </div>
+                  </div>
+                </>
               ) : (
                 <RegistrationClosed
                   session={session}
