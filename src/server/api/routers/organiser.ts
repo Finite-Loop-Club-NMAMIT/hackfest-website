@@ -250,4 +250,196 @@ export const organiserRouter = createTRPCRouter({
       });
       return updatedTeam;
     }),
+  getCollegeAnalytics: adminProcedure.query(async ({ ctx }) => {
+    // Get all colleges
+    const colleges = await ctx.db.college.findMany({
+      select: {
+        id: true,
+        name: true,
+        state: true,
+        User: {
+          select: {
+            id: true,
+            teamId: true,
+            Team: {
+              select: {
+                id: true,
+                isComplete: true,
+                paymentStatus: true,
+                teamProgress: true,
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Process college data to get required metrics
+    const collegeAnalytics = colleges.map(college => {
+      // Get unique teams from this college
+      const uniqueTeamIds = new Set<string>();
+      const confirmedTeamIds = new Set<string>();
+      const selectedTeamIds = new Set<string>();
+
+      college.User.forEach(user => {
+        if (user.teamId) {
+          uniqueTeamIds.add(user.teamId);
+          
+          if (user.Team?.isComplete === true) {
+            confirmedTeamIds.add(user.teamId);
+          }
+          
+          if (user.Team?.teamProgress === 'SELECTED') {
+            selectedTeamIds.add(user.teamId);
+          }
+        }
+      });
+
+      return {
+        id: college.id,
+        name: college.name,
+        state: college.state,
+        totalTeams: uniqueTeamIds.size,
+        confirmedTeams: confirmedTeamIds.size,
+        selectedTeams: selectedTeamIds.size,
+      };
+    });
+
+    // Calculate summary statistics
+    // Each college already has a unique ID from the database, so the length of the
+    // collegeAnalytics array is the correct count of unique colleges
+    const totalColleges = collegeAnalytics.length;
+    const collegesWithConfirmedTeams = collegeAnalytics.filter(c => c.confirmedTeams > 0).length;
+    const collegesWithSelectedTeams = collegeAnalytics.filter(c => c.selectedTeams > 0).length;
+    
+    // Sort colleges by selected teams (descending)
+    const sortedColleges = [...collegeAnalytics].sort((a, b) => 
+      b.selectedTeams - a.selectedTeams || b.confirmedTeams - a.confirmedTeams
+    );
+
+    // Group colleges by state
+    const stateAnalytics: Record<string, {
+      totalColleges: number;
+      collegesWithConfirmedTeams: number;
+      collegesWithSelectedTeams: number;
+      totalTeams: number;
+      confirmedTeams: number;
+      selectedTeams: number;
+      colleges: typeof collegeAnalytics;
+    }> = {};
+
+    // Initialize state groups
+    collegeAnalytics.forEach(college => {
+      const stateName = college.state.toString();
+      if (!stateAnalytics[stateName]) {
+        stateAnalytics[stateName] = {
+          totalColleges: 0,
+          collegesWithConfirmedTeams: 0,
+          collegesWithSelectedTeams: 0,
+          totalTeams: 0,
+          confirmedTeams: 0,
+          selectedTeams: 0,
+          colleges: []
+        };
+      }
+      
+      // Add college to its state group
+      stateAnalytics[stateName].colleges.push(college);
+      stateAnalytics[stateName].totalColleges++;
+      stateAnalytics[stateName].totalTeams += college.totalTeams;
+      stateAnalytics[stateName].confirmedTeams += college.confirmedTeams;
+      stateAnalytics[stateName].selectedTeams += college.selectedTeams;
+      
+      if (college.confirmedTeams > 0) {
+        stateAnalytics[stateName].collegesWithConfirmedTeams++;
+      }
+      if (college.selectedTeams > 0) {
+        stateAnalytics[stateName].collegesWithSelectedTeams++;
+      }
+    });
+    
+    // Sort states by selected teams (descending)
+    const sortedStates = Object.entries(stateAnalytics)
+      .map(([state, data]) => ({ state, ...data }))
+      .sort((a, b) => b.selectedTeams - a.selectedTeams || b.confirmedTeams - a.confirmedTeams);
+
+    return {
+      totalColleges,
+      collegesWithConfirmedTeams,
+      collegesWithSelectedTeams,
+      collegeBreakdown: sortedColleges,
+      stateAnalytics: sortedStates
+    };
+  }),
+  getCollegeTeams: adminProcedure
+    .input(
+      z.object({
+        collegeId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { collegeId } = input;
+      
+      // Get all users from this college with their team information
+      const collegeUsers = await ctx.db.user.findMany({
+        where: {
+          collegeId: collegeId,
+          teamId: {
+            not: null
+          }
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          isLeader: true,
+          teamId: true,
+        }
+      });
+      
+      // Extract unique team IDs
+      const teamIds = [...new Set(collegeUsers.map(user => user.teamId).filter(Boolean))];
+      
+      // Get full team details including members and their submission
+      const teams = await ctx.db.team.findMany({
+        where: {
+          id: {
+            in: teamIds as string[]
+          },
+          teamProgress: 'SELECTED'
+        },
+        include: {
+          Members: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              isLeader: true,
+              College: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          },
+          IdeaSubmission: true,
+          Scores: {
+            include: {
+              Criteria: true
+            }
+          },
+          Remark: true
+        }
+      });
+      
+      return {
+        teams,
+        college: await ctx.db.college.findUnique({
+          where: { id: collegeId },
+          select: { name: true, state: true }
+        })
+      };
+    }),
 });
