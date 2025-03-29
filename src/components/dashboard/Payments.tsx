@@ -28,6 +28,16 @@ export default function Top60Payments() {
 
   if (isLoading) return <Skeleton className="h-12 w-full" />;
 
+  const statusPriority = { VERIFY: 0, PENDING: 1, PAID: 2 };
+  const sortedTeams = teams
+    ? [...teams].sort((a, b) => {
+        return (
+          (statusPriority[a.paymentStatus] ?? 99) -
+          (statusPriority[b.paymentStatus] ?? 99)
+        );
+      })
+    : [];
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -40,13 +50,14 @@ export default function Top60Payments() {
               <TableHead>Rank</TableHead>
               <TableHead>Team Name</TableHead>
               <TableHead>Payment Status</TableHead>
+              <TableHead>Amount</TableHead>
               <TableHead>Transaction ID</TableHead>
               <TableHead>Payment Proof</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {teams?.map((team, index) => (
+            {sortedTeams.map((team, index) => (
               <TableRow key={team.id}>
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{team.name}</TableCell>
@@ -63,6 +74,7 @@ export default function Top60Payments() {
                     {team.paymentStatus}
                   </Badge>
                 </TableCell>
+                <TableCell>{350 * team.Members.length}</TableCell>
                 <TableCell>
                   {team.paymentStatus === "VERIFY" && team.transactionId
                     ? team.transactionId
@@ -89,9 +101,9 @@ export default function Top60Payments() {
                 </TableCell>
               </TableRow>
             ))}
-            {teams && teams.length === 0 && (
+            {sortedTeams.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={7} className="text-center">
                   No top 60 teams found.
                 </TableCell>
               </TableRow>
