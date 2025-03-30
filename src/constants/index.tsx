@@ -13,9 +13,9 @@ export const paymentQRUrl =
   "https://res.cloudinary.com/dwwno9ngw/image/upload/v1741614504/n2yaizaraqftwrkwheq6.png";
 
 export const UPIUser = {
-  name: "Prathama S J",
-  phone: "+91 7411709904",
-  upiId: "prathamajs@okhdfcbank&pn=Prathama%20S%20J",
+  name: "A Omkar G Prabhu",
+  phone: "+91 9448846524",
+  upiId: "prabhuomkar9@oksbi&pn=A%20Omkar%20G%20Prabhu",
   baseAmount: 350,
 };
 
