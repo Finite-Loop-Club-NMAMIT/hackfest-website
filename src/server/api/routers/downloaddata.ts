@@ -123,4 +123,56 @@ export const downloadData = createTRPCRouter({
     const base64Csv = Buffer.from(csv).toString("base64");
     return { csv: base64Csv };
   }),
+  downloadPaymentStatus: adminProcedure.query(async ({ ctx }) => {
+    const teams = await ctx.db.team.findMany({
+      where: {
+        Members: {
+          some: { isLeader: true },
+        },
+        teamProgress: "SELECTED",
+      },
+      select: {
+        id: true,
+        paymentStatus: true,
+        Members: {
+          where: { isLeader: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+      },
+    });
+    if (teams.length === 0) return { csv: "" };
+
+    const header = [
+      "teamId",
+      "teamLeader_id",
+      "teamLeader_name",
+      "teamLeader_email",
+      "teamLeader_phone",
+      "paymentStatus",
+    ];
+    const rows = teams.map((team) => {
+      const leader = team.Members[0] ?? {
+        id: "",
+        name: "",
+        email: "",
+        phone: "",
+      };
+      return [
+        team.id,
+        leader.id,
+        leader.name,
+        leader.email,
+        leader.phone,
+        team.paymentStatus ?? "",
+      ].join(",");
+    });
+    const csv = [header.join(","), ...rows].join("\n");
+    const base64Csv = Buffer.from(csv).toString("base64");
+    return { csv: base64Csv };
+  }),
 });

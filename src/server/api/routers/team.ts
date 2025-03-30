@@ -285,7 +285,7 @@ export const teamRouter = createTRPCRouter({
           isComplete,
         },
       });
-      
+
       return {
         status: "success",
         message: "Joined team successfully",
@@ -423,6 +423,13 @@ export const teamRouter = createTRPCRouter({
       if (!input.teamId || input.teamId.length === 0) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Team not found" });
       }
+      const user = ctx.session.user;
+      if (user.team?.id !== input.teamId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Stop stalking other teams",
+        });
+      }
       const team = await ctx.db.team.findUnique({
         where: {
           id: input.teamId,
@@ -483,10 +490,10 @@ export const teamRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const settings = await ctx.db.appSettings.findFirst();
       if (settings?.isResultOpen) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Cannot modify team status while results are published",
-      });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot modify team status while results are published",
+        });
       }
       await ctx.db.team.update({
         where: {
@@ -513,10 +520,10 @@ export const teamRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const settings = await ctx.db.appSettings.findFirst();
       if (settings?.isResultOpen) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Cannot modify team status while results are published",
-      });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot modify team status while results are published",
+        });
       }
       await ctx.db.team.update({
         where: {
@@ -543,10 +550,10 @@ export const teamRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const settings = await ctx.db.appSettings.findFirst();
       if (settings?.isResultOpen) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Cannot modify team status while results are published",
-      });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot modify team status while results are published",
+        });
       }
       await ctx.db.team.update({
         where: {
@@ -573,10 +580,10 @@ export const teamRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const settings = await ctx.db.appSettings.findFirst();
       if (settings?.isResultOpen) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Cannot modify team status while results are published",
-      });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot modify team status while results are published",
+        });
       }
       await ctx.db.team.update({
         where: {
@@ -645,10 +652,10 @@ export const teamRouter = createTRPCRouter({
         teamProgress: "SELECTED",
       },
       include: {
-        IdeaSubmission:{
-          select:{
-            track:true,
-          }
+        IdeaSubmission: {
+          select: {
+            track: true,
+          },
         },
         Members: {
           select: {
@@ -745,7 +752,7 @@ export const teamRouter = createTRPCRouter({
           select: {
             id: true,
             name: true,
-            isLeader : true,
+            isLeader: true,
             image: true,
             phone: true,
             email: true,
@@ -777,13 +784,18 @@ export const teamRouter = createTRPCRouter({
     });
 
     // Calculate total scores for each team (only counting VALIDATOR scores)
-    const teamsWithTotalScores = teams.map(team => {
-      const validatorScores = team.Scores.filter(score => 
-        score.Judge.type === "VALIDATOR" || score.Judge.type === "SUPER_VALIDATOR"
+    const teamsWithTotalScores = teams.map((team) => {
+      const validatorScores = team.Scores.filter(
+        (score) =>
+          score.Judge.type === "VALIDATOR" ||
+          score.Judge.type === "SUPER_VALIDATOR",
       );
-      
-      const totalScore = validatorScores.reduce((sum, score) => sum + score.score, 0);
-      
+
+      const totalScore = validatorScores.reduce(
+        (sum, score) => sum + score.score,
+        0,
+      );
+
       return {
         ...team,
         totalScore,
@@ -822,7 +834,7 @@ export const teamRouter = createTRPCRouter({
           },
         },
         orderBy: {
-          isLeader: 'desc',
+          isLeader: "desc",
         },
       });
 
