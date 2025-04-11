@@ -35,15 +35,27 @@ const Sponsors = () => {
           />
         </div>
       </div>
-
-      <div className="flex w-full flex-col items-center justify-center gap-4 sm:gap-6">
-        <h1>Co-Powered By</h1>
-        <Image
-          src={"/images/sponsors/rakuten.svg"}
-          alt="rakuten"
-          width={200}
-          height={60}
-        />
+      
+      <div className="flex flex-col w-full xl:w-[80%] overflow-hidden sm:flex-row justify-center sm:justify-around gap-y-10 sm:gap-y-0 items-center">
+        <div className="flex w-full flex-col overflow-hidden justify-center sm:justify-evenly lg:justify-center gap-y-4 items-center">
+          <h1 className="text-center">Co-Powered By</h1>
+          <Image
+            src={"/images/sponsors/niveus.png"}
+            alt="paloalto"
+            width={240}
+            height={150}
+          />
+        </div>
+        <div className="hidden sm:block h-36 w-2 bg-gray-400"></div>
+        <div className="flex w-full flex-col overflow-hidden justify-center sm:justify-evenly lg:justify-center gap-y-4 items-center">
+          <h1 className="text-center">Sponsored By</h1>
+          <Image
+            src={"/images/sponsors/rakuten.svg"}
+            alt="paloalto"
+            width={200}
+            height={100}
+          />
+        </div>
       </div>
     </section>
   );
