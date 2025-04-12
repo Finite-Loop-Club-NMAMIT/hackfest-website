@@ -724,6 +724,7 @@ export default function RegisterProfileForm() {
                       }
                     } catch (error) {
                       toast.dismiss("submitting");
+                      console.error(error);
                       toast.error("Error Registering");
                       setSubmitting(false);
                     }
