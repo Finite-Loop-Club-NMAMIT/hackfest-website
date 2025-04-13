@@ -25,6 +25,7 @@ import { BsWhatsapp } from "react-icons/bs";
 import { FaMoneyBill } from "react-icons/fa";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { Building, MapPin } from "lucide-react"; // Import icons
 
 interface User {
   name: string | null;
@@ -32,13 +33,21 @@ interface User {
   isLeader: boolean;
 }
 
+interface TeamDetailsProps {
+  user: inferRouterOutputs<typeof userRouter>["getUserDetails"];
+  order: number;
+  boysDormitory?: string | null;
+  girlsDormitory?: string | null;
+  arena?: string | null;
+}
+
 export default function TeamDetails({
   user,
   order,
-}: {
-  user: inferRouterOutputs<typeof userRouter>["getUserDetails"];
-  order: number;
-}) {
+  boysDormitory,
+  girlsDormitory,
+  arena,
+}: TeamDetailsProps) {
   const settings = useContext(settingsCtx);
   const [teamMembers, setTeamMembers] = useState<{
     leader: User;
@@ -144,10 +153,48 @@ export default function TeamDetails({
             <div className="flex h-full flex-col items-center justify-between">
               <TeamList teamId={user.Team.id} showTeamName={false} />
             </div>
-            {/* {
-              settings.settings?.isTop60Validated && session.data?.user.team?.teamProgress === "SELECTED" ? session.data.user.team.paymentStatus === "PENDING"  : ()
-            } */}
             <PaymentButton />
+            {/* --- Enhanced Allocation Details Styling --- */}
+            {((boysDormitory ?? girlsDormitory) ?? arena) && (
+              <div className="mt-5 rounded-lg border border-blue-400/30 bg-gradient-to-br from-blue-900/30 via-black/20 to-blue-900/30 p-4 shadow-md shadow-blue-500/10">
+                <h4 className="mb-3 text-center text-lg font-bold tracking-wide text-blue-300">
+                  Venue & Accommodation
+                </h4>
+                <div className="space-y-2 text-center text-sm text-gray-300">
+                  {/* Display Boys Dormitory Name if available */}
+                  {boysDormitory && (
+                    <p className="flex items-center justify-center gap-2">
+                      <Building size={16} className="text-blue-400" />
+                      <span className="font-semibold text-gray-100">
+                        Boys Dorm:
+                      </span>{" "}
+                      {boysDormitory}
+                    </p>
+                  )}
+                  {/* Display Girls Dormitory Name if available */}
+                  {girlsDormitory && (
+                    <p className="flex items-center justify-center gap-2">
+                      <Building size={16} className="text-pink-400" />
+                      <span className="font-semibold text-gray-100">
+                        Girls Dorm:
+                      </span>{" "}
+                      {girlsDormitory}
+                    </p>
+                  )}
+                  {/* Display Arena Name if available */}
+                  {arena && (
+                    <p className="flex items-center justify-center gap-2">
+                      <MapPin size={16} className="text-green-400" />
+                      <span className="font-semibold text-gray-100">
+                        Arena:
+                      </span>{" "}
+                      {arena}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* --- End of Enhanced Allocation Details Styling --- */}
             {settings.settings?.isRegistrationOpen ? (
               <>
                 {user.profileProgress === "FORM_TEAM" ? (

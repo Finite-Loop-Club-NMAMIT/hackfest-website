@@ -99,10 +99,28 @@ function Content({
       );
 
     case "FORM_TEAM":
-      return <ProfileCard user={user} order={[3, 4, 2, 0]} />;
+      return (
+        <ProfileCard
+          user={user}
+          order={[3, 4, 2, 0]}
+        />
+      );
     case "SUBMIT_IDEA":
-      return <ProfileCard user={user} order={[3, 5, 4, 2]} />;
+      return (
+        <ProfileCard
+          user={user}
+          order={[3, 5, 4, 2]}
+        />
+      );
     case "COMPLETE":
-      return <ProfileCard user={user} order={[2, 5, 3, 4]} />;
+      return (
+        <ProfileCard
+          user={user}
+          order={[2, 5, 3, 4]}
+          boysDormitory={user.Team?.boysDormitory}
+          girlsDormitory={user.Team?.girlsDormitory}
+          arena={user.Team?.arena}
+        />
+      );
   }
 }

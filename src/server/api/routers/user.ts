@@ -268,6 +268,9 @@ export const userRouter = createTRPCRouter({
           select: {
             id: true,
             name: true,
+            arena: true,
+            boysDormitory: true,
+            girlsDormitory:true,
             isComplete: true,
             github: {
               select: {
