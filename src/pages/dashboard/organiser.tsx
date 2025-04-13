@@ -10,6 +10,8 @@ import AnalyticsTab from "~/components/dashboard/AnalyticsTab";
 import RolesTab from "~/components/dashboard/RolesTab";
 import SelectionWindow from "~/components/dashboard/selectionWindow";
 import Top60Payments from "~/components/dashboard/Payments";
+import AllocationTab from "~/components/dashboard/AllocationTab";
+import AuditLogViewer from "~/components/organiser/AuditLogViewer"; // Import the new component
 
 export default function Organiser() {
   const users = api.user.getAllUsers.useQuery().data;
@@ -22,7 +24,7 @@ export default function Organiser() {
       const storedTab = localStorage.getItem("organiserActiveTab");
       if (
         storedTab &&
-        ["teams", "analytics", "roles", "quickboard"].includes(storedTab)
+        ["teams", "analytics", "roles", "quickboard", "allocations", "selectionwindow", "payments", "auditlog"].includes(storedTab) // Add "auditlog" here
       ) {
         setActiveTab(storedTab);
       }
@@ -53,10 +55,10 @@ export default function Organiser() {
   return (
     <div className="my-5 w-full">
       {/* Custom Tabs Navigation */}
-      <div className="flex flex-row items-center justify-center border-b">
+      <div className="flex flex-row items-center justify-start md:justify-center border-b overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveTab("quickboard")}
-          className={`w-full px-4 py-2 text-center transition-colors ${
+          className={`whitespace-nowrap flex-shrink-0 px-4 py-2 text-center transition-colors ${
             activeTab === "quickboard"
               ? "border-b-2 border-purple-500 font-bold"
               : "text-gray-400 hover:text-white"
@@ -66,7 +68,7 @@ export default function Organiser() {
         </button>
         <button
           onClick={() => setActiveTab("teams")}
-          className={`w-full px-4 py-2 text-center transition-colors ${
+          className={`whitespace-nowrap flex-shrink-0 px-4 py-2 text-center transition-colors ${
             activeTab === "teams"
               ? "border-b-2 border-purple-500 font-bold"
               : "text-gray-400 hover:text-white"
@@ -76,7 +78,7 @@ export default function Organiser() {
         </button>
         <button
           onClick={() => setActiveTab("analytics")}
-          className={`w-full px-4 py-2 text-center transition-colors ${
+          className={`whitespace-nowrap flex-shrink-0 px-4 py-2 text-center transition-colors ${
             activeTab === "analytics"
               ? "border-b-2 border-purple-500 font-bold"
               : "text-gray-400 hover:text-white"
@@ -86,7 +88,7 @@ export default function Organiser() {
         </button>
         <button
           onClick={() => setActiveTab("roles")}
-          className={`w-full px-4 py-2 text-center transition-colors ${
+          className={`whitespace-nowrap flex-shrink-0 px-4 py-2 text-center transition-colors ${
             activeTab === "roles"
               ? "border-b-2 border-purple-500 font-bold"
               : "text-gray-400 hover:text-white"
@@ -95,8 +97,18 @@ export default function Organiser() {
           Roles
         </button>
         <button
+          onClick={() => setActiveTab("allocations")}
+          className={`whitespace-nowrap flex-shrink-0 px-4 py-2 text-center transition-colors ${
+            activeTab === "allocations"
+              ? "border-b-2 border-purple-500 font-bold"
+              : "text-gray-400 hover:text-white"
+          }`}
+        >
+          Allocations
+        </button>
+        <button
           onClick={() => setActiveTab("selectionwindow")}
-          className={`w-full px-4 py-2 text-center transition-colors ${
+          className={`whitespace-nowrap flex-shrink-0 px-4 py-2 text-center transition-colors ${
             activeTab === "selectionwindow"
               ? "border-b-2 border-purple-500 font-bold"
               : "text-gray-400 hover:text-white"
@@ -106,13 +118,23 @@ export default function Organiser() {
         </button>
         <button
           onClick={() => setActiveTab("payments")}
-          className={`w-full px-4 py-2 text-center transition-colors ${
+          className={`whitespace-nowrap flex-shrink-0 px-4 py-2 text-center transition-colors ${
             activeTab === "payments"
               ? "border-b-2 border-purple-500 font-bold"
               : "text-gray-400 hover:text-white"
           }`}
         >
           Payments
+        </button>
+        <button
+          onClick={() => setActiveTab("auditlog")}
+          className={`whitespace-nowrap flex-shrink-0 px-4 py-2 text-center transition-colors ${
+            activeTab === "auditlog"
+              ? "border-b-2 border-purple-500 font-bold"
+              : "text-gray-400 hover:text-white"
+          }`}
+        >
+          Audit Log
         </button>
       </div>
 
@@ -121,8 +143,10 @@ export default function Organiser() {
       {activeTab === "teams" && <TeamsTab />}
       {activeTab === "analytics" && <AnalyticsTab />}
       {activeTab === "roles" && <RolesTab users={users} />}
+      {activeTab === "allocations" && <AllocationTab />}
       {activeTab === "selectionwindow" && <SelectionWindow />}
       {activeTab === "payments" && <Top60Payments />}
+      {activeTab === "auditlog" && <AuditLogViewer />}
     </div>
   );
 }

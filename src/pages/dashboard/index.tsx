@@ -8,6 +8,7 @@ import Validator from "./validator";
 import Organiser from "./organiser";
 import TeamAttendance from "./team";
 import SuperVaildator from "./super-validator";
+import Judge from "./judge";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -82,6 +83,8 @@ export default function Dashboard() {
         return "superValidator";
       case "TEAM":
         return "team";
+      case "JUDGE":
+        return "judge"; // Assuming judge is a valid tab for judges
       default:
         return "";
     }
@@ -186,6 +189,7 @@ export default function Dashboard() {
           {activeTab === "organiser" && <Organiser />}
           {activeTab === "validator" && <Validator />}
           {activeTab === "superValidator" && <SuperVaildator />}
+          {activeTab === "judge" && <Judge />}
         </div>
       </div>
     </DashboardLayout>

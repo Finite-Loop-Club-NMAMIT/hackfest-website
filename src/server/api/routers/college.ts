@@ -12,10 +12,17 @@ export const collegeRouter = createTRPCRouter({
     .input(createCollegeZ)
     .mutation(async ({ input, ctx }) => {
       try {
-        await ctx.db.college.create({
+        const newCollege = await ctx.db.college.create({
           data: {
             name: input.name,
             state: input.state.toUpperCase() as States,
+          },
+        });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "COLLEGE_CREATE",
+            description: `Admin ${ctx.session.user.email} created college '${input.name}' (State: ${input.state}, ID: ${newCollege.id})`,
           },
         });
         return { status: "success", message: "College created successfully" };

@@ -53,7 +53,7 @@ export const videoRouter = createTRPCRouter({
           data: {
             sessionUser: ctx.session.user.email,
             auditType: "VIDEO_SUBMISSION",
-            description: `Team ${team.id} has submitted a video link`,
+            description: `User ${ctx.session.user.email} submitted video link for team ${team.id}. Link: ${input.videoLink}`,
           },
         });
         

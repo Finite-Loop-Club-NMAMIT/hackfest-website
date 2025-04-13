@@ -134,11 +134,11 @@ export const JudgeRouter = createTRPCRouter({
                 judgeId: judge.id,
               },
             });
-            return await ctx.db.auditLog.create({
+            await db.auditLog.create({
               data: {
                 sessionUser: ctx.session.user.email,
-                auditType: "SCORE",
-                description: `  Score of ${input.score} set for team ${input.teamId} for criteria ${input.criteriaId}`,
+                auditType: "SCORE_SET",
+                description: `Judge ${user.email} (Type: ${judge.type}) set score ${input.score} for team ${input.teamId} on criteria ${input.criteriaId}`,
               },
             });
           } else {
@@ -147,28 +147,27 @@ export const JudgeRouter = createTRPCRouter({
               message: "Score exceeds maximum limit",
             });
           }
-        }
-
-        // const diffScore = input.score - oldScoreForCriteria.score;
-         await db.scores.update({
-          where: {
-            teamId_criteriaId_judgeId: {
-              criteriaId: input.criteriaId,
-              teamId: input.teamId,
-              judgeId: judge.id,
+        } else {
+          await db.scores.update({
+            where: {
+              teamId_criteriaId_judgeId: {
+                criteriaId: input.criteriaId,
+                teamId: input.teamId,
+                judgeId: judge.id,
+              },
             },
-          },
-          data: {
-            score: input.score,
-          },
-        });
-        return      await ctx.db.auditLog.create({
-          data: {
-            sessionUser: ctx.session.user.email,
-            auditType: "SCORE",
-            description: `Score of ${input.score} set for team ${input.teamId} for criteria ${input.criteriaId}`,
-          },
-        });
+            data: {
+              score: input.score,
+            },
+          });
+          await db.auditLog.create({
+            data: {
+              sessionUser: ctx.session.user.email,
+              auditType: "SCORE_SET",
+              description: `Judge ${user.email} (Type: ${judge.type}) updated score to ${input.score} for team ${input.teamId} on criteria ${input.criteriaId}`,
+            },
+          });
+        }
       });
     }),
 
@@ -205,11 +204,11 @@ export const JudgeRouter = createTRPCRouter({
           type: input.type,
         },
       });
-      return await ctx.db.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
-          auditType: "Role Change",
-          description: `Judge ${input.id} has been updated to ${input.type} `,
+          auditType: "JUDGE_UPDATE",
+          description: `Admin ${ctx.session.user.email} updated judge ${input.id} type to ${input.type}`,
         },
       });
     }),
@@ -269,8 +268,8 @@ export const JudgeRouter = createTRPCRouter({
         await ctx.db.auditLog.create({
           data: {
             sessionUser: ctx.session.user.email,
-            auditType: "Role Change",
-            description: `User ${input.userId} has been assigned as a Judge for ${input.type}`,
+            auditType: "JUDGE_ADD",
+            description: `Admin ${ctx.session.user.email} assigned user ${input.userId} as a Judge (Type: ${input.type})`,
           },
         });
         
@@ -307,8 +306,8 @@ export const JudgeRouter = createTRPCRouter({
         await ctx.db.auditLog.create({
           data: {
             sessionUser: ctx.session.user.email,
-            auditType: "Role Change",
-            description: `User ${input.userId} has been removed as a Judge`,
+            auditType: "JUDGE_DELETE",
+            description: `Admin ${ctx.session.user.email} removed Judge role (ID: ${input.judgeId}) from user ${input.userId}`,
           },
         });
         return { success: true };

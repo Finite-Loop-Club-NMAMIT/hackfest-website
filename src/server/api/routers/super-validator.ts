@@ -90,6 +90,13 @@ export const superValidatorRouter = createTRPCRouter({
                 judgeId: judge.id,
               },
             });
+            await db.auditLog.create({
+              data: {
+                sessionUser: ctx.session.user.email,
+                auditType: "SCORE_SET",
+                description: `SuperValidator ${user.email} set score ${input.score} for team ${input.teamId} on criteria ${input.criteriaId}`,
+              },
+            });
             return await db.team.update({
               where: {
                 id: input.teamId,
@@ -106,19 +113,27 @@ export const superValidatorRouter = createTRPCRouter({
               message: "Score exceeds maximum limit",
             });
           }
-        }
-        await db.scores.update({
-          where: {
-            teamId_criteriaId_judgeId: {
-              criteriaId: input.criteriaId,
-              teamId: input.teamId,
-              judgeId: judge.id,
+        } else {
+          await db.scores.update({
+            where: {
+              teamId_criteriaId_judgeId: {
+                criteriaId: input.criteriaId,
+                teamId: input.teamId,
+                judgeId: judge.id,
+              },
             },
-          },
-          data: {
-            score: input.score,
-          },
-        });
+            data: {
+              score: input.score,
+            },
+          });
+          await db.auditLog.create({
+            data: {
+              sessionUser: ctx.session.user.email,
+              auditType: "SCORE_SET",
+              description: `SuperValidator ${user.email} updated score to ${input.score} for team ${input.teamId} on criteria ${input.criteriaId}`,
+            },
+          });
+        }
 
         return await db.team.update({
           where: {
@@ -160,10 +175,18 @@ export const superValidatorRouter = createTRPCRouter({
       }
 
       if (team.teamProgress === "SEMI_SELECTED") {
-      return await ctx.db.team.update({
-        where: { id: input.teamId },
-        data: { teamProgress: "SELECTED" },
-      });
+        const updatedTeam = await ctx.db.team.update({
+          where: { id: input.teamId },
+          data: { teamProgress: "SELECTED" },
+        });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "TEAM_STATUS_UPDATE",
+            description: `SuperValidator ${ctx.session.user.email} moved team ${input.teamId} to Top 60 (SELECTED)`,
+          },
+        });
+        return updatedTeam;
       } else {
       throw new TRPCError({
         code: "BAD_REQUEST",
@@ -191,10 +214,18 @@ export const superValidatorRouter = createTRPCRouter({
       }
 
       if (team.teamProgress === "SELECTED") {
-        return await ctx.db.team.update({
+        const updatedTeam = await ctx.db.team.update({
           where: { id: input.teamId },
           data: { teamProgress: "SEMI_SELECTED" },
         });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "TEAM_STATUS_UPDATE",
+            description: `SuperValidator ${ctx.session.user.email} reset team ${input.teamId} to Top 100 (SEMI_SELECTED)`,
+          },
+        });
+        return updatedTeam;
       } else {
         throw new TRPCError({
           code: "BAD_REQUEST",

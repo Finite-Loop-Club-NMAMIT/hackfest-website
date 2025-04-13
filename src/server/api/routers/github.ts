@@ -44,6 +44,8 @@ export const githubRouter = createTRPCRouter({
       })
 
       let count = 0;
+      let invitedCount = 0;
+      const failedTeams: string[] = [];
 
       for (const team of teams) {
         const githubTeamName = tName2GHTName(team.name)
@@ -123,14 +125,29 @@ export const githubRouter = createTRPCRouter({
                 },
               });
               console.log(`Team invitation sent : ${invitation.data.email}`)
+              if (invitation.data.email) { // Check if invitation was successful
+                invitedCount++;
+              }
               count++;
             } catch { continue }
           }
-        } catch { continue }
+        } catch (e) {
+          console.error(`Failed processing team ${team.name} (ID: ${team.id}):`, e);
+          failedTeams.push(team.name);
+          continue
+        }
       }
 
-      if (count === 0) {
-        throw new TRPCClientError("No invitations sent")
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_INVITE_BATCH",
+          description: `Admin ${ctx.session.user.email} attempted batch GitHub invitations. Successful invites: ${invitedCount}. Failed teams: ${failedTeams.join(', ') || 'None'}.`,
+        },
+      });
+
+      if (count === 0 && teams.length > 0) { // Adjusted error condition
+        throw new TRPCClientError("No invitations sent successfully.")
       }
     }),
 
@@ -168,6 +185,14 @@ export const githubRouter = createTRPCRouter({
         },
       });
       console.log(`Team invitation sent : ${invitation.data.email}`)
+
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_INVITE_USER",
+          description: `Admin ${ctx.session.user.email} sent GitHub invitation to ${input.githubUsername} for team ${input.teamId}. Invite Email: ${invitation.data.email ?? 'N/A'}`,
+        },
+      });
     }),
 
   enableCommitForTeam: adminProcedure
@@ -205,6 +230,14 @@ export const githubRouter = createTRPCRouter({
           }
         })
       }
+
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_PERM_ENABLE",
+          description: `Admin ${ctx.session.user.email} enabled 'maintain' permissions for team ${githubTeam.team.name} (ID: ${input.teamId}) on repos: ${githubTeam.githubRepoName.join(', ')}.`,
+        },
+      });
 
       console.log(`Enabled commit for team : ${githubTeam.team.name} with team id : ${input.teamId}`)
     }),
@@ -245,6 +278,14 @@ export const githubRouter = createTRPCRouter({
         })
       }
 
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_PERM_DISABLE",
+          description: `Admin ${ctx.session.user.email} disabled 'maintain' (set to 'pull') permissions for team ${githubTeam.team.name} (ID: ${input.teamId}) on repos: ${githubTeam.githubRepoName.join(', ')}.`,
+        },
+      });
+
       console.log(`Disabled commit for team : ${githubTeam.team.name} with team id : ${input.teamId}`)
     }
     ),
@@ -261,6 +302,9 @@ export const githubRouter = createTRPCRouter({
         }
       })
 
+      let successCount = 0;
+      const failedTeams: string[] = [];
+
       for (const githubTeam of githubTeams) {
         try{
 
@@ -276,11 +320,22 @@ export const githubRouter = createTRPCRouter({
             }
           })
         }
-      }
-      catch{continue}
-
+        successCount++;
         console.log(`Enabled commit for team : ${githubTeam.team.name}`)
       }
+      catch(e){
+        console.error(`Failed enabling commit for team ${githubTeam.team.name}:`, e);
+        failedTeams.push(githubTeam.team.name);
+        continue
+      }
+      }
+       await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_PERM_ENABLE_ALL",
+          description: `Admin ${ctx.session.user.email} attempted to enable 'maintain' permissions for all teams. Success: ${successCount}. Failed: ${failedTeams.join(', ') || 'None'}.`,
+        },
+      });
     }),
 
   disableCommitForAll: adminProcedure
@@ -295,22 +350,38 @@ export const githubRouter = createTRPCRouter({
         }
       })
 
-      for (const githubTeam of githubTeams) {
-        for (const repoName of githubTeam.githubRepoName) {
-          await octokit.request('PUT /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}', {
-            org: ORGANIZATION_NAME,
-            team_slug: githubTeam.githubTeamSlug,
-            owner: ORGANIZATION_NAME,
-            repo: repoName,
-            permission: 'pull',
-            headers: {
-              'X-GitHub-Api-Version': '2022-11-28'
-            }
-          })
-        }
+      let successCount = 0;
+      const failedTeams: string[] = [];
 
-        console.log(`Disabled commit for team : ${githubTeam.team.name}`)
+      for (const githubTeam of githubTeams) {
+         try{
+            for (const repoName of githubTeam.githubRepoName) {
+              await octokit.request('PUT /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}', {
+                org: ORGANIZATION_NAME,
+                team_slug: githubTeam.githubTeamSlug,
+                owner: ORGANIZATION_NAME,
+                repo: repoName,
+                permission: 'pull',
+                headers: {
+                  'X-GitHub-Api-Version': '2022-11-28'
+                }
+              })
+            }
+            successCount++;
+            console.log(`Disabled commit for team : ${githubTeam.team.name}`)
+         } catch(e) {
+            console.error(`Failed disabling commit for team ${githubTeam.team.name}:`, e);
+            failedTeams.push(githubTeam.team.name);
+            continue;
+         }
       }
+       await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_PERM_DISABLE_ALL",
+          description: `Admin ${ctx.session.user.email} attempted to disable 'maintain' (set to 'pull') permissions for all teams. Success: ${successCount}. Failed: ${failedTeams.join(', ') || 'None'}.`,
+        },
+      });
     }),
 
   makeRepoPrivateForTeam: adminProcedure
@@ -346,6 +417,14 @@ export const githubRouter = createTRPCRouter({
           }
         })
       }
+
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_VISIBILITY_PRIVATE",
+          description: `Admin ${ctx.session.user.email} set repo visibility to private for team ${githubTeam.team.name} (ID: ${input.teamId}) on repos: ${githubTeam.githubRepoName.join(', ')}.`,
+        },
+      });
 
       console.log(`Made repo private for team : ${githubTeam.team.name}`)
     }),
@@ -384,6 +463,14 @@ export const githubRouter = createTRPCRouter({
         })
       }
 
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_VISIBILITY_PUBLIC",
+          description: `Admin ${ctx.session.user.email} set repo visibility to public for team ${githubTeam.team.name} (ID: ${input.teamId}) on repos: ${githubTeam.githubRepoName.join(', ')}.`,
+        },
+      });
+
       console.log(`Made repo public for team : ${githubTeam.team.name}`)
     }),
 
@@ -399,20 +486,36 @@ export const githubRouter = createTRPCRouter({
         },
       })
 
-      for (const githubTeam of githubTeams) {
-        for (const repoName of githubTeam.githubRepoName) {
-          await octokit.request('PATCH /repos/{owner}/{repo}', {
-            owner: ORGANIZATION_NAME,
-            repo: repoName,
-            private: true,
-            headers: {
-              'X-GitHub-Api-Version': '2022-11-28'
-            }
-          })
-        }
+      let successCount = 0;
+      const failedTeams: string[] = [];
 
-        console.log(`Made repo private for team : ${githubTeam.team.name}`)
+      for (const githubTeam of githubTeams) {
+        try {
+          for (const repoName of githubTeam.githubRepoName) {
+            await octokit.request('PATCH /repos/{owner}/{repo}', {
+              owner: ORGANIZATION_NAME,
+              repo: repoName,
+              private: true,
+              headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+              }
+            })
+          }
+          successCount++;
+          console.log(`Made repo private for team : ${githubTeam.team.name}`)
+        } catch (e) {
+           console.error(`Failed setting repo private for team ${githubTeam.team.name}:`, e);
+           failedTeams.push(githubTeam.team.name);
+           continue;
+        }
       }
+       await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_VISIBILITY_PRIVATE_ALL",
+          description: `Admin ${ctx.session.user.email} attempted to set repo visibility to private for all teams. Success: ${successCount}. Failed: ${failedTeams.join(', ') || 'None'}.`,
+        },
+      });
     }),
 
   makeRepoPublicForAll: adminProcedure
@@ -427,6 +530,9 @@ export const githubRouter = createTRPCRouter({
         }
       })
 
+      let successCount = 0;
+      const failedTeams: string[] = [];
+
       for (const githubTeam of githubTeams) {
         try {
           for (const repoName of githubTeam.githubRepoName) {
@@ -439,13 +545,21 @@ export const githubRouter = createTRPCRouter({
               }
             })
           }
+          successCount++;
+          console.log(`Made repo public for team : ${githubTeam.team.name}`)
         } catch (error) {
           console.log(githubTeam.githubRepoName)
+          failedTeams.push(githubTeam.team.name); // Log failed team name
           continue
         }
-
-        console.log(`Made repo public for team : ${githubTeam.team.name}`)
       }
+       await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_VISIBILITY_PUBLIC_ALL",
+          description: `Admin ${ctx.session.user.email} attempted to set repo visibility to public for all teams. Success: ${successCount}. Failed: ${failedTeams.join(', ') || 'None'}.`,
+        },
+      });
     }),
 
   addRepoToTeam: adminProcedure
@@ -500,6 +614,15 @@ export const githubRouter = createTRPCRouter({
           }
         }
       })
+
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "GITHUB_REPO_ADD",
+          description: `Admin ${ctx.session.user.email} added new repo '${githubRepoName}' (ID: ${githubRepoId}) to team ${githubTeam.team.name} (ID: ${input.teamId}).`,
+        },
+      });
+
       console.log(githubInDB)
     }),
 

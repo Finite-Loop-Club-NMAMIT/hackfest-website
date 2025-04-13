@@ -36,7 +36,8 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
-    ".next/types/**/*.ts"
-, "src/components/organiserDashboard/judgePanel.sx"  ],
+    ".next/types/**/*.ts",
+    "src/components/organiserDashboard/judgePanel.sx"
+  ],
   "exclude": ["node_modules"]
 }

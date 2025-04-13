@@ -94,6 +94,9 @@ model Team {
   referralId      Int?
   paymentStatus   PaymentStatus     @default(PENDING)
   attended        Boolean           @default(false)
+  boysDormitory   Dormitory?        
+  girlsDormitory  Dormitory?        
+  arena           Arena?            
   IdeaSubmission  IdeaSubmission?
   github          Github?
   paymentProof    String?
@@ -315,4 +318,23 @@ enum TeamProgress {
   RUNNER
   SECOND_RUNNER
   TRACK
+}
+
+enum Dormitory {
+  NC61
+  NC62
+  NC63
+  SMV54
+  SMV55
+  SMV56
+  NOT_ASSIGNED
+}
+
+enum Arena {
+  ADL01
+  ADL03
+  ADL04
+  SMV54
+  SMV55
+  NOT_ASSIGNED
 }

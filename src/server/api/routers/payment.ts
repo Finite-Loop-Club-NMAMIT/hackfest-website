@@ -52,6 +52,14 @@ export const paymentRouter = createTRPCRouter({
           },
         });
 
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "PAYMENT_SUBMIT",
+            description: `User ${ctx.session.user.email} submitted payment proof for team ${team.Team.id}. Transaction ID: ${input.transactionId}`,
+          },
+        });
+
         return {
           success: true,
           message: "Payment successful",
@@ -83,6 +91,13 @@ export const paymentRouter = createTRPCRouter({
       await ctx.db.team.update({
         where: { id: input },
         data: { paymentStatus: "PAID" },
+      });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "PAYMENT_VERIFY",
+          description: `Admin ${ctx.session.user.email} verified payment for team ${input}.`,
+        },
       });
       return { success: true, message: "Payment verified successfully" };
     }),

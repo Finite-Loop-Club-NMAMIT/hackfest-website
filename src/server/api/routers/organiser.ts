@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, createTRPCRouter, dashboardProcedure } from "~/server/api/trpc";
 import { addJudge } from "~/server/schema/zod-schema";
-import { Role } from "@prisma/client";
+import { Role, Dormitory, Arena } from "@prisma/client";
 
 export const organiserRouter = createTRPCRouter({
   getJudgesList: adminProcedure.query(async ({ ctx }) => {
@@ -139,7 +139,7 @@ export const organiserRouter = createTRPCRouter({
 
 
           // Create audit log
-          return await ctx.db.auditLog.create({
+          return await tx.auditLog.create({
             data: {
               sessionUser: ctx.session.user.email,
               auditType: "Role Change",
@@ -149,9 +149,10 @@ export const organiserRouter = createTRPCRouter({
         });
       } catch (error) {
         console.error("Error removing judge:", error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to delete judge";
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: error instanceof Error ? error.message : "Failed to delete judge",
+          message: errorMessage,
           cause: error,
         });
       }
@@ -444,4 +445,145 @@ export const organiserRouter = createTRPCRouter({
         })
       };
     }),
+  getAllTeamsForAllocation: adminProcedure.query(async ({ ctx }) => {
+    return await ctx.db.team.findMany({
+      where: {
+        OR: [
+          { teamProgress: 'SELECTED' },
+          { teamProgress: 'TOP15' },
+          { teamProgress: 'WINNER' },
+          { teamProgress: 'RUNNER' },
+          { teamProgress: 'SECOND_RUNNER' },
+          { teamProgress: 'TRACK' }
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        teamNo: true,
+        teamProgress: true,
+        boysDormitory: true,
+        girlsDormitory: true,
+        arena: true,
+        Members: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        }
+      },
+      orderBy: { name: 'asc' }
+    });
+  }),
+  
+  updateTeamAllocation: adminProcedure
+    .input(
+      z.object({
+        teamId: z.string(),
+        boysDormitory: z.nativeEnum(Dormitory).optional(),
+        girlsDormitory: z.nativeEnum(Dormitory).optional(),
+        arena: z.nativeEnum(Arena).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { teamId, boysDormitory, girlsDormitory, arena } = input;
+      
+      // Check for arena conflicts before updating
+      if (arena && arena !== 'NOT_ASSIGNED') {
+        const existingArenaTeam = await ctx.db.team.findFirst({
+          where: {
+            arena: arena,
+            id: { not: teamId }
+          },
+          select: { id: true, name: true }
+        });
+        
+        if (existingArenaTeam) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: `Arena ${String(arena)} is already allocated to team '${existingArenaTeam.name}'`
+          });
+        }
+      }
+      const updateData: { boysDormitory?: Dormitory; girlsDormitory?: Dormitory; arena?: Arena } = {};
+      if (boysDormitory !== undefined) updateData.boysDormitory = boysDormitory;
+      if (girlsDormitory !== undefined) updateData.girlsDormitory = girlsDormitory;
+      if (arena !== undefined) updateData.arena = arena;
+      
+      // Update team
+      const updatedTeam = await ctx.db.team.update({
+        where: { id: teamId },
+        data: updateData
+      });
+      
+      // Create audit log
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM_ALLOCATION",
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          description: `Team ${teamId} allocation updated: ${String(JSON.stringify(updateData))}`,
+        }
+      });
+      
+      return updatedTeam;
+    }),
+    
+  getAllocationSummary: adminProcedure.query(async ({ ctx }) => {
+    // Get counts of teams allocated to each arena and dormitory
+    const teams = await ctx.db.team.findMany({
+      where: {
+        OR: [
+          { boysDormitory: { not: null } },
+          { girlsDormitory: { not: null } },
+          { arena: { not: null } }
+        ]
+      },
+      select: {
+        boysDormitory: true,
+        girlsDormitory: true,
+        arena: true
+      }
+    });
+    
+    // Initialize counters
+    const arenaCounts: Record<string, number> = {
+      ADL01: 0,
+      ADL03: 0,
+      ADL04: 0,
+      SMV54: 0,
+      SMV55: 0,
+      NOT_ASSIGNED: 0
+    };
+    
+    const dormitoryCounts: Record<string, number> = {
+      NC61: 0,
+      NC62: 0,
+      NC63: 0,
+      SMV54: 0,
+      SMV55: 0,
+      SMV56: 0,
+      NOT_ASSIGNED: 0
+    };
+    
+    // Count allocations
+    teams.forEach(team => {
+      if (team.arena) {
+        arenaCounts[team.arena] = (arenaCounts[team.arena] ?? 0) + 1;
+      }
+      if (team.boysDormitory) {
+        dormitoryCounts[team.boysDormitory] = (dormitoryCounts[team.boysDormitory] ?? 0) + 1;
+      }
+      if (team.girlsDormitory) {
+        dormitoryCounts[team.girlsDormitory] = (dormitoryCounts[team.girlsDormitory] ?? 0) + 1;
+      }
+    });
+    
+    return {
+      arenaCounts,
+      dormitoryCounts,
+      totalTeams: teams.length
+    };
+  }),
 });

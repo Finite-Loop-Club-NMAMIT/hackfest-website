@@ -169,8 +169,8 @@ export const teamRouter = createTRPCRouter({
         await ctx.db.auditLog.create({
           data: {
             sessionUser: ctx.session.user.email,
-            auditType: "TEAM",
-            description: `Team ${input.teamName} created by ${user.email} `,
+            auditType: "TEAM_CREATE",
+            description: `User ${user.email} created team '${input.teamName}' (ID: ${result.teamId})`,
           },
         });
         return {
@@ -223,13 +223,6 @@ export const teamRouter = createTRPCRouter({
         },
       });
 
-      await ctx.db.auditLog.create({
-        data: {
-          sessionUser: ctx.session.user.email,
-          auditType: "TEAM",
-          description: `Team ${team?.name} joined by ${user.email} `,
-        },
-      });
       if (!team) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Team not found" });
       }
@@ -271,8 +264,8 @@ export const teamRouter = createTRPCRouter({
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
-          auditType: "TEAM",
-          description: `Team ${team?.name} joined by ${user.email} `,
+          auditType: "TEAM_JOIN",
+          description: `User ${user.email} joined team '${team?.name}' (ID: ${team?.id})`,
         },
       });
 
@@ -298,7 +291,8 @@ export const teamRouter = createTRPCRouter({
 
   leaveTeam: protectedProcedure.mutation(async ({ ctx }) => {
     try {
-      const user = ctx.session.user;
+      const user = ctx.session.user;// Capture team name before leaving
+
       await ctx.db.user.update({
         where: {
           id: user?.id,
@@ -348,9 +342,9 @@ export const teamRouter = createTRPCRouter({
         });
         await ctx.db.auditLog.create({
           data: {
-            sessionUser: ctx.session.user.email,
-            auditType: "TEAM",
-            description: `Team ${team?.name} is incomplete`,
+            sessionUser: ctx.session.user.email, // Or system if appropriate
+            auditType: "TEAM_STATUS_UPDATE",
+            description: `Team '${team?.name}' (ID: ${team?.id}) marked as incomplete due to member leaving.`,
           },
         });
       }
@@ -367,12 +361,17 @@ export const teamRouter = createTRPCRouter({
   deleteTeam: protectedProcedure.mutation(async ({ ctx }) => {
     try {
       const user = ctx.session.user;
+      const teamIdToDelete = user.team?.id; // Capture team ID before deletion
+      const teamNameToDelete = user.team?.name; // Capture team name before deletion
 
       if (!user?.isLeader) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "You are not the leader of this team",
         });
+      }
+      if (!teamIdToDelete || !teamNameToDelete) {
+         throw new TRPCError({ code: "BAD_REQUEST", message: "Team information not found for deletion." });
       }
 
       await ctx.db.team.update({
@@ -396,14 +395,14 @@ export const teamRouter = createTRPCRouter({
 
       await ctx.db.team.delete({
         where: {
-          id: user.team?.id,
+          id: teamIdToDelete,
         },
       });
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
-          auditType: "TEAM",
-          description: `Team ${user.team?.id} has been deleted`,
+          auditType: "TEAM_DELETE",
+          description: `User ${user.email} deleted team '${teamNameToDelete}' (ID: ${teamIdToDelete})`,
         },
       });
 
@@ -506,8 +505,8 @@ export const teamRouter = createTRPCRouter({
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
-          auditType: "TEAM",
-          description: `Team ${input.teamId} has been moved to Top 100`,
+          auditType: "TEAM_STATUS_UPDATE",
+          description: `Admin ${ctx.session.user.email} moved team ${input.teamId} to Top 100 (SEMI_SELECTED)`,
         },
       });
     }),
@@ -536,8 +535,8 @@ export const teamRouter = createTRPCRouter({
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
-          auditType: "TEAM",
-          description: `Team ${input.teamId} has been moved to Top 60`,
+          auditType: "TEAM_STATUS_UPDATE",
+          description: `Admin ${ctx.session.user.email} moved team ${input.teamId} to Top 60 (SELECTED)`,
         },
       });
     }),
@@ -566,8 +565,8 @@ export const teamRouter = createTRPCRouter({
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
-          auditType: "TEAM",
-          description: `Team ${input.teamId} has been reset`,
+          auditType: "TEAM_STATUS_UPDATE",
+          description: `Admin ${ctx.session.user.email} reset progress for team ${input.teamId} to NOT_SELECTED`,
         },
       });
     }),
@@ -596,8 +595,8 @@ export const teamRouter = createTRPCRouter({
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
-          auditType: "TEAM",
-          description: `Team ${input.teamId} has been reset to Top 100`,
+          auditType: "TEAM_STATUS_UPDATE",
+          description: `Admin ${ctx.session.user.email} reset progress for team ${input.teamId} to Top 100 (SEMI_SELECTED)`,
         },
       });
     }),
@@ -613,7 +612,7 @@ export const teamRouter = createTRPCRouter({
           id: input.teamId,
         },
       });
-      await ctx.db.team.update({
+      const updatedTeam = await ctx.db.team.update({
         where: {
           id: input.teamId,
         },
@@ -624,8 +623,8 @@ export const teamRouter = createTRPCRouter({
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
-          auditType: "TEAM",
-          description: `Attendance for team ${input.teamId} has been updated`,
+          auditType: "TEAM_ATTENDANCE",
+          description: `Admin ${ctx.session.user.email} marked attendance for team ${input.teamId} as ${updatedTeam.attended}`,
         },
       });
     }),

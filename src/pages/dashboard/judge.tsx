@@ -1,4 +1,3 @@
-import DashboardLayout from "~/components/layout/dashboardLayout";
 import { api } from "~/utils/api";
 import Spinner from "~/components/spinner";
 import { useSession } from "next-auth/react";
@@ -13,11 +12,9 @@ export default function Judge() {
 
   if (status === "loading")
     return (
-      <DashboardLayout>
         <div className="flex h-screen w-screen items-center justify-center">
           <Spinner />
         </div>
-      </DashboardLayout>
     );
 
   if (!data || !data.user || data.user.role !== "JUDGE") {
@@ -26,7 +23,6 @@ export default function Judge() {
 
   return(
     <>
-      <DashboardLayout>
         {
           judgeDay?.type === "DAY1" && <DAY1 />
         }
@@ -36,7 +32,6 @@ export default function Judge() {
         {
           judgeDay?.type === "DAY3" && <DAY3 />
         }
-      </DashboardLayout>
     </>
   )
       

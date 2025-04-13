@@ -35,8 +35,8 @@ export const remarkRouter = createTRPCRouter({
         return await ctx.db.auditLog.create({
           data: {
             sessionUser: ctx.session.user.email,
-            auditType: "REMARK",
-            description: `Remark for team ${input.teamId} has been updated `,
+            auditType: "REMARK_UPDATE",
+            description: `User ${ctx.session.user.email} (Judge ID: ${input.judgeId}) updated remark for team ${input.teamId}.`,
           },
         });
       }
@@ -51,8 +51,8 @@ export const remarkRouter = createTRPCRouter({
       return await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
-          auditType: "REMARK",
-          description: ` Remark for team ${input.teamId} has been added `,
+          auditType: "REMARK_ADD",
+          description: `User ${ctx.session.user.email} (Judge ID: ${input.judgeId}) added remark for team ${input.teamId}.`,
         },
       });
     }),
