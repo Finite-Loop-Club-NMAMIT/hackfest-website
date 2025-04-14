@@ -10,6 +10,46 @@ interface CriteriaData {
   judgeType: JudgeType;
 }
 
+// Simple confirmation modal component
+function ConfirmationModal({ 
+  isOpen, 
+  title, 
+  message, 
+  onConfirm, 
+  onCancel 
+}: { 
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h3 className="text-xl font-medium mb-4">{title}</h3>
+        <p className="mb-6 text-gray-300">{message}</p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-medium rounded-md"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CriteriaTab() {
   const utils = api.useUtils();
   const { data: criteriaList, isLoading, error } = api.organiser.getCriteria.useQuery();
@@ -53,6 +93,12 @@ export default function CriteriaTab() {
     judgeType: JudgeType.VALIDATOR,
   });
 
+  // Modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedItemForDelete, setSelectedItemForDelete] = useState<string | null>(null);
+  const [pendingEditItem, setPendingEditItem] = useState<CriteriaData | null>(null);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setCurrentCriteria(prev => ({
@@ -70,13 +116,32 @@ export default function CriteriaTab() {
   };
 
   const handleEdit = (criteria: CriteriaData) => {
-    setIsEditing(true);
-    setCurrentCriteria({ id: criteria.id, criteria: criteria.criteria, judgeType: criteria.judgeType });
+    setPendingEditItem(criteria);
+    setShowEditModal(true);
+  };
+  
+  const confirmEdit = () => {
+    if (pendingEditItem) {
+      setIsEditing(true);
+      setCurrentCriteria({ 
+        id: pendingEditItem.id, 
+        criteria: pendingEditItem.criteria, 
+        judgeType: pendingEditItem.judgeType 
+      });
+      setPendingEditItem(null);
+      setShowEditModal(false);
+    }
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this criterion? This cannot be undone.")) {
-      deleteMutation.mutate({ id });
+    setSelectedItemForDelete(id);
+    setShowDeleteModal(true);
+  };
+  
+  const confirmDelete = () => {
+    if (selectedItemForDelete) {
+      deleteMutation.mutate({ id: selectedItemForDelete });
+      setShowDeleteModal(false);
     }
   };
 
@@ -95,6 +160,7 @@ export default function CriteriaTab() {
 
     if (isEditing && currentCriteria.id) {
       updateMutation.mutate({ id: currentCriteria.id, ...mutationData });
+      console.log("Updating criteria:", currentCriteria.id, mutationData);
     } else {
       addMutation.mutate(mutationData);
     }
@@ -108,7 +174,7 @@ export default function CriteriaTab() {
       <h2 className="text-2xl font-semibold mb-4">Manage Judging Criteria</h2>
 
       <form onSubmit={handleSubmit} className="p-4 rounded-lg shadow space-y-4">
-        <h3 className="text-xl font-medium">{isEditing ? "Edit Criteria" : "Add New Criteria"}</h3>
+        <h3 className="text-xl font-medium">{isEditing ? `Edit Criteria: ${currentCriteria.criteria}` : "Add New Criteria"}</h3>
         <div>
           <label htmlFor="criteria" className="block text-sm font-medium text-gray-300 mb-1">Criteria Name</label>
           <input
@@ -136,16 +202,20 @@ export default function CriteriaTab() {
             ))}
           </select>
         </div>
-        <div className="flex justify-end space-x-3">
+        <div className="flex justify-center space-x-3 mt-4">
           {isEditing && (
-            <button type="button" onClick={resetForm} className="px-4 py-2 rounded-md transition-colors">
+            <button 
+              type="button" 
+              onClick={resetForm} 
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md transition-colors"
+            >
               Cancel Edit
             </button>
           )}
           <button
             type="submit"
             disabled={addMutation.isLoading || updateMutation.isLoading}
-            className="px-4 py-2 rounded-md transition-colors disabled:opacity-50"
+            className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-md transition-colors disabled:opacity-50 shadow-md"
           >
             {addMutation.isLoading || updateMutation.isLoading ? <Spinner size="small" /> : (isEditing ? "Update Criteria" : "Add Criteria")}
           </button>
@@ -195,6 +265,26 @@ export default function CriteriaTab() {
           </table>
         </div>
       </div>
+      
+      {/* Confirmation Modals */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this criterion? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setShowDeleteModal(false)}
+      />
+      
+      <ConfirmationModal
+        isOpen={showEditModal}
+        title="Confirm Edit"
+        message={`Do you want to edit the criterion "${pendingEditItem?.criteria}"? Any unsaved changes to the current form will be lost.`}
+        onConfirm={confirmEdit}
+        onCancel={() => {
+          setShowEditModal(false);
+          setPendingEditItem(null);
+        }}
+      />
     </div>
   );
 }

@@ -12,7 +12,7 @@ import SelectionWindow from "~/components/dashboard/selectionWindow";
 import Top60Payments from "~/components/dashboard/Payments";
 import AllocationTab from "~/components/dashboard/AllocationTab";
 import AuditLogViewer from "~/components/organiser/AuditLogViewer"; 
-import CriteriaTab from "~/components/dashboard/CriteriaTab";
+import JuryTab from "~/components/dashboard/JuryTab";
 export default function Organiser() {
   const users = api.user.getAllUsers.useQuery().data;
   const [activeTab, setActiveTab] = useState("teams");
@@ -158,8 +158,7 @@ export default function Organiser() {
       {activeTab === "selectionwindow" && <SelectionWindow />}
       {activeTab === "payments" && <Top60Payments />}
       {activeTab === "auditlog" && <AuditLogViewer />}
-      {/* Render CriteriaTab when jury tab is active */}
-      {activeTab === "jury" && <CriteriaTab />}
+      {activeTab === "jury" && <JuryTab />}
     </div>
   );
 }
