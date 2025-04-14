@@ -1,0 +1,251 @@
+import React, { useState } from "react";
+
+import {
+  AlertCircle,
+  PanelLeftOpen,
+  PanelRightOpen,
+  Plus,
+  Users,
+} from "lucide-react";
+import { Button } from "~/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { DialogClose, DialogFooter } from "../ui/modal";
+import { api } from "~/utils/api";
+import { toast } from "sonner";
+import { useRouter } from "next/router";
+
+export default function ChatList() {
+  const router = useRouter();
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(
+    null,
+  );
+  // create and join values
+  const [createRoom, setCreateRoom] = useState("");
+  const [joinRoom, setJoinRoom] = useState("");
+  // Dialog States
+  const [createRoomDialog, setCreateRoomDialog] = useState(false);
+  const [joinRoomDialog, setJoinRoomDialog] = useState(false);
+
+  // Queries and mutations
+  const chatRoomQuery = api.chat.getChatRoomList.useQuery();
+  const createRoomMutation = api.chat.createRoom.useMutation({
+    onError: (error) => {
+      toast.error(error.message);
+    },
+    onSuccess: async () => {
+      toast.success("Successfully create Room");
+      setCreateRoomDialog(false);
+      await chatRoomQuery.refetch();
+    },
+  });
+
+  React.useEffect(() => {
+    console.log(chatRoomQuery.data)
+  },[chatRoomQuery])
+
+  return (
+    <div
+      className={`${
+        collapsed ? "w-16" : "w-80"
+      } h-[calc(100vh-6rem)] transform border-t border-blue-900 py-[1px] transition-all duration-300 ease-in-out will-change-transform`}
+    >
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-r-xl bg-blue-950 text-white">
+        <div className="flex h-16 w-full items-center justify-between border-b border-blue-900 px-3">
+          {!collapsed && <h2 className="pl-2 text-xl font-semibold">Chats</h2>}
+          <button
+            onClick={() => setCollapsed((val) => !val)}
+            className="flex items-center justify-center rounded-full p-3 text-white transition-colors duration-200 hover:bg-blue-900"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <PanelLeftOpen /> : <PanelRightOpen />}
+          </button>
+        </div>
+
+        {/* <div className="flex border-b border-blue-900 p-3">
+          {!collapsed ? (
+            <div className="relative w-full">
+              <input
+                type="text"
+                placeholder="Search conversations..."
+                className="w-full rounded-full bg-blue-900/50 py-2 pl-10 pr-4 text-sm text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+              <Search className="absolute left-3 top-2 h-5 w-5 text-blue-300" />
+            </div>
+          ) : (
+            <button className="mx-auto rounded-full p-3 hover:bg-blue-900">
+              <Search className="h-5 w-5" />
+            </button>
+          )}
+        </div> */}
+
+        <div className="flex flex-col gap-2 border-b border-blue-900 p-3">
+          {!collapsed ? (
+            <>
+              <Dialog
+                open={createRoomDialog}
+                onOpenChange={setCreateRoomDialog}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    className="justify-start gap-2 bg-blue-900 hover:bg-blue-800"
+                    size="sm"
+                  >
+                    <Plus size={16} /> New Chat
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>New Chat</DialogTitle>
+                    <DialogDescription>
+                        Create a new Chat room for you and your team to
+                        communicate.
+                      <Input
+                        placeholder="Room name"
+                        className="mt-4 placeholder:opacity-70"
+                        onChange={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+
+                          const target = e.target;
+
+                          if (target) {
+                            setCreateRoom(target.value);
+                          }
+                        }}
+                      />
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant={"destructive"}>Cancel</Button>
+                    </DialogClose>
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        if (createRoom.length < 3) {
+                          toast.error(
+                            "Room name must be greater than 3 characters",
+                          );
+                        } else if (createRoom.length > 15) {
+                          toast.error(
+                            "Room name must not exceed more that 15 characters",
+                          );
+                        } else {
+                          createRoomMutation.mutate(createRoom);
+                        }
+                      }}
+                    >
+                      Create
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={joinRoomDialog} onOpenChange={setJoinRoomDialog}>
+                <DialogTrigger asChild>
+                  <Button
+                    className="justify-start gap-2 bg-blue-900 hover:bg-blue-800"
+                    size="sm"
+                  >
+                    <Users size={16} /> Join Chat
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Join Chat</DialogTitle>
+                    <DialogDescription>
+                      <p>Join existing chat room for communication.</p>
+                      <Input
+                        placeholder="Room Id"
+                        className="mt-4 placeholder:opacity-70"
+                        onChange={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+
+                          const target = e.target;
+
+                          if (target) {
+                            setJoinRoom(target.value);
+                          }
+                        }}
+                      />
+                    </DialogDescription>
+                  </DialogHeader>
+                </DialogContent>
+              </Dialog>
+            </>
+          ) : (
+            <>
+              <Button
+                className="mx-auto rounded-full bg-blue-900 p-2 hover:bg-blue-800"
+                size="icon"
+              >
+                <Plus size={18} />
+              </Button>
+              <Button
+                className="mx-auto rounded-full bg-blue-900 p-2 hover:bg-blue-800"
+                size="icon"
+              >
+                <Users size={18} />
+              </Button>
+            </>
+          )}
+        </div>
+
+        {chatRoomQuery.status === "error" &&
+          chatRoomQuery.error.data?.code === "UNAUTHORIZED" && (
+            <div className="mt-8 flex flex-col items-center justify-center gap-4">
+              <AlertCircle className="size-10 stroke-destructive" />
+              <p className="px-4 text-center text-xl opacity-80">
+                You are not allowed to use the chat feature
+              </p>
+            </div>
+          )}
+
+        {/* Contact List */}
+        <div className="scrollbar-thin scrollbar-thumb-blue-900 scrollbar-track-transparent flex-grow overflow-y-auto">
+          {chatRoomQuery.status === "success" &&
+            chatRoomQuery.data.map((contact) => (
+              <div
+                key={contact.chatRoom.id}
+                className={`flex cursor-pointer items-center p-3 transition-colors hover:bg-blue-900/50 ${selectedContactId === contact.chatRoom.id ? "bg-blue-900" : ""}`}
+                onClick={async() => {
+                  setSelectedContactId(contact.chatRoom.id);
+                  await router.push(`/chat?room='${contact.chatRoom.id}'`)
+                }}
+              >
+                <div className="relative">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-800 text-lg">
+                    {/* {contact.avatar} */}
+                  </div>
+                </div>
+
+                {!collapsed && (
+                  <>
+                    <div className="ml-3 overflow-hidden">
+                      <p className="truncate font-medium">{contact.chatRoom.name}</p>
+                      <p className="truncate text-xs text-blue-300">
+                        {contact.chatRoom.messages[0]?.content ?? ""}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+}

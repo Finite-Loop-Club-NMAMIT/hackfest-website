@@ -66,6 +66,9 @@ model User {
   Judge           Judge?     @relation(fields: [judgeId], references: [id], onDelete: SetNull)
   judgeId         String?
 
+  messages  Message[]
+  chatRooms UserChatRoom[]
+
   @@index([collegeId])
   @@index([teamId])
 }
@@ -211,6 +214,50 @@ model webAnalytics {
   startPing   DateTime // Session start
   lastPing    DateTime // Last activity
   device      String // User device info
+}
+
+model ChatRoom {
+  id   String @id @default(cuid())
+  name String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages     Message[]
+  participants UserChatRoom[]
+}
+
+model Message {
+  id String @id @default(cuid())
+
+  content String
+  code    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
+
+  chatRoomId String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+
+  @@index([senderId])
+  @@index([chatRoomId])
+}
+
+model UserChatRoom {
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+  chatRoomId String
+
+  joinedAt DateTime @default(now())
+
+  @@id([userId, chatRoomId])
+  @@index([userId])
+  @@index([chatRoomId])
 }
 
 enum JudgeType {

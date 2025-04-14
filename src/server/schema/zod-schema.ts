@@ -120,9 +120,20 @@ const appSettingsZ = z.object({
 });
 
 const paymentTransactionZ = z.object({
-  transactionId: z.string().min(3, { message: "Transaction ID cannot be empty" }),
-  paymentProof: z.string().min(3, { message: "Payment proof required" })
-})
+  transactionId: z
+    .string()
+    .min(3, { message: "Transaction ID cannot be empty" }),
+  paymentProof: z.string().min(3, { message: "Payment proof required" }),
+});
+
+const createRoomZ = z
+  .string()
+  .min(3, { message: "Room name should be atleast 3 characters" })
+  .max(15, { message: "Room name cannot exceed 15 characters" });
+
+const joinRoomZ = z
+  .string()
+  .min(3, { message: "Room id should be atleast 3 characters" })
 
 export {
   editProfileZ,
@@ -138,4 +149,6 @@ export {
   resumeSubmissionZ,
   appSettingsZ,
   paymentTransactionZ,
+  createRoomZ,
+  joinRoomZ,
 };

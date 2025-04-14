@@ -10,11 +10,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { cn } from "~/lib/utils";
 
-const AuthButton = () => {
+const AuthButton = ({ className }: { className?: string }) => {
   const { data: session } = useSession();
   return (
-    <div className="flex justify-center pl-4">
+    <div className={cn("flex justify-center pl-4", className)}>
       {session ? (
         session.user.profileProgress === "FILL_DETAILS" ? (
           <a href="/register">
