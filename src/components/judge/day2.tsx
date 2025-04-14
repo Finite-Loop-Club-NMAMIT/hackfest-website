@@ -544,8 +544,8 @@ export default function DAY2() {
                 );
               })}
             </CarouselContent>
-            <CarouselPrevious className="carousel-navigation-prev absolute left-1 top-1/2 -translate-y-1/2 w-10 p-1 text-foreground hover:text-foreground hidden md:inline-flex md:left-[-70px] md:w-16 md:p-2" />
-            <CarouselNext className="carousel-navigation-next absolute right-1 top-1/2 -translate-y-1/2 w-10 p-1 text-foreground hover:text-foreground hidden md:inline-flex md:right-[-70px] md:w-16 md:p-2" />
+            <CarouselPrevious className="carousel-navigation-prev absolute left-1 top-1/2 -translate-y-1/2 w-10 p-1 text-foreground hover:text-foreground hidden lg:inline-flex lg:left-[-70px] lg:w-16 lg:p-2" />
+            <CarouselNext className="carousel-navigation-next absolute right-1 top-1/2 -translate-y-1/2 w-10 p-1 text-foreground hover:text-foreground hidden lg:inline-flex lg:right-[-70px] lg:w-16 lg:p-2" />
           </Carousel>
         </div>
       )}

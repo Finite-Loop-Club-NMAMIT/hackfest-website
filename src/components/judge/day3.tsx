@@ -396,8 +396,8 @@ export default function DAY3() {
                     );
                   })}
                 </CarouselContent>
-                <CarouselPrevious className="carousel-navigation-prev absolute left-1 top-1/2 -translate-y-1/2 h-10 w-10 p-1 text-foreground hover:bg-muted hover:text-foreground hidden md:inline-flex md:left-[-60px] md:h-14 md:w-14 md:p-2" />
-                <CarouselNext className="carousel-navigation-next absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 p-1 text-foreground hover:bg-muted hover:text-foreground hidden md:inline-flex md:right-[-60px] md:h-14 md:w-14 md:p-2" />
+                <CarouselPrevious className="carousel-navigation-prev absolute left-1 top-1/2 -translate-y-1/2 h-10 w-10 p-1 text-foreground hover:bg-muted hover:text-foreground hidden lg:inline-flex lg:left-[-60px] lg:h-14 lg:w-14 lg:p-2" />
+                <CarouselNext className="carousel-navigation-next absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 p-1 text-foreground hover:bg-muted hover:text-foreground hidden lg:inline-flex lg:right-[-60px] lg:h-14 lg:w-14 lg:p-2" />
               </Carousel>
             </div>
           ) : (

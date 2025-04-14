@@ -373,8 +373,8 @@ export default function DAY1() {
                 );
               })}
             </CarouselContent>
-            <CarouselPrevious className="carousel-navigation-prev absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 p-1 text-foreground hover:bg-muted hover:text-foreground hidden md:inline-flex md:left-[-40px] lg:left-[-50px] md:h-10 md:w-10 lg:h-12 lg:w-12 md:p-1.5 lg:p-2" />
-            <CarouselNext className="carousel-navigation-next absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-1 text-foreground hover:bg-muted hover:text-foreground hidden md:inline-flex md:right-[-40px] lg:right-[-50px] md:h-10 md:w-10 lg:h-12 lg:w-12 md:p-1.5 lg:p-2" />
+            <CarouselPrevious className="carousel-navigation-prev absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 p-1 text-foreground hover:bg-muted hover:text-foreground hidden lg:inline-flex lg:left-[-50px] lg:h-12 lg:w-12 lg:p-2" />
+            <CarouselNext className="carousel-navigation-next absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-1 text-foreground hover:bg-muted hover:text-foreground hidden lg:inline-flex lg:right-[-50px] lg:h-12 lg:w-12 lg:p-2" />
           </Carousel>
         </div>
       )}
