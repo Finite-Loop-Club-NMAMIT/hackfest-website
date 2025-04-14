@@ -140,6 +140,7 @@ model Judge {
   Scores Scores[]
   Remark Remark[]
   User   User[]
+  tutorialShown Boolean @default(false)
 }
 
 model Criteria {
@@ -153,7 +154,7 @@ model Criteria {
 model Scores {
   id         Int      @id @default(autoincrement())
   Criteria   Criteria @relation(fields: [criteriaId], references: [id])
-  Judge      Judge    @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+  Judge      Judge    @relation(fields: [judgeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   score      Int
   Team       Team     @relation(fields: [teamId], references: [id])
   criteriaId String
@@ -182,7 +183,7 @@ model Remark {
   remark String
 
   Team    Team   @relation(fields: [teamId], references: [id])
-  Judge   Judge  @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+  Judge   Judge  @relation(fields: [judgeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   teamId  String
   judgeId String
 
@@ -217,6 +218,10 @@ model webAnalytics {
 }
 
 enum JudgeType {
+  REMARK // Formerly DAY1
+  DAY2_ROUND1
+  DAY2_ROUND2
+  DAY3_FINALS // Formerly DAY3
   DAY1
   DAY2
   DAY3
@@ -312,7 +317,7 @@ enum States {
 enum TeamProgress {
   NOT_SELECTED
   SEMI_SELECTED
-  SELECTED
+  SELECTED // Represents Top 60 for Day 3 toggle
   TOP15
   WINNER
   RUNNER

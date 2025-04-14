@@ -1,9 +1,26 @@
-import { TeamProgress } from "@prisma/client";
+import { TeamProgress, JudgeType, Role } from "@prisma/client"; // Added JudgeType
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, createTRPCRouter, dashboardProcedure } from "~/server/api/trpc";
+import { adminProcedure, createTRPCRouter, dashboardProcedure } from "~/server/api/trpc"; // Removed unused judgeProcedure import
 import { addJudge } from "~/server/schema/zod-schema";
-import { Role, Dormitory, Arena } from "@prisma/client";
+import { Dormitory, Arena } from "@prisma/client";
+
+// Zod schemas for Criteria input validation
+const criteriaInputBase = z.object({
+  criteria: z.string().min(1, "Criteria name cannot be empty"),
+  maxScore: z.number().int().positive("Max score must be a positive integer"),
+  judgeType: z.nativeEnum(JudgeType),
+});
+
+const addCriteriaInput = criteriaInputBase;
+
+const updateCriteriaInput = criteriaInputBase.extend({
+  id: z.string(),
+});
+
+const deleteCriteriaInput = z.object({
+  id: z.string(),
+});
 
 export const organiserRouter = createTRPCRouter({
   getJudgesList: adminProcedure.query(async ({ ctx }) => {
@@ -210,7 +227,7 @@ export const organiserRouter = createTRPCRouter({
         },
       });
     }),
-  changeTeamProgress: adminProcedure
+  changeTeamProgress: dashboardProcedure // Keep dashboardProcedure for broader access, check role inside
     .input(
       z.object({
         teamId: z.string(),
@@ -219,11 +236,59 @@ export const organiserRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const user = ctx.session.user;
-      if (user.role !== "JUDGE")
+      let isAuthorized = false;
+      let judgeType: JudgeType | null = null;
+
+      // Check if user is ADMIN
+      if (user.role === Role.ADMIN) {
+        isAuthorized = true;
+      }
+      // Check if user is JUDGE
+      else if (user.role === Role.JUDGE) {
+         const judge = await ctx.db.judge.findUnique({
+           where: { id: user.id }, // Assuming user.id is judgeId
+           select: { type: true }
+         });
+         if (judge?.type === JudgeType.DAY3_FINALS) {
+           isAuthorized = true;
+           judgeType = judge.type;
+         }
+      }
+
+      if (!isAuthorized) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You are not authorized to perform this action",
         });
+      }
+
+      // Define the allowed progress states for Day 3 judges
+      const day3AllowedProgresses: ReadonlyArray<TeamProgress> = [TeamProgress.SELECTED, TeamProgress.TOP15];
+
+      // Specific logic for DAY3_FINALS judges: only allow toggling between SELECTED and TOP15
+      if (judgeType === JudgeType.DAY3_FINALS) {
+        // Check if the input progress is one of the allowed states
+        if (!day3AllowedProgresses.includes(input.progress)) {
+           throw new TRPCError({
+             code: "BAD_REQUEST",
+             message: "Day 3 judges can only set progress to SELECTED or TOP15.",
+           });
+        }
+        // Ensure the team is currently in either state before toggling
+        const currentTeam = await ctx.db.team.findUnique({
+            where: { id: input.teamId },
+            select: { teamProgress: true }
+        });
+        // Check if the current team progress is one of the allowed states
+        if (!currentTeam || !day3AllowedProgresses.includes(currentTeam.teamProgress)) {
+             throw new TRPCError({
+               code: "BAD_REQUEST",
+               message: "Team is not currently in SELECTED or TOP15 state for Day 3 judging.",
+             });
+        }
+      }
+      // Admins can set any progress state (existing logic)
+
       const team = await ctx.db.team.findUnique({
         where: {
           id: input.teamId,
@@ -234,6 +299,7 @@ export const organiserRouter = createTRPCRouter({
           code: "NOT_FOUND",
           message: "Team not found",
         });
+
       const updatedTeam = await ctx.db.team.update({
         where: {
           id: input.teamId,
@@ -242,11 +308,12 @@ export const organiserRouter = createTRPCRouter({
           teamProgress: input.progress,
         },
       });
+
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
           auditType: "TEAM_PROGRESS",
-          description: `Team ${input.teamId} progress has been updated to ${input.progress}`,
+          description: `${user.role === Role.ADMIN ? 'Admin' : `Judge (${judgeType})`} ${user.email} updated Team ${input.teamId} progress to ${input.progress}`,
         },
       });
       return updatedTeam;
@@ -586,4 +653,104 @@ export const organiserRouter = createTRPCRouter({
       totalTeams: teams.length
     };
   }),
+
+  // --- New Criteria Procedures ---
+
+  getCriteria: adminProcedure.query(async ({ ctx }) => {
+    return await ctx.db.criteria.findMany({
+      orderBy: { JudgeType: 'asc' } // Optional: order by type or name
+    });
+  }),
+
+  addCriteria: adminProcedure
+    .input(addCriteriaInput)
+    .mutation(async ({ ctx, input }) => {
+      const newCriteria = await ctx.db.criteria.create({
+        data: {
+          criteria: input.criteria,
+          maxScore: input.maxScore,
+          JudgeType: input.judgeType,
+        },
+      });
+
+      // Audit Log
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "CRITERIA_ADD",
+          description: `Admin ${ctx.session.user.email} added criteria: ${input.criteria} (Max: ${input.maxScore}, Type: ${input.judgeType})`,
+        },
+      });
+
+      return newCriteria;
+    }),
+
+  updateCriteria: adminProcedure
+    .input(updateCriteriaInput)
+    .mutation(async ({ ctx, input }) => {
+      const updatedCriteria = await ctx.db.criteria.update({
+        where: { id: input.id },
+        data: {
+          criteria: input.criteria,
+          maxScore: input.maxScore,
+          JudgeType: input.judgeType,
+        },
+      });
+
+      // Audit Log
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "CRITERIA_UPDATE",
+          description: `Admin ${ctx.session.user.email} updated criteria ID ${input.id} to: ${input.criteria} (Max: ${input.maxScore}, Type: ${input.judgeType})`,
+        },
+      });
+
+      return updatedCriteria;
+    }),
+
+  deleteCriteria: adminProcedure
+    .input(deleteCriteriaInput)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Check if any scores reference this criteria
+        const existingScores = await ctx.db.scores.count({
+          where: { criteriaId: input.id },
+        });
+
+        if (existingScores > 0) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Cannot delete criteria because related scores exist. Please remove associated scores first.",
+          });
+        }
+
+        const deletedCriteria = await ctx.db.criteria.delete({
+          where: { id: input.id },
+        });
+
+        // Audit Log
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "CRITERIA_DELETE",
+            description: `Admin ${ctx.session.user.email} deleted criteria: ${deletedCriteria.criteria} (ID: ${input.id})`,
+          },
+        });
+
+        return { success: true, id: input.id };
+      } catch (error) {
+         if (error instanceof TRPCError) {
+           // Re-throw TRPC specific errors (like the CONFLICT one)
+           throw error;
+         }
+         // Handle potential Prisma errors or other issues
+         console.error("Error deleting criteria:", error);
+         throw new TRPCError({
+           code: "INTERNAL_SERVER_ERROR",
+           message: "Failed to delete criteria.",
+           cause: error,
+         });
+      }
+    }),
 });

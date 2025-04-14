@@ -61,7 +61,7 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
   }>({
     defaultValues: {
       userId: "",
-      type: "DAY1",
+      type: "REMARK",
     },
   });
 
@@ -204,9 +204,10 @@ const JudgePanel: FunctionComponent<Props> = ({ users }) => {
                     <SelectValue placeholder="Select judge type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="DAY1">Day 1</SelectItem>
-                    <SelectItem value="DAY2">Day 2</SelectItem>
-                    <SelectItem value="DAY3">Day 3</SelectItem>
+                    <SelectItem value="REMARK">Day 1</SelectItem>
+                    <SelectItem value="DAY2_ROUND1">Day 2 Round 1</SelectItem>
+                    <SelectItem value="DAY2_ROUND2">Day 2 Round 2</SelectItem>
+                    <SelectItem value="DAY3_FINALS">Day 3</SelectItem>
                     <SelectItem value="VALIDATOR">Validator</SelectItem>
                     <SelectItem value="SUPER_VALIDATOR">Super Validator</SelectItem>
                   </SelectContent>

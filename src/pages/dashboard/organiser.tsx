@@ -11,8 +11,8 @@ import RolesTab from "~/components/dashboard/RolesTab";
 import SelectionWindow from "~/components/dashboard/selectionWindow";
 import Top60Payments from "~/components/dashboard/Payments";
 import AllocationTab from "~/components/dashboard/AllocationTab";
-import AuditLogViewer from "~/components/organiser/AuditLogViewer"; // Import the new component
-
+import AuditLogViewer from "~/components/organiser/AuditLogViewer"; 
+import CriteriaTab from "~/components/dashboard/CriteriaTab";
 export default function Organiser() {
   const users = api.user.getAllUsers.useQuery().data;
   const [activeTab, setActiveTab] = useState("teams");
@@ -24,7 +24,7 @@ export default function Organiser() {
       const storedTab = localStorage.getItem("organiserActiveTab");
       if (
         storedTab &&
-        ["teams", "analytics", "roles", "quickboard", "allocations", "selectionwindow", "payments", "auditlog"].includes(storedTab) // Add "auditlog" here
+        ["teams", "analytics", "roles", "quickboard", "allocations", "selectionwindow", "payments", "auditlog", "jury"].includes(storedTab) // Add "jury" here
       ) {
         setActiveTab(storedTab);
       }
@@ -136,6 +136,17 @@ export default function Organiser() {
         >
           Audit Log
         </button>
+        {/* Add Jury Tab Button */}
+        <button
+          onClick={() => setActiveTab("jury")}
+          className={`whitespace-nowrap flex-shrink-0 px-4 py-2 text-center transition-colors ${
+            activeTab === "jury"
+              ? "border-b-2 border-purple-500 font-bold"
+              : "text-gray-400 hover:text-white"
+          }`}
+        >
+          Jury
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -147,6 +158,8 @@ export default function Organiser() {
       {activeTab === "selectionwindow" && <SelectionWindow />}
       {activeTab === "payments" && <Top60Payments />}
       {activeTab === "auditlog" && <AuditLogViewer />}
+      {/* Render CriteriaTab when jury tab is active */}
+      {activeTab === "jury" && <CriteriaTab />}
     </div>
   );
 }

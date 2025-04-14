@@ -24,13 +24,16 @@ export default function Judge() {
   return(
     <>
         {
-          judgeDay?.type === "DAY1" && <DAY1 />
+          judgeDay?.type === "REMARK" && <DAY1 />
         }
         {
-          judgeDay?.type === "DAY2" && <DAY2 />
+          judgeDay?.type === "DAY2_ROUND1" && <DAY2 />
         }
         {
-          judgeDay?.type === "DAY3" && <DAY3 />
+          judgeDay?.type === "DAY2_ROUND2" && <DAY2 />
+        }
+        {
+          judgeDay?.type === "DAY3_FINALS" && <DAY3 />
         }
     </>
   )

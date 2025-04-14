@@ -36,7 +36,7 @@ export const remarkRouter = createTRPCRouter({
           data: {
             sessionUser: ctx.session.user.email,
             auditType: "REMARK_UPDATE",
-            description: `User ${ctx.session.user.email} (Judge ID: ${input.judgeId}) updated remark for team ${input.teamId}.`,
+            description: `User ${ctx.session.user.email} (Judge ID: ${input.judgeId}) updated remark for team ${input.teamId}. Remark: "${input.remark}"`,
           },
         });
       }
@@ -52,7 +52,7 @@ export const remarkRouter = createTRPCRouter({
         data: {
           sessionUser: ctx.session.user.email,
           auditType: "REMARK_ADD",
-          description: `User ${ctx.session.user.email} (Judge ID: ${input.judgeId}) added remark for team ${input.teamId}.`,
+          description: `User ${ctx.session.user.email} (Judge ID: ${input.judgeId}) added remark for team ${input.teamId}. Remark: "${input.remark}"`,
         },
       });
     }),
