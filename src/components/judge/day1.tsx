@@ -17,8 +17,8 @@ import { api } from "~/utils/api";
 import type { RouterOutputs } from "~/utils/api";
 import { X, UserCircle, Plus, Info } from "lucide-react";
 import Image from "next/image";
-import Tutorial from "./tutorial"; // Import the Tutorial component
-import type { Step } from 'react-joyride'; // Import Step type
+import Tutorial from "./tutorial";
+import type { Step } from 'react-joyride';
 
 
 type TeamWithRelations = RouterOutputs["judges"]["getTeams"][number];
@@ -31,8 +31,8 @@ export default function DAY1() {
   const teamsQuery = api.judges.getTeams.useQuery();
   const teams = teamsQuery.data;
   const { data: session } = useSession();
-  const judgeInfoQuery = api.judges.getDay.useQuery(undefined, { // Fetch judge info including tutorial status
-      enabled: !!session?.user, // Only run if user is logged in
+  const judgeInfoQuery = api.judges.getDay.useQuery(undefined, {
+      enabled: !!session?.user,
   });
 
   const [currentTeamIndex, setCurrentTeamIndex] = useState<number>(() => {
@@ -46,7 +46,7 @@ export default function DAY1() {
   const [currentRemarks, setCurrentRemarks] = useState<string[]>([]);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>()
   const [isSaving, setIsSaving] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false); // State to control tutorial visibility
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const addRemarkMutation = api.remark.addRemark.useMutation({
     onSuccess: async () => {
@@ -61,9 +61,9 @@ export default function DAY1() {
     }
   });
 
-  const markTutorialMutation = api.judges.markTutorialAsShown.useMutation({ // Mutation to mark tutorial as shown
+  const markTutorialMutation = api.judges.markTutorialAsShown.useMutation({
       onSuccess: () => {
-          void judgeInfoQuery.refetch(); // Refetch judge info to update status
+          void judgeInfoQuery.refetch();
           toast.success("Tutorial completed!");
       },
       onError: (error) => {
@@ -85,7 +85,7 @@ export default function DAY1() {
     }
 
 
-    setIsSaving(true); // Set saving state
+    setIsSaving(true);
     const teamId = teams[indexToSave].id;
     const judgeId = session.user.id;
 
@@ -116,8 +116,7 @@ export default function DAY1() {
 
   useEffect(() => {
 
-    if (teams && teams[currentTeamIndex] && session?.user && currentRemarks.length === 0) { // Check if remarks are empty and session exists
-      // Find the remark specifically made by the current judge
+    if (teams && teams[currentTeamIndex] && session?.user && currentRemarks.length === 0) {
       const userRemark = teams[currentTeamIndex]?.Remark?.find(r => r.judgeId === session.user.id);
       const existingRemark = userRemark?.remark;
 
@@ -137,30 +136,26 @@ export default function DAY1() {
 
     const handleSelect = () => {
         void (async () => {
-            const previousIndex = currentTeamIndex; // Get the index we are navigating away from
+            const previousIndex = currentTeamIndex;
             const newIndex = carouselApi.selectedScrollSnap();
 
-            // Save remarks of the *previous* slide before updating index/state
             await handleSaveRemarks(previousIndex);
 
-            // Update index state AFTER saving previous remarks
             setCurrentTeamIndex(newIndex);
 
-            // Load remarks for the new slide
             if (teams && teams[newIndex]) {
-                // Find the remark specifically made by the current judge
                 const userRemark = teams[newIndex]?.Remark?.find(r => r.judgeId === session.user.id);
                 const existingRemark = userRemark?.remark;
 
                 if (existingRemark) {
                     setCurrentRemarks(existingRemark.split(REMARK_DELIMITER).filter((point: string) => point.trim() !== ''));
                 } else {
-                    setCurrentRemarks(['']); // Reset to one empty point for new slide if no remark by this judge
+                    setCurrentRemarks(['']);
                 }
             } else {
-                setCurrentRemarks(['']); // Reset if teams not loaded
+                setCurrentRemarks(['']);
             }
-        })(); // Immediately invoke the async function
+        })();
     };
 
 
@@ -169,13 +164,10 @@ export default function DAY1() {
     return () => {
       carouselApi?.off("select", handleSelect);
     };
-    // Add handleSaveRemarks, currentTeamIndex, and session?.user to dependencies
   }, [carouselApi, teams, handleSaveRemarks, currentTeamIndex, session?.user]);
 
-  // Effect to show tutorial if not shown before
   useEffect(() => {
       if (judgeInfoQuery.isSuccess && judgeInfoQuery.data && !judgeInfoQuery.data.tutorialShown) {
-          // Add a small delay to ensure the page elements are rendered
           const timer = setTimeout(() => setShowTutorial(true), 500);
           return () => clearTimeout(timer);
       }
@@ -186,16 +178,16 @@ export default function DAY1() {
   }
 
   const handleAddPoint = () => {
-    setCurrentRemarks([...currentRemarks, '']); // Add a new empty point
+    setCurrentRemarks([...currentRemarks, '']);
   };
 
   const handleRemovePoint = (index: number) => {
-    if (currentRemarks.length > 1) { // Keep at least one point
+    if (currentRemarks.length > 1) {
       const newRemarks = [...currentRemarks];
       newRemarks.splice(index, 1);
       setCurrentRemarks(newRemarks);
     } else {
-        setCurrentRemarks(['']); // Reset to one empty point if last one is removed
+        setCurrentRemarks(['']);
     }
   };
 
@@ -205,52 +197,49 @@ export default function DAY1() {
     setCurrentRemarks(newRemarks);
   };
 
-  // Manual save button still uses the same logic but provides immediate feedback
   const handleManualSave = async () => {
-      // Call save for the currently displayed team index
       await handleSaveRemarks(currentTeamIndex);
   };
 
   const handleTutorialComplete = () => {
       setShowTutorial(false);
-      markTutorialMutation.mutate(); // Call mutation to update DB
+      markTutorialMutation.mutate();
   };
 
-  // Define tutorial steps for Day 1
   const day1TutorialSteps: Step[] = [
       {
-          target: '.carousel-container', // Use a class or ID for the main container
+          target: '.carousel-container',
           content: 'Welcome to the Day 1 Remarks Dashboard! Use the arrows or swipe to navigate between teams.',
           placement: 'center',
           disableBeacon: true,
       },
       {
-          target: '.team-info-header', // Add a class to the team info section
+          target: '.team-info-header',
           content: 'Here you can see the team name, number, track, and members.',
           placement: 'bottom',
       },
       {
-          target: '.remark-input-section', // Add a class to the remark input section
+          target: '.remark-input-section',
           content: 'This is where you enter your remarks for the current team. Use the "+" button to add points and "x" to remove them.',
           placement: 'top',
       },
       {
-          target: '.add-remark-point-button', // Add a class to the add point button
+          target: '.add-remark-point-button',
           content: 'Click here to add a new remark point.',
           placement: 'right',
       },
       {
-          target: '.save-remarks-button', // Add a class to the save button
+          target: '.save-remarks-button',
           content: 'Click "Save Remarks" to save your input. Remarks are also auto-saved when you navigate away.',
           placement: 'top',
       },
       {
-          target: '.carousel-navigation-prev', // Add class to prev button
+          target: '.carousel-navigation-prev',
           content: 'Use this button to go to the previous team.',
           placement: 'right',
       },
       {
-          target: '.carousel-navigation-next', // Add class to next button
+          target: '.carousel-navigation-next',
           content: 'Use this button to go to the next team. You can also swipe on touch devices.',
           placement: 'left',
       },
@@ -264,154 +253,118 @@ export default function DAY1() {
 
   return (
     <>
-      {/* Add Tutorial Component */}
       <Tutorial run={showTutorial} steps={day1TutorialSteps} onComplete={handleTutorialComplete} />
 
       {teamsQuery.isLoading && (
-        <div className="flex h-screen w-screen items-center justify-center bg-background"> {/* Added background */}
-          <Spinner size="large" /> {/* Larger spinner */}
+        <div className="flex h-screen w-screen items-center justify-center bg-background">
+          <Spinner size="large" />
         </div>
       )}
       {teamsQuery.isSuccess && teams && teams.length > 0 && (
-        // Add a class for the tutorial target
-        <div className="carousel-container flex w-full items-center justify-center px-2 py-4 md:px-4 md:py-8">
+        <div className="carousel-container flex w-full items-center justify-center px-2 py-4 md:px-6 lg:px-8 md:py-6 lg:py-8">
           <Carousel
-            setApi={setCarouselApi} // Pass the setter function
-            className="m-auto flex h-[85vh] w-full max-w-full items-center justify-center md:max-w-7xl" // Adjusted height/width
+            setApi={setCarouselApi}
+            className="m-auto flex h-[85vh] w-full max-w-full items-center justify-center md:max-w-5xl lg:max-w-6xl"
           >
             <CarouselContent>
-              {teams.map((team: TeamWithRelations, index: number) => { // Add types for team and index
-                // Find the remark specifically made by the current judge for display purposes
+              {teams.map((team: TeamWithRelations, index: number) => {
                 const userRemarkObj = team.Remark?.find(r => r.judgeId === session.user.id);
                 const existingRemark = userRemarkObj?.remark;
-                // Split using the delimiter for display
                 const remarkPoints = existingRemark ? existingRemark.split(REMARK_DELIMITER).filter((point: string) => point.trim() !== '') : [];
 
                 return (
                   <CarouselItem key={team.id}>
-                    {/* Adjust height slightly for mobile */}
-                    {/* Reduce height */}
-                    <Card className="h-[80vh] overflow-hidden rounded-lg bg-card shadow-lg md:h-[80vh]"> {/* Added bg, shadow, rounded */}
-                      {/* Adjust padding for mobile */}
-                      <CardContent className="flex h-full flex-col items-center justify-start p-4 md:p-6 lg:p-8">
-                        {/* Add a class for the tutorial target */}
-                        <div className="team-info-header mb-4 flex w-full flex-col items-center justify-center gap-3 pb-4 md:mb-6 md:gap-4 md:pb-6">
-                          {/* Top Row: Team Name and Track */}
-                          <div className="flex w-full items-start justify-between">
-                             {/* Left: Team Name and Number */}
+                    <Card className="h-[80vh] overflow-hidden rounded-lg bg-card shadow-lg md:h-[78vh] lg:h-[75vh]">
+                      <CardContent className="flex h-full flex-col items-center justify-start p-3 md:p-5 lg:p-6">
+                        <div className="team-info-header mb-3 flex w-full flex-col items-center justify-center gap-2 pb-3 md:mb-4 md:gap-3 md:pb-4 lg:mb-5 lg:pb-5">
+                          <div className="flex w-full items-start justify-between gap-2 md:gap-4">
                              <div className="flex flex-col items-start">
-                               {/* Adjust font size for mobile */}
-                               <h1 className="team-name-info w-full truncate text-left text-2xl font-bold text-foreground md:text-3xl lg:text-5xl">
+                               <h1 className="team-name-info w-full truncate text-left text-xl font-bold text-foreground md:text-2xl lg:text-4xl">
                                  {team.name}
                                </h1>
-                               {/* Adjust font size for mobile */}
-                               <span className="mt-1 text-xs font-medium text-primary md:text-sm">Team #{team.teamNo}</span>
+                               <span className="mt-1 text-xs font-medium text-primary md:text-sm lg:text-base">Team #{team.teamNo}</span>
                              </div>
-                             {/* Right: Track */}
-                             {/* Adjust font size and padding for mobile */}
-                            <div className="flex flex-shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground md:px-3 md:py-1 md:text-sm">
-                              <Info className="h-3 w-3 md:h-4 md:w-4" />
-                              {/* Shorten "Track:" on mobile */}
+                            <div className="flex flex-shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground md:px-2.5 md:py-1 md:text-xs lg:px-3 lg:text-sm">
+                              <Info className="h-3 w-3 md:h-3.5 md:w-3.5 lg:h-4 lg:w-4" />
                               <span className="hidden sm:inline">Track:</span> {team.IdeaSubmission?.track.replace(/_/g, ' ') ?? 'N/A'}
                             </div>
                           </div>
 
-                          {/* Bottom Row: Team Members */}
-                          {/* Adjust gap and padding for mobile */}
-                          <div className="flex w-full flex-wrap items-start justify-center gap-x-3 gap-y-2 pt-2 md:gap-x-4 md:pt-4">
+                          <div className="flex w-full flex-wrap items-start justify-center gap-x-2 gap-y-1 pt-1 md:gap-x-3 md:gap-y-2 md:pt-2 lg:gap-x-4 lg:pt-3">
                               {team.Members.map((member) => (
-                                // Adjust width and image size for mobile
-                                <div key={member.name} className="flex w-16 flex-col items-center text-center md:w-20">
+                                <div key={member.name} className="flex w-14 flex-col items-center text-center md:w-16 lg:w-20">
                                   {member.image ? (
                                     <Image
                                       src={member.image}
                                       alt={member.name ?? 'Member'}
-                                      width={40} // Smaller size for mobile
-                                      height={40} // Smaller size for mobile
-                                      className="rounded-full object-cover ring-2 ring-offset-2 ring-offset-card ring-border transition-transform duration-200 hover:scale-110 hover:ring-primary md:h-12 md:w-12" // Enhanced styling
+                                      width={36}
+                                      height={36}
+                                      className="rounded-full object-cover ring-1 ring-offset-1 ring-offset-card ring-border transition-transform duration-200 hover:scale-110 hover:ring-primary md:h-10 md:w-10 lg:h-12 lg:w-12 md:ring-2 md:ring-offset-2"
                                     />
                                   ) : (
-                                    <UserCircle className="h-10 w-10 text-muted-foreground transition-colors duration-200 hover:text-primary md:h-12 md:w-12" /> // Smaller size for mobile
+                                    <UserCircle className="h-9 w-9 text-muted-foreground transition-colors duration-200 hover:text-primary md:h-10 md:w-10 lg:h-12 lg:w-12"
+                                    />
                                   )}
-                                  {/* Adjust font size for mobile */}
-                                  <span className="mt-1 w-full text-[10px] text-muted-foreground md:mt-1.5 md:text-xs">{member.name}</span>
+                                  <span className="mt-1 w-full text-[9px] text-muted-foreground md:mt-1 md:text-[10px] lg:mt-1.5 lg:text-xs">{member.name}</span>
                                 </div>
                               ))}
                           </div>
                         </div>
 
-                        {/* Remark Input Section */}
                         {index === currentTeamIndex && (
-                           // Add a class for the tutorial target
-                           <div className="remark-input-section flex h-full w-full flex-col space-y-3 overflow-hidden pt-1 md:space-y-4 md:pt-2">
-                             {/* Adjust font size for mobile */}
-                             <h3 className="text-xl font-semibold text-foreground md:text-2xl lg:text-3xl">Your Remarks</h3> {/* Changed title */}
-                             {/* Adjust padding for mobile */}
-                             <div className="flex-grow space-y-2 overflow-y-auto rounded-md bg-background/50 p-2 pr-3 shadow-inner md:space-y-3 md:p-3 md:pr-4">
+                           <div className="remark-input-section flex h-full w-full flex-col space-y-2 overflow-hidden pt-1 md:space-y-3 md:pt-2">
+                             <h3 className="text-lg font-semibold text-foreground md:text-xl lg:text-2xl">Your Remarks</h3>
+                             <div className="flex-grow space-y-2 overflow-y-auto rounded-md bg-background/50 p-2 pr-2 shadow-inner md:space-y-2.5 md:p-2.5 md:pr-3 lg:p-3 lg:pr-4 scrollbar-thin scrollbar-thumb-muted-foreground/50 scrollbar-track-transparent">
                                {currentRemarks.map((point, pointIndex) => (
-                                 // Adjust gap for mobile
-                                 <div key={pointIndex} className="flex items-center gap-2 md:gap-3">
-                                   {/* Adjust size for mobile */}
-                                   <span className="text-lg font-semibold text-primary md:text-xl">•</span> {/* Larger bullet */}
+                                 <div key={pointIndex} className="flex items-center gap-1.5 md:gap-2">
+                                   <span className="text-base font-semibold text-primary md:text-lg">•</span>
                                    <Input
                                      type="text"
                                      value={point}
                                      onChange={(e) => handleRemarkChange(pointIndex, e.target.value)}
                                      placeholder="Enter remark point..."
-                                     // Adjust font size for mobile
-                                     className="flex-grow rounded-md border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary md:text-base" // Enhanced input style
+                                     className="flex-grow rounded-md border-border bg-input px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary md:px-2.5 md:py-1.5 md:text-sm lg:text-base"
                                    />
                                    <Button
-                                     variant="ghost" // Ghost variant for less emphasis
+                                     variant="ghost"
                                      size="icon"
                                      onClick={() => handleRemovePoint(pointIndex)}
                                      disabled={currentRemarks.length <= 1}
-                                     // Adjust size for mobile
-                                     className="h-6 w-6 text-destructive hover:bg-destructive/10 disabled:opacity-50 md:h-7 md:w-7" // Adjusted size, color, hover
+                                     className="h-5 w-5 flex-shrink-0 text-destructive hover:bg-destructive/10 disabled:opacity-50 md:h-6 md:w-6"
                                    >
-                                     <X className="h-3 w-3 md:h-4 md:w-4" /> {/* Use the X icon */}
+                                     <X className="h-2.5 w-2.5 md:h-3 md:w-3" />
                                    </Button>
                                  </div>
                                ))}
                              </div>
-                             {/* Action Buttons - Stack vertically on mobile, remove mt-auto */}
-                             <div className="flex flex-col gap-2 pt-2 md:flex-row md:justify-end md:gap-3 md:pt-4"> {/* Removed mt-auto */}
-                                {/* Add a class for the tutorial target */}
-                                <Button onClick={handleAddPoint} variant="outline" size="sm" className="add-remark-point-button flex items-center gap-1 border-dashed border-primary text-primary hover:bg-primary/10 hover:text-primary md:size-auto"> {/* Dashed outline */}
-                                  <Plus className="h-4 w-4" /> Add Point
+                             <div className="flex flex-col gap-1.5 pt-1 md:flex-row md:justify-end md:gap-2 md:pt-2">
+                                <Button onClick={handleAddPoint} variant="outline" size="sm" className="add-remark-point-button flex items-center gap-1 border-dashed border-primary px-2 py-1 text-xs text-primary hover:bg-primary/10 hover:text-primary md:px-3 md:py-1.5 md:text-sm lg:gap-1.5">
+                                  <Plus className="h-3 w-3 md:h-3.5 md:w-3.5 lg:h-4 lg:w-4" /> Add Point
                                 </Button>
-                                {/* Add a class for the tutorial target */}
                                 <Button
-                                  onClick={handleManualSave} // Changed to manual save handler
-                                  disabled={isSaving || addRemarkMutation.isLoading} // Disable if saving
-                                  size="sm" // Smaller size for mobile
-                                  className="save-remarks-button bg-primary text-primary-foreground hover:bg-primary/90 md:size-auto" // Standard primary button
+                                  onClick={handleManualSave}
+                                  disabled={isSaving || addRemarkMutation.isLoading}
+                                  size="sm"
+                                  className="save-remarks-button bg-primary px-2 py-1 text-xs text-primary-foreground hover:bg-primary/90 md:px-3 md:py-1.5 md:text-sm"
                                 >
-                                  {/* Show spinner if saving */}
                                   {(isSaving || addRemarkMutation.isLoading) ? <Spinner size="small" /> : "Save Remarks"}
                                 </Button>
                              </div>
                            </div>
                         )}
-                         {/* Display Saved Remarks - Remove border */}
                          {index !== currentTeamIndex && remarkPoints.length > 0 && (
-                            // Adjust padding/spacing for mobile
-                            <div className="flex h-full w-full flex-col space-y-3 pt-1 md:space-y-4 md:pt-2">
-                                {/* Adjust font size for mobile */}
-                                <h3 className="text-xl font-semibold text-foreground md:text-2xl lg:text-3xl">Your Saved Remarks</h3> {/* Changed title */}
-                                {/* Adjust padding and text size for mobile */}
-                                <ul className="list-disc space-y-1 rounded-md bg-background/50 p-3 pl-6 text-sm text-foreground shadow-inner md:space-y-2 md:p-4 md:pl-8 md:text-base"> {/* Removed border, Added bg, padding, shadow */}
+                            <div className="flex h-full w-full flex-col space-y-2 pt-1 md:space-y-3 md:pt-2">
+                                <h3 className="text-lg font-semibold text-foreground md:text-xl lg:text-2xl">Your Saved Remarks</h3>
+                                <ul className="list-disc space-y-1 rounded-md bg-background/50 p-2 pl-5 text-xs text-foreground shadow-inner md:space-y-1.5 md:p-3 md:pl-6 md:text-sm lg:text-base scrollbar-thin scrollbar-thumb-muted-foreground/50 scrollbar-track-transparent">
                                     {remarkPoints.map((point: string, idx: number) => (
                                         <li key={idx}>{point}</li>
                                     ))}
                                 </ul>
                             </div>
                          )}
-                         {/* No Remarks Message - Enhanced Styling */}
                          {index !== currentTeamIndex && remarkPoints.length === 0 && (
                              <div className="flex h-full w-full flex-col items-center justify-center text-center">
-                                 {/* Adjust font size for mobile */}
-                                 <p className="text-base text-muted-foreground md:text-lg">You haven&apos;t saved any remarks for this team yet.</p> {/* Changed message */}
+                                 <p className="text-sm text-muted-foreground md:text-base lg:text-lg">You haven&apos;t saved any remarks for this team yet.</p>
                              </div>
                          )}
                       </CardContent>
@@ -420,20 +373,19 @@ export default function DAY1() {
                 );
               })}
             </CarouselContent>
-            {/* Add classes for tutorial targets */}
-            <CarouselPrevious className="carousel-navigation-prev absolute left-1 top-1/2 -translate-y-1/2 h-10 w-10 p-1 text-foreground hover:bg-muted hover:text-foreground hidden md:inline-flex md:left-[-60px] md:h-14 md:w-14 md:p-2" />
-            <CarouselNext className="carousel-navigation-next absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 p-1 text-foreground hover:bg-muted hover:text-foreground hidden md:inline-flex md:right-[-60px] md:h-14 md:w-14 md:p-2" />
+            <CarouselPrevious className="carousel-navigation-prev absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 p-1 text-foreground hover:bg-muted hover:text-foreground hidden md:inline-flex md:left-[-40px] lg:left-[-50px] md:h-10 md:w-10 lg:h-12 lg:w-12 md:p-1.5 lg:p-2" />
+            <CarouselNext className="carousel-navigation-next absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-1 text-foreground hover:bg-muted hover:text-foreground hidden md:inline-flex md:right-[-40px] lg:right-[-50px] md:h-10 md:w-10 lg:h-12 lg:w-12 md:p-1.5 lg:p-2" />
           </Carousel>
         </div>
       )}
        {teamsQuery.isSuccess && (!teams || teams.length === 0) && (
            <div className="flex h-screen w-screen items-center justify-center">
-               <p className="text-xl text-gray-500">No teams available for remarking at this stage.</p>
+               <p className="text-lg text-gray-500 md:text-xl">No teams available for remarking at this stage.</p>
            </div>
        )}
        {teamsQuery.isError && (
             <div className="flex h-screen w-screen items-center justify-center bg-background p-4 text-center">
-               <p className="text-xl text-destructive">Error loading teams: {teamsQuery.error.message}</p>
+               <p className="text-lg text-destructive md:text-xl">Error loading teams: {teamsQuery.error.message}</p>
            </div>
        )}
     </>

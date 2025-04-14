@@ -7,7 +7,6 @@ import toast from "react-hot-toast";
 interface CriteriaData {
   id?: string;
   criteria: string;
-  maxScore: number;
   judgeType: JudgeType;
 }
 
@@ -40,7 +39,6 @@ export default function CriteriaTab() {
       toast.success("Criteria deleted successfully!");
     },
     onError: (error) => {
-      // Check for specific error related to existing scores
       if (error.message.includes("related records")) {
          toast.error("Cannot delete criteria with existing scores.");
       } else {
@@ -52,15 +50,14 @@ export default function CriteriaTab() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentCriteria, setCurrentCriteria] = useState<CriteriaData>({
     criteria: "",
-    maxScore: 10,
-    judgeType: JudgeType.VALIDATOR, // Default value
+    judgeType: JudgeType.VALIDATOR,
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setCurrentCriteria(prev => ({
       ...prev,
-      [name]: name === 'maxScore' ? parseInt(value, 10) : value,
+      [name]: value,
     }));
   };
 
@@ -68,14 +65,13 @@ export default function CriteriaTab() {
     setIsEditing(false);
     setCurrentCriteria({
       criteria: "",
-      maxScore: 10,
       judgeType: JudgeType.VALIDATOR,
     });
   };
 
   const handleEdit = (criteria: CriteriaData) => {
     setIsEditing(true);
-    setCurrentCriteria({ ...criteria });
+    setCurrentCriteria({ id: criteria.id, criteria: criteria.criteria, judgeType: criteria.judgeType });
   };
 
   const handleDelete = (id: string) => {
@@ -86,14 +82,14 @@ export default function CriteriaTab() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentCriteria.criteria || currentCriteria.maxScore <= 0) {
-      toast.error("Please fill in all fields correctly.");
+    if (!currentCriteria.criteria) {
+      toast.error("Please fill in the criteria name.");
       return;
     }
 
     const mutationData = {
       criteria: currentCriteria.criteria,
-      maxScore: currentCriteria.maxScore,
+      maxScore: 10,
       judgeType: currentCriteria.judgeType,
     };
 
@@ -111,8 +107,7 @@ export default function CriteriaTab() {
     <div className="p-4 md:p-6 space-y-6">
       <h2 className="text-2xl font-semibold mb-4">Manage Judging Criteria</h2>
 
-      {/* Add/Edit Form */}
-      <form onSubmit={handleSubmit} className="bg-gray-800 p-4 rounded-lg shadow space-y-4">
+      <form onSubmit={handleSubmit} className="p-4 rounded-lg shadow space-y-4">
         <h3 className="text-xl font-medium">{isEditing ? "Edit Criteria" : "Add New Criteria"}</h3>
         <div>
           <label htmlFor="criteria" className="block text-sm font-medium text-gray-300 mb-1">Criteria Name</label>
@@ -123,20 +118,7 @@ export default function CriteriaTab() {
             value={currentCriteria.criteria}
             onChange={handleInputChange}
             required
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
-          />
-        </div>
-        <div>
-          <label htmlFor="maxScore" className="block text-sm font-medium text-gray-300 mb-1">Max Score</label>
-          <input
-            type="number"
-            id="maxScore"
-            name="maxScore"
-            value={currentCriteria.maxScore}
-            onChange={handleInputChange}
-            required
-            min="1"
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+            className="w-full px-3 py-2 border bg-transparent border-gray-600 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
           />
         </div>
         <div>
@@ -147,52 +129,49 @@ export default function CriteriaTab() {
             value={currentCriteria.judgeType}
             onChange={handleInputChange}
             required
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+            className="w-full px-3 py-2 bg-transparent border border-gray-600 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
           >
             {Object.values(JudgeType).map(type => (
-              <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
+              <option className="bg-transparent text-black" key={type} value={type}>{type.replace(/_/g, ' ')}</option>
             ))}
           </select>
         </div>
         <div className="flex justify-end space-x-3">
           {isEditing && (
-            <button type="button" onClick={resetForm} className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md transition-colors">
+            <button type="button" onClick={resetForm} className="px-4 py-2 rounded-md transition-colors">
               Cancel Edit
             </button>
           )}
           <button
             type="submit"
             disabled={addMutation.isLoading || updateMutation.isLoading}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-md transition-colors disabled:opacity-50"
           >
             {addMutation.isLoading || updateMutation.isLoading ? <Spinner size="small" /> : (isEditing ? "Update Criteria" : "Add Criteria")}
           </button>
         </div>
       </form>
 
-      {/* Criteria List */}
-      <div className="bg-gray-800 p-4 rounded-lg shadow">
+      <div className="p-4 rounded-lg shadow">
         <h3 className="text-xl font-medium mb-4">Existing Criteria</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-700">
+            <thead className="">
               <tr>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Max Score</th>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Judge Type</th>
                 <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-gray-800 divide-y divide-gray-700">
+            <tbody className="divide-y divide-gray-700">
               {criteriaList && criteriaList.length > 0 ? (
                 criteriaList.map((item) => (
                   <tr key={item.id}>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-100">{item.criteria}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-100">{item.maxScore}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-100">{item.JudgeType.replace(/_/g, ' ')}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium space-x-2">
                       <button
-                        onClick={() => handleEdit({ id: item.id, criteria: item.criteria, maxScore: item.maxScore, judgeType: item.JudgeType })}
+                        onClick={() => handleEdit({ id: item.id, criteria: item.criteria, judgeType: item.JudgeType })}
                         className="text-indigo-400 hover:text-indigo-300"
                       >
                         Edit
@@ -209,7 +188,7 @@ export default function CriteriaTab() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="px-4 py-3 text-center text-sm text-gray-400">No criteria found.</td>
+                  <td colSpan={3} className="px-4 py-3 text-center text-sm text-gray-400">No criteria found.</td>
                 </tr>
               )}
             </tbody>
