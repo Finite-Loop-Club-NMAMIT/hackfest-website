@@ -16,6 +16,7 @@ export const ResultsVisibilityToggle = () => {
     profileEdit: false,
     top60Validated: false,
     eventStarted: false,
+    winnersDeclared: false,
   });
 
   type ToggleKey = keyof typeof loadingStates;
@@ -63,6 +64,13 @@ export const ResultsVisibilityToggle = () => {
     onSettled: () => updateLoadingState("eventStarted", false),
   });
 
+  const winnersMutation = api.appSettings.setWinnersDeclaredStatus.useMutation({
+    onMutate: () => updateLoadingState("winnersDeclared", true),
+    onSuccess: handleSuccess("Winners declared status updated"),
+    onError: handleError,
+    onSettled: () => updateLoadingState("winnersDeclared", false),
+  });
+
   // Helper functions
   function updateLoadingState(key: ToggleKey, value: boolean): void {
     setLoadingStates(prev => ({ ...prev, [key]: value }));
@@ -87,6 +95,7 @@ export const ResultsVisibilityToggle = () => {
     profileEdit: () => profileEditMutation.mutate(!appSettings?.isProfileEditOpen),
     top60: () => top60Mutation.mutate(!appSettings?.isTop60Validated),
     event: () => eventMutation.mutate(!appSettings?.isEventStarted),
+    winners: () => winnersMutation.mutate(!appSettings?.isWinnersDeclared),
   };
 
   if (!appSettings) return <div>Loading settings...</div>;
@@ -273,6 +282,36 @@ export const ResultsVisibilityToggle = () => {
               </Switch>
               <span className="text-sm">
                 {loadingStates.eventStarted ? "Updating..." : appSettings.isEventStarted ? "Started" : "Not Started"}
+              </span>
+            </div>
+          </div>
+          
+          {/* Winners Declared */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Winners Status</h3>
+              <p className="text-sm text-gray-500">
+                {appSettings.isWinnersDeclared ? "Winners have been declared" : "Winners have not been declared"}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={appSettings.isWinnersDeclared || false}
+                onChange={toggleSetting.winners}
+                disabled={loadingStates.winnersDeclared}
+                className={`${
+                  appSettings.isWinnersDeclared ? 'bg-blue-600' : 'bg-gray-200'
+                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+              >
+                <span className="sr-only">Toggle winners declared status</span>
+                <span
+                  className={`${
+                    appSettings.isWinnersDeclared ? 'translate-x-6' : 'translate-x-1'
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                />
+              </Switch>
+              <span className="text-sm">
+                {loadingStates.winnersDeclared ? "Updating..." : appSettings.isWinnersDeclared ? "Declared" : "Not Declared"}
               </span>
             </div>
           </div>

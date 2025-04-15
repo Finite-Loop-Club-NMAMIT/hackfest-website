@@ -15,6 +15,12 @@ export const appSettingsRouter = createTRPCRouter({
     return appSettings?.isResultOpen;
   }),
   
+
+  isWinnersDeclared: publicProcedure.query(async ({ ctx }) => {
+    const appSettings = await ctx.db.appSettings.findFirst();
+    return appSettings?.isWinnersDeclared;
+  }),
+  
   setResultVisibility: adminProcedure
     .input(z.boolean())
     .mutation(async ({ ctx, input }) => {
@@ -119,6 +125,24 @@ export const appSettingsRouter = createTRPCRouter({
           sessionUser: ctx.session.user.email,
           auditType: "App Settings",
           description: `Event status set to ${input ? "started" : "not started"}`,
+        },
+      });
+    }),
+  
+  setWinnersDeclaredStatus: adminProcedure
+    .input(z.boolean())
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.appSettings.update({
+        where: { id: 1 },
+        data: {
+          isWinnersDeclared: input,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "App Settings",
+          description: `Winners declared status set to ${input ? "declared" : "not declared"}`,
         },
       });
     }),

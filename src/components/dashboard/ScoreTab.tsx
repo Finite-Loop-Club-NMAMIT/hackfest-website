@@ -78,25 +78,64 @@ const ScoreCard = ({
   score,
   maxScore,
   className = "",
+  variant = "default"
 }: {
   label: string;
   score: number | string;
   maxScore?: number;
   className?: string;
+  variant?: "default" | "normalized";
 }) => {
   return (
     <div
-      className={`p-2 rounded-lg text-center border border-gray-600 ${className}`}
+      className={`p-2 rounded-lg text-center border ${
+        variant === "normalized" 
+          ? "border-blue-600 bg-blue-900/20" 
+          : "border-gray-600"
+      } ${className}`}
     >
-      <div className="text-xs text-gray-300 truncate max-w-[80px]">
+      <div className={`text-xs ${
+        variant === "normalized" ? "text-blue-300" : "text-gray-300"
+      } truncate max-w-[80px]`}>
         {label}
       </div>
-      <div className="text-lg font-semibold">
+      <div className={`text-lg font-semibold ${
+        variant === "normalized" ? "text-blue-300" : ""
+      }`}>
         {score}
         {maxScore ? (
           <span className="text-xs text-gray-400">/{maxScore}</span>
+        ) : variant === "normalized" ? (
+          <span className="text-xs text-blue-400">/10</span>
         ) : null}
       </div>
+    </div>
+  );
+};
+
+const JudgeScoreRange = ({
+  minScore,
+  maxScore,
+}: {
+  minScore: number;
+  maxScore: number;
+}) => {
+  return (
+    <div className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+      <span title="Lowest score given by this judge">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 inline" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+        </svg>
+        {minScore}
+      </span>
+      <span className="mx-1">-</span>
+      <span title="Highest score given by this judge">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 inline" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+        </svg>
+        {maxScore}
+      </span>
+      <span className="ml-1 text-gray-500">range</span>
     </div>
   );
 };
@@ -699,31 +738,66 @@ export default function ScoreTab() {
   ) => {
     const normalizedScores: Record<
       string,
-      { rawTotal: number }
+      { rawTotal: number; normalizedTotal: number }
     > = {};
 
     let overallRawTotal = 0;
     let overallMaxPossibleRaw = 0;
-  
+    let overallNormalizedTotal = 0;
+    
+    // Find the global min and max across all judges
+    let globalMin = Infinity;
+    let globalMax = -Infinity;
+    
+    Object.entries(judgeScores).forEach(([_, data]) => {
+      if (data.minScore < globalMin) globalMin = data.minScore;
+      if (data.maxScore > globalMax) globalMax = data.maxScore;
+    });
+    
+    // Handle edge case where min and max are the same (all scores are identical)
+    const normalizationRange = globalMax - globalMin || 1; // Avoid division by zero
+
     Object.entries(judgeScores).forEach(([judgeId, data]) => {
+      // Calculate normalized total by normalizing each score and summing
+      let normalizedTotal = 0;
+      let scoreCount = 0;
+      
+      Object.values(data.scores).forEach(score => {
+        // Apply min-max normalization formula: (x - min) / (max - min) * 10
+        // This scales the score to a 0-10 range
+        const normalizedScore = ((score - globalMin) / normalizationRange) * 10;
+        normalizedTotal += normalizedScore;
+        scoreCount++;
+      });
+      
+      // Average the normalized scores
+      const avgNormalized = scoreCount > 0 ? normalizedTotal / scoreCount : 0;
+      
       normalizedScores[judgeId] = {
-        rawTotal: data.total
+        rawTotal: data.total,
+        normalizedTotal: Math.round(avgNormalized) // Round to integer
       };
 
       overallRawTotal += data.total;
-      const criteriaCount = Object.keys(data.scores).length;
-      overallMaxPossibleRaw += data.maxScore * criteriaCount;
+      overallMaxPossibleRaw += data.maxScore * Object.keys(data.scores).length;
+      overallNormalizedTotal += normalizedTotal;
     });
 
+    const judgeCount = Object.keys(normalizedScores).length;
     const overallRawPercentage =
       overallMaxPossibleRaw > 0
         ? Math.round((overallRawTotal / overallMaxPossibleRaw) * 100)
+        : 0;
+    const overallNormalizedScore = 
+      judgeCount > 0 
+        ? Math.round((overallNormalizedTotal / judgeCount) / 10 * 10) // Round to integer for 0-10 scale
         : 0;
 
     return {
       judgeScores: normalizedScores,
       overallRawTotal,
-      overallRawPercentage
+      overallRawPercentage,
+      overallNormalizedScore
     };
   };
 
@@ -1040,10 +1114,10 @@ export default function ScoreTab() {
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               {sortOrder === "none" && (
-                <path fillRule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l-3-3a1 1 0 010-1.414zM6.293 10.293a1 1 0 011.414 0L10 12.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M10 3a1 1 0 000 2h2a1 1 0 100-2H9zM6.293 10.293a1 1 0 011.414 0L10 12.586l2.293-2.293a1 1 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414zM6.293 10.293a1 1 0 011.414 0L10 12.586l2.293-2.293a1 1 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
               )}
               {sortOrder === "asc" && (
-                <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l-6-6a1 1 0 011.414-1.414l6 6a1 1 0 011.414 0l6-6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
               )}
               {sortOrder === "desc" && (
                 <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -1080,7 +1154,7 @@ export default function ScoreTab() {
             const {
               judgeScores: normalizedJudgeScores,
               overallRawTotal,
-              overallRawPercentage,
+              overallNormalizedScore,
             } = normalizeJudgeScores(judgeScores);
 
             // Check if we should show extended options (only for TOP15 filter)
@@ -1129,9 +1203,9 @@ export default function ScoreTab() {
                           className="border border-gray-600"
                         />
                         <ScoreCard
-                          label="Raw %"
-                          score={`${overallRawPercentage}%`}
-                          className="border border-gray-600"
+                          label="Normalized"
+                          score={overallNormalizedScore}
+                          variant="normalized"
                         />
                       </div>
                     </div>
@@ -1269,8 +1343,14 @@ export default function ScoreTab() {
                               className="border border-gray-700 rounded-lg p-3"
                             >
                               <div className="flex justify-between items-center mb-2">
-                                <div className="font-medium">
-                                  {data.judgeName}
+                                <div>
+                                  <div className="font-medium">
+                                    {data.judgeName}
+                                  </div>
+                                  <JudgeScoreRange 
+                                    minScore={data.minScore} 
+                                    maxScore={data.maxScore} 
+                                  />
                                 </div>
                                 <div className="flex items-center space-x-3">
                                   <ScoreCard
@@ -1279,6 +1359,13 @@ export default function ScoreTab() {
                                       normalizedJudgeScores[judgeId]?.rawTotal ?? 0
                                     }
                                     className="border border-gray-600"
+                                  />
+                                  <ScoreCard
+                                    label="Normalized"
+                                    score={
+                                      normalizedJudgeScores[judgeId]?.normalizedTotal ?? 0
+                                    }
+                                    variant="normalized"
                                   />
                                 </div>
                               </div>

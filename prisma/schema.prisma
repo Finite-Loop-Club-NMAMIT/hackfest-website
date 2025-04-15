@@ -176,6 +176,7 @@ model AppSettings {
   isTop60Validated      Boolean @default(false)
   isEventStarted        Boolean @default(false)
   isResultOpen          Boolean @default(false)
+  isWinnersDeclared      Boolean @default(false)
 }
 
 model Remark {

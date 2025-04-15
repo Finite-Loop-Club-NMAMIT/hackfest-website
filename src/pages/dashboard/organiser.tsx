@@ -94,7 +94,7 @@ export default function Organiser() {
               : "text-gray-400 hover:text-white"
           }`}
         >
-          Roles
+          Roles & Settings
         </button>
         <button
           onClick={() => setActiveTab("allocations")}

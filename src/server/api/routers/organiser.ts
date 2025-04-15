@@ -1,7 +1,7 @@
 import { TeamProgress, JudgeType, Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, createTRPCRouter, dashboardProcedure } from "~/server/api/trpc";
+import { adminProcedure, createTRPCRouter, dashboardProcedure, publicProcedure } from "~/server/api/trpc";
 import { addJudge } from "~/server/schema/zod-schema";
 import { Dormitory, Arena } from "@prisma/client";
 
@@ -864,6 +864,76 @@ export const organiserRouter = createTRPCRouter({
                 }
               }
             }
+          }
+        }
+      },
+      orderBy: [
+        { teamNo: 'asc' }
+      ]
+    });
+
+    // Remove judge scoring ranges for normalization
+    const allCriteria = await ctx.db.criteria.findMany({
+      where: {
+        JudgeType: {
+          in: [JudgeType.DAY2_ROUND1, JudgeType.DAY2_ROUND2]
+        }
+      },
+      orderBy: [
+        { JudgeType: 'asc' },
+        { criteria: 'asc' }
+      ]
+    });
+
+    const judges = await ctx.db.judge.findMany({
+      where: {
+        type: {
+          in: [JudgeType.DAY2_ROUND1, JudgeType.DAY2_ROUND2]
+        }
+      },
+      include: {
+        User: {
+          select: {
+            name: true,
+            id: true
+          }
+        }
+      }
+    });
+
+    return {
+      teams,
+      criteria: allCriteria,
+      judges
+    };
+  }),
+  getTeamWinners: publicProcedure.query(async ({ ctx }) => {
+    const teams = await ctx.db.team.findMany({
+      where: {
+        teamProgress: {
+          in: ['SELECTED', 'TOP15','WINNER', 'RUNNER', 'SECOND_RUNNER', 'TRACK']
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        teamNo: true,
+        teamProgress: true,
+        Members: {
+          select: {
+            id: true,
+            name: true,
+            College: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
+        IdeaSubmission: {
+          select: {
+            track: true,
+            pptUrl: true
           }
         }
       },

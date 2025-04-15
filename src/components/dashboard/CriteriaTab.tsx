@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { api } from "~/utils/api";
+
 import { JudgeType } from "@prisma/client";
 import Spinner from "../spinner";
 import toast from "react-hot-toast";
+import { api } from "../../utils/api";
 
 interface CriteriaData {
   id?: string;
