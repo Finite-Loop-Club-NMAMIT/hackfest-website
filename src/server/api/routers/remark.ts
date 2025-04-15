@@ -61,22 +61,12 @@ export const remarkRouter = createTRPCRouter({
     return ctx.db.remark.findMany();
   }),
   
-  // New endpoint to get teams with remarks
+
   getTeamsWithRemarks: remarkProcedure.query(async ({ ctx }) => {
-    // First, get all teams with remarks
     const teams = await ctx.db.team.findMany({
       where: {
-        OR: [
-              { teamProgress: "SELECTED" },
-              { teamProgress: "TOP15" },
-              { teamProgress: "WINNER" },
-              { teamProgress: "RUNNER" },
-              { teamProgress: "SECOND_RUNNER" },
-              { teamProgress: "TRACK" },
-            ],
-        teamProgress: "SELECTED",
         Remark: {
-          some: {} 
+          some: {}
         }
       },
       select: {
@@ -85,24 +75,24 @@ export const remarkRouter = createTRPCRouter({
         name: true,
         IdeaSubmission:{
           select: {
-            track: true,
+          track: true,
           }
         },
         Remark: {
           select: {
-            id: true,
-            remark: true,
-            createdAt: true,
-            Judge: {
+          id: true,
+          remark: true,
+          createdAt: true,
+          Judge: {
+            select: {
+            type: true,
+            User: {
               select: {
-                type: true,
-                User: {
-                  select: {
-                    name: true
-                  }
-                }
+              name: true
               }
             }
+            }
+          }
           }
         }
       },
