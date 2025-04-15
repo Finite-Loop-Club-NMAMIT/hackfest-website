@@ -304,6 +304,93 @@ export const organiserRouter = createTRPCRouter({
       return updatedTeam;
     }),
     
+  updateTeamProgressFromScoring: adminProcedure
+    .input(
+      z.object({
+        teamId: z.string(),
+        progress: z.nativeEnum(TeamProgress),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const team = await ctx.db.team.findUnique({
+        where: {
+          id: input.teamId,
+        },
+        select: {
+          id: true,
+          name: true,
+          teamProgress: true,
+        }
+      });
+      
+      if (!team) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Team not found",
+        });
+      }
+      
+      // Define allowed progress transitions based on current status
+      let allowedProgressValues: TeamProgress[];
+      
+      if (team.teamProgress === TeamProgress.TOP15) {
+        // TOP15 can be promoted to winner categories or demoted to SELECTED
+        allowedProgressValues = [
+          TeamProgress.SELECTED, 
+          TeamProgress.TOP15, 
+          TeamProgress.WINNER, 
+          TeamProgress.RUNNER, 
+          TeamProgress.SECOND_RUNNER, 
+          TeamProgress.TRACK
+        ];
+      } else if (team.teamProgress === TeamProgress.SELECTED) {
+        // SELECTED can only be promoted to TOP15
+        allowedProgressValues = [TeamProgress.SELECTED, TeamProgress.TOP15];
+      } else if ([
+        TeamProgress.WINNER,
+        TeamProgress.RUNNER,
+        TeamProgress.SECOND_RUNNER,
+        TeamProgress.TRACK
+      ].includes(team.teamProgress as unknown as (typeof TeamProgress.WINNER | typeof TeamProgress.RUNNER | typeof TeamProgress.SECOND_RUNNER | typeof TeamProgress.TRACK))) {
+        // Winners can be demoted back to TOP15
+        allowedProgressValues = [
+          team.teamProgress, 
+          TeamProgress.TOP15
+        ];
+      } else {
+        // For any other status, only allow same status to prevent mistakes
+        allowedProgressValues = [team.teamProgress];
+      }
+      
+      if (!allowedProgressValues.includes(input.progress)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Invalid progress transition from ${team.teamProgress} to ${input.progress}`,
+        });
+      }
+      
+      // Update the team's progress
+      const updatedTeam = await ctx.db.team.update({
+        where: {
+          id: input.teamId,
+        },
+        data: {
+          teamProgress: input.progress,
+        },
+      });
+      
+      // Log the action
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM_PROGRESS_FROM_SCORING",
+          description: `Admin ${ctx.session.user.email} updated Team ${team.name} (${input.teamId}) progress from ${team.teamProgress} to ${input.progress} via scoring interface`,
+        },
+      });
+      
+      return updatedTeam;
+    }),
+
   getCollegeAnalytics: adminProcedure.query(async ({ ctx }) => {
     const colleges = await ctx.db.college.findMany({
       select: {
@@ -736,6 +823,12 @@ export const organiserRouter = createTRPCRouter({
                 name: true
               }
             }
+          }
+        },
+        IdeaSubmission: {
+          select: {
+            track: true,
+            pptUrl: true
           }
         },
         Scores: {

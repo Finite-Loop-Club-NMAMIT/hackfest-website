@@ -173,6 +173,60 @@ export default function DAY1() {
       }
   }, [judgeInfoQuery.isSuccess, judgeInfoQuery.data]);
 
+  // Add keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!carouselApi) return;
+      
+      if (e.key === "ArrowLeft") {
+        carouselApi.scrollPrev();
+      } else if (e.key === "ArrowRight") {
+        carouselApi.scrollNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [carouselApi]);
+
+  // Enhanced tutorial steps with more details about buttons
+  const day1TutorialSteps: Step[] = [
+    {
+      target: 'body',
+      content: 'Welcome to the Day 1 Judge Dashboard! This tutorial will guide you through the interface.',
+      placement: 'center',
+      disableBeacon: true,
+    },
+    {
+      target: '.carousel-container',
+      content: 'Navigate between teams using the left and right arrow keys on your keyboard.',
+      placement: 'center',
+    },
+    {
+      target: '.remark-input-section',
+      content: 'In this section, you can add your evaluation remarks for each team.',
+      placement: 'top',
+    },
+    {
+      target: '.add-remark-point-button',
+      content: 'Click this button to add more bullet points for detailed feedback about the team.',
+      placement: 'bottom',
+    },
+    {
+      target: '.save-remarks-button',
+      content: 'Click here to manually save your remarks. Your remarks are also automatically saved when you navigate to another team.',
+      placement: 'bottom',
+    },
+    {
+      target: 'body',
+      content: 'You\'re all set! Review each team and provide detailed remarks to help with team selection.',
+      placement: 'center',
+    }
+  ];
+
   if (!session?.user) {
     return <div>Unauthorized</div>;
   }
@@ -206,54 +260,15 @@ export default function DAY1() {
       markTutorialMutation.mutate();
   };
 
-  const day1TutorialSteps: Step[] = [
-      {
-          target: '.carousel-container',
-          content: 'Welcome to the Day 1 Remarks Dashboard! Use the arrows or swipe to navigate between teams.',
-          placement: 'center',
-          disableBeacon: true,
-      },
-      {
-          target: '.team-info-header',
-          content: 'Here you can see the team name, number, track, and members.',
-          placement: 'bottom',
-      },
-      {
-          target: '.remark-input-section',
-          content: 'This is where you enter your remarks for the current team. Use the "+" button to add points and "x" to remove them.',
-          placement: 'top',
-      },
-      {
-          target: '.add-remark-point-button',
-          content: 'Click here to add a new remark point.',
-          placement: 'right',
-      },
-      {
-          target: '.save-remarks-button',
-          content: 'Click "Save Remarks" to save your input. Remarks are also auto-saved when you navigate away.',
-          placement: 'top',
-      },
-      {
-          target: '.carousel-navigation-prev',
-          content: 'Use this button to go to the previous team.',
-          placement: 'right',
-      },
-      {
-          target: '.carousel-navigation-next',
-          content: 'Use this button to go to the next team. You can also swipe on touch devices.',
-          placement: 'left',
-      },
-      {
-          target: 'body',
-          content: "That's it! You're ready to start adding remarks.",
-          placement: 'center',
-      },
-  ];
-
-
   return (
     <>
-      <Tutorial run={showTutorial} steps={day1TutorialSteps} onComplete={handleTutorialComplete} />
+      <Tutorial 
+        run={showTutorial} 
+        steps={day1TutorialSteps} 
+        onComplete={handleTutorialComplete}
+        continuous={true}
+        showSkipButton={true}
+      />
 
       {teamsQuery.isLoading && (
         <div className="flex h-screen w-screen items-center justify-center bg-background">
@@ -261,12 +276,16 @@ export default function DAY1() {
         </div>
       )}
       {teamsQuery.isSuccess && teams && teams.length > 0 && (
-        <div className="carousel-container flex w-full items-center justify-center px-2 py-4 md:px-6 lg:px-8 md:py-6 lg:py-8">
+        <div className="carousel-container flex w-full items-center justify-center px-2 py-4 md:px-6 lg:px-8 md:py-6 lg:py-8 overflow-hidden bg-background">
           <Carousel
             setApi={setCarouselApi}
             className="m-auto flex h-[85vh] w-full max-w-full items-center justify-center md:max-w-5xl lg:max-w-6xl"
+            opts={{
+              align: "center",
+              containScroll: "trimSnaps",
+            }}
           >
-            <CarouselContent>
+            <CarouselContent className="overflow-visible">
               {teams.map((team: TeamWithRelations, index: number) => {
                 const userRemarkObj = team.Remark?.find(r => r.judgeId === session.user.id);
                 const existingRemark = userRemarkObj?.remark;

@@ -1,78 +1,75 @@
-import React, { useState, useEffect } from 'react'; // Import useState and useEffect
-import Joyride, { type Step, type CallBackProps, STATUS, EVENTS, ACTIONS } from 'react-joyride'; // Import EVENTS and ACTIONS
+import React from 'react';
+import Joyride, { type Step, EVENTS, STATUS, type CallBackProps } from 'react-joyride'; 
 import { useTheme } from 'next-themes';
 
 interface TutorialProps {
   run: boolean;
   steps: Step[];
   onComplete: () => void;
+  continuous?: boolean;
+  showSkipButton?: boolean;
 }
 
-const Tutorial: React.FC<TutorialProps> = ({ run, steps, onComplete }) => {
+const Tutorial: React.FC<TutorialProps> = ({ 
+  run, 
+  steps, 
+  onComplete,
+  continuous = true,
+  showSkipButton = true
+}) => {
   const { theme } = useTheme();
-  const [stepIndex, setStepIndex] = useState(0); // State for controlled step index
+  
+  const handleCallback = (data: CallBackProps) => {
+    const { status, type } = data;
 
-  // Effect to reset step index when the tour starts
-  useEffect(() => {
-    if (run) {
-      setStepIndex(0);
-    }
-  }, [run]);
-
-  const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, index, action, type } = data;
-    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-
-    if (finishedStatuses.includes(status as string)) {
-      // Reset index on finish/skip and call the completion handler
-      setStepIndex(0);
+    // End tutorial when it's finished or skipped
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as typeof STATUS.FINISHED | typeof STATUS.SKIPPED)) {
       onComplete();
-    } else if (([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND] as string[]).includes(type as string)) {
-      // Update step index based on action (next/prev)
-      // 'index' is the current step index, 'action' indicates 'next' or 'prev'
-      const nextStepIndex: number = index + (action === ACTIONS.PREV ? -1 : 1);
-      setStepIndex(nextStepIndex);
+    }
+
+    // Handle case when target element is not found
+    if (type === EVENTS.TARGET_NOT_FOUND) {
+      // Fix the TypeScript error by safely stringifying the target
+      const targetStr = typeof data.step?.target === 'string' 
+        ? data.step.target 
+        : 'Non-string target';
+      console.log(`Target not found: ${targetStr}`);
     }
   };
 
   return (
     <Joyride
-      steps={steps}
+      callback={handleCallback}
+      continuous={continuous}
       run={run}
-      stepIndex={stepIndex} // Control the step index
-      continuous
-      showProgress
-      showSkipButton
-      callback={handleJoyrideCallback}
+      hideCloseButton={false}
+      scrollToFirstStep={true}
+      showProgress={true}
+      showSkipButton={showSkipButton}
+      disableScrolling={false}
+      disableOverlayClose={true}
+      steps={steps}
       styles={{
         options: {
-          zIndex: 10000, // Ensure it's above other elements
-          arrowColor: theme === 'dark' ? '#3f3f46' : '#ffffff', // zinc-700 or white
+          zIndex: 10000,
+          primaryColor: '#6366f1',
           backgroundColor: theme === 'dark' ? '#3f3f46' : '#ffffff',
-          primaryColor: '#6366f1', // indigo-500
-          textColor: theme === 'dark' ? '#f4f4f5' : '#18181b', // zinc-100 or zinc-900
+          textColor: theme === 'dark' ? '#f4f4f5' : '#18181b',
+          arrowColor: theme === 'dark' ? '#3f3f46' : '#ffffff',
         },
         tooltip: {
-          borderRadius: '0.5rem', // rounded-lg
-          padding: '1rem 1.5rem', // p-4 md:p-6
+          padding: '12px 16px',
+          borderRadius: '8px',
         },
         buttonNext: {
-            backgroundColor: '#6366f1', // indigo-500
-            borderRadius: '0.375rem', // rounded-md
-            padding: '0.5rem 1rem', // px-4 py-2
-            fontSize: '0.875rem', // text-sm
+          backgroundColor: '#6366f1',
+          color: 'white',
         },
         buttonBack: {
-            color: theme === 'dark' ? '#a1a1aa' : '#71717a', // zinc-400 or zinc-500
-            marginRight: '0.5rem', // mr-2
-            fontSize: '0.875rem', // text-sm
+          color: theme === 'dark' ? '#a1a1aa' : '#71717a',
         },
         buttonSkip: {
-            color: theme === 'dark' ? '#a1a1aa' : '#71717a', // zinc-400 or zinc-500
-            fontSize: '0.875rem', // text-sm
-        },
-        spotlight: {
-            borderRadius: '0.5rem', // rounded-lg
+          color: theme === 'dark' ? '#a1a1aa' : '#71717a',
         }
       }}
     />

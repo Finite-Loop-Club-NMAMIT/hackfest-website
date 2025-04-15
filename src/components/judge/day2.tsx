@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import type { MouseEvent } from "react";
 import {
   Carousel,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
@@ -250,6 +251,9 @@ export default function DAY2() {
       }
   });
 
+  // Fix the TypeScript error by using the proper type for CarouselApi
+  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
+
   const isLoading = teamsQuery.isLoading || judgeInfoQuery.isLoading || criteriasQuery.isLoading;
   const isError = teamsQuery.isError || judgeInfoQuery.isError || criteriasQuery.isError;
   const errorMessage = teamsQuery.error?.message ?? judgeInfoQuery.error?.message ?? criteriasQuery.error?.message;
@@ -260,6 +264,25 @@ export default function DAY2() {
           return () => clearTimeout(timer);
       }
   }, [judgeInfoQuery.isSuccess, judgeInfoQuery.data]);
+
+  // Add keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!carouselApi) return;
+      
+      if (e.key === "ArrowLeft") {
+        carouselApi.scrollPrev();
+      } else if (e.key === "ArrowRight") {
+        carouselApi.scrollNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [carouselApi]);
 
   const handleAddPoint = () => {
     setEditingRemarks([...editingRemarks, '']);
@@ -333,58 +356,48 @@ export default function DAY2() {
       markTutorialMutation.mutate();
   };
 
+  // Completely remade tutorial steps with simplified targeting
   const day2TutorialSteps: Step[] = [
-      {
-          target: '.carousel-container',
-          content: 'Welcome to the Day 2 Scoring Dashboard! Navigate between teams using arrows or swipe.',
-          placement: 'center',
-          disableBeacon: true,
-      },
-      {
-          target: '.team-info-header',
-          content: 'Team details are displayed here.',
-          placement: 'bottom',
-      },
-      {
-          target: '.scoring-section',
-          content: 'Rate the team on each criterion using the star rating system. Hover or click to set a score.',
-          placement: 'right',
-      },
-      {
-          target: '.star-rating-example',
-          content: 'Click or hover over the stars to assign a score for this criterion. Scores are saved automatically.',
-          placement: 'bottom',
-      },
-      {
-          target: '.remarks-section',
-          content: 'View remarks from all judges here. You can add or edit your own remarks.',
-          placement: 'left',
-      },
-      {
-          target: '.edit-remarks-button',
-          content: 'Click this button to open a modal where you can add or edit your remarks for this team.',
-          placement: 'left',
-      },
-      {
-          target: '.carousel-navigation-prev',
-          content: 'Go to the previous team.',
-          placement: 'right',
-      },
-      {
-          target: '.carousel-navigation-next',
-          content: 'Go to the next team.',
-          placement: 'left',
-      },
-      {
-          target: 'body',
-          content: "You're all set to start scoring and remarking!",
-          placement: 'center',
-      },
+    {
+      target: 'body',
+      content: 'Welcome to the Day 2 Judging Dashboard! Let\'s walk through the scoring process.',
+      placement: 'center',
+      disableBeacon: true,
+    },
+    {
+      target: '.carousel-container',
+      content: 'Navigate between teams using the left and right arrow keys.',
+      placement: 'center',
+    },
+    {
+      target: '.edit-remarks-button',
+      content: 'Click here to add or edit your remarks about this team.',
+      placement: 'bottom',
+    },
+    {
+      target: '.star-rating-example',
+      content: 'Click or hover over the stars to rate each team on specific criteria. Your scores save automatically.',
+      placement: 'bottom',
+    },
+    {
+      target: '.carousel-navigation-next',
+      content: 'Use these buttons or arrow keys to move between teams.',
+      placement: 'left',
+    },
+    {
+      target: 'body',
+      content: 'You\'re ready to start scoring! Rate each team and provide comments to explain your scores.',
+      placement: 'center',
+    }
   ];
 
   return (
     <>
-      <Tutorial run={showTutorial} steps={day2TutorialSteps} onComplete={handleTutorialComplete} />
+      <Tutorial 
+        run={showTutorial} 
+        steps={day2TutorialSteps} 
+        onComplete={handleTutorialComplete}
+      />
 
       {isLoading && (
         <div className="flex h-screen w-screen items-center justify-center">
@@ -398,9 +411,16 @@ export default function DAY2() {
       )}
 
       {!isLoading && !isError && teams && teams.length > 0 && criterias && criterias.length > 0 && (
-        <div className="carousel-container flex w-full items-center justify-center px-2 py-4 md:px-6 md:py-10 overflow-visible">
-          <Carousel className="m-auto flex w-full max-w-full items-center justify-center md:max-w-7xl overflow-visible" >
-            <CarouselContent>
+        <div className="carousel-container flex w-full items-center justify-center px-2 py-4 md:px-6 md:py-10 overflow-hidden bg-background">
+          <Carousel 
+            className="m-auto flex w-full max-w-full items-center justify-center md:max-w-7xl" 
+            setApi={setCarouselApi}
+            opts={{
+              align: "center",
+              containScroll: "trimSnaps",
+            }}
+          >
+            <CarouselContent className="overflow-visible">
               {teams.map((team, _index) => {
                  const allRemarks = team.Remark ?? [];
                  const judgeId = session?.user?.id;

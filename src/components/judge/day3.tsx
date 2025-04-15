@@ -130,73 +130,72 @@ export default function DAY3() {
       markTutorialMutation.mutate();
   };
 
+  // Add keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!carouselApi) return;
+      
+      if (e.key === "ArrowLeft") {
+        carouselApi.scrollPrev();
+      } else if (e.key === "ArrowRight") {
+        carouselApi.scrollNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [carouselApi]);
+
+  // Simplified tutorial steps
   const day3TutorialSteps: Step[] = [
-      {
-          target: '.filter-search-controls',
-          content: 'Welcome to the Day 3 Finals Dashboard! Use these controls to filter teams by name, number, or track.',
-          placement: 'bottom',
-          disableBeacon: true,
-      },
-      {
-          target: '#search-team-name',
-          content: 'Search for a team by its name.',
-          placement: 'bottom',
-      },
-      {
-          target: '#search-team-no',
-          content: 'Search for a team by its number.',
-          placement: 'bottom',
-      },
-       {
-          target: '.search-button',
-          content: 'Click the search icon after entering a name or number to jump to that team.',
-          placement: 'bottom',
-      },
-      {
-          target: '#track-filter',
-          content: 'Filter the list of teams by their track.',
-          placement: 'bottom',
-      },
-      {
-          target: '.carousel-container',
-          content: 'Navigate through the filtered teams using the arrows or swipe.',
-          placement: 'center',
-      },
-      {
-          target: '.team-info-header',
-          content: 'View team details and members here.',
-          placement: 'bottom',
-      },
-      {
-          target: '.judge-remarks-section',
-          content: 'Review remarks submitted by judges during previous rounds.',
-          placement: 'top',
-      },
-      {
-          target: '.progress-control-section',
-          content: 'Use these buttons to promote a team to the Top 15 or demote them back to the Top 60 selection pool.',
-          placement: 'top',
-      },
-      {
-          target: '.promote-button',
-          content: 'Click here to mark the team as part of the Top 15 finalists.',
-          placement: 'top',
-      },
-      {
-          target: '.demote-button',
-          content: 'Click here to move the team back to the Top 60 pool (if they were previously Top 15).',
-          placement: 'top',
-      },
-      {
-          target: 'body',
-          content: "You're ready to manage the final team selections!",
-          placement: 'center',
-      },
+    {
+      target: 'body',
+      content: 'Welcome to the Day 3 Finals Dashboard! You\'ll be selecting the winning teams here.',
+      placement: 'center',
+      disableBeacon: true,
+    },
+    {
+      target: '.filter-search-controls',
+      content: 'Use these controls to find specific teams or filter by track.',
+      placement: 'bottom',
+    },
+    {
+      target: '.search-button',
+      content: 'Search for teams by name or number, then click to find them.',
+      placement: 'bottom',
+    },
+    {
+      target: '.carousel-container',
+      content: 'Navigate between teams using arrow keys on your keyboard.',
+      placement: 'center',
+    },
+    {
+      target: '.promote-button',
+      content: 'Click here to promote a team to the Top 15 finalists.',
+      placement: 'bottom',
+    },
+    {
+      target: '.demote-button',
+      content: 'Use this to move a team back to the selection pool if needed.',
+      placement: 'bottom',
+    },
+    {
+      target: 'body',
+      content: 'You\'re all set to make the final team selections!',
+      placement: 'center',
+    }
   ];
 
   return (
     <>
-      <Tutorial run={showTutorial} steps={day3TutorialSteps} onComplete={handleTutorialComplete} />
+      <Tutorial 
+        run={showTutorial} 
+        steps={day3TutorialSteps} 
+        onComplete={handleTutorialComplete}
+      />
 
       {teamsQuery.isLoading && (
         <div className="flex h-screen w-screen items-center justify-center bg-background">
@@ -270,9 +269,16 @@ export default function DAY3() {
           </div>
 
           {filteredTeams.length > 0 ? (
-            <div className="carousel-container flex w-full flex-grow items-center justify-center">
-              <Carousel setApi={setCarouselApi} className="m-auto flex h-[80vh] w-full max-w-full items-center justify-center md:max-w-4xl">
-                <CarouselContent>
+            <div className="carousel-container flex w-full flex-grow items-center justify-center overflow-hidden bg-background">
+              <Carousel 
+                setApi={setCarouselApi} 
+                className="m-auto flex h-[80vh] w-full max-w-full items-center justify-center md:max-w-4xl"
+                opts={{
+                  align: "center",
+                  containScroll: "trimSnaps",
+                }}
+              >
+                <CarouselContent className="overflow-visible">
                   {filteredTeams.map((team) => {
                     const isTop15 = team.teamProgress === TeamProgress.TOP15;
                     const isSelected = team.teamProgress === TeamProgress.SELECTED;
