@@ -1,11 +1,10 @@
-import { TeamProgress, JudgeType, Role } from "@prisma/client"; // Added JudgeType
+import { TeamProgress, JudgeType, Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, createTRPCRouter, dashboardProcedure } from "~/server/api/trpc"; // Removed unused judgeProcedure import
+import { adminProcedure, createTRPCRouter, dashboardProcedure } from "~/server/api/trpc";
 import { addJudge } from "~/server/schema/zod-schema";
 import { Dormitory, Arena } from "@prisma/client";
 
-// Zod schemas for Criteria input validation
 const criteriaInputBase = z.object({
   criteria: z.string().min(1, "Criteria name cannot be empty"),
   maxScore: z.number().int().positive("Max score must be a positive integer"),
@@ -39,6 +38,7 @@ export const organiserRouter = createTRPCRouter({
       },
     });
   }),
+  
   addJudge: adminProcedure.input(addJudge).mutation(async ({ input, ctx }) => {
     const user = await ctx.db.user.findUnique({
       where: {
@@ -58,9 +58,7 @@ export const organiserRouter = createTRPCRouter({
       });
     }
 
-    // Create judge record and update user role in a transaction
     await ctx.db.$transaction(async (tx) => {
-      // Create judge record
       await tx.judge.create({
         data: {
           id: input.userId,
@@ -71,7 +69,6 @@ export const organiserRouter = createTRPCRouter({
         }
       });
 
-      // Update user role based on judge type
       const role = input.type === "VALIDATOR" 
         ? Role.VALIDATOR 
         : input.type === "SUPER_VALIDATOR"
@@ -87,7 +84,6 @@ export const organiserRouter = createTRPCRouter({
          }
       });
 
-      // Create audit log
       await tx.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
@@ -97,6 +93,7 @@ export const organiserRouter = createTRPCRouter({
       });
     });
   }),
+  
   removeJudge: dashboardProcedure
     .input(
       z.object({
@@ -106,7 +103,6 @@ export const organiserRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        // Find the judge record first with User relation
         const judge = await ctx.db.judge.findFirst({
           where: {
             id: input.judgeId,
@@ -123,9 +119,7 @@ export const organiserRouter = createTRPCRouter({
           });
         }
         
-        // Proceed with deletion in transaction
-         await ctx.db.$transaction(async (tx) => {
-            // Then update the user role if needed
+        await ctx.db.$transaction(async (tx) => {
             const user = await ctx.db.user.findUnique({
               where: { id: input.userId },
               select: { role: true }
@@ -145,17 +139,12 @@ export const organiserRouter = createTRPCRouter({
               });
               }
 
-
-          // Delete the judge record first
           await tx.judge.delete({
             where: {
               id: input.judgeId,
             },
           });
 
-
-
-          // Create audit log
           return await tx.auditLog.create({
             data: {
               sessionUser: ctx.session.user.email,
@@ -174,6 +163,7 @@ export const organiserRouter = createTRPCRouter({
         });
       }
     }),
+    
   getVolunteerList: adminProcedure.query(async ({ ctx }) => {
     return await ctx.db.user.findMany({
       where: {
@@ -181,6 +171,7 @@ export const organiserRouter = createTRPCRouter({
       },
     });
   }),
+  
   addVolunteer: adminProcedure
     .input(
       z.object({
@@ -204,6 +195,7 @@ export const organiserRouter = createTRPCRouter({
         },
       });
     }),
+    
   removeVolunteer: adminProcedure
     .input(
       z.object({
@@ -227,7 +219,8 @@ export const organiserRouter = createTRPCRouter({
         },
       });
     }),
-  changeTeamProgress: dashboardProcedure // Keep dashboardProcedure for broader access, check role inside
+    
+  changeTeamProgress: dashboardProcedure
     .input(
       z.object({
         teamId: z.string(),
@@ -239,14 +232,12 @@ export const organiserRouter = createTRPCRouter({
       let isAuthorized = false;
       let judgeType: JudgeType | null = null;
 
-      // Check if user is ADMIN
       if (user.role === Role.ADMIN) {
         isAuthorized = true;
       }
-      // Check if user is JUDGE
       else if (user.role === Role.JUDGE) {
          const judge = await ctx.db.judge.findUnique({
-           where: { id: user.id }, // Assuming user.id is judgeId
+           where: { id: user.id },
            select: { type: true }
          });
          if (judge?.type === JudgeType.DAY3_FINALS) {
@@ -262,24 +253,19 @@ export const organiserRouter = createTRPCRouter({
         });
       }
 
-      // Define the allowed progress states for Day 3 judges
       const day3AllowedProgresses: ReadonlyArray<TeamProgress> = [TeamProgress.SELECTED, TeamProgress.TOP15];
 
-      // Specific logic for DAY3_FINALS judges: only allow toggling between SELECTED and TOP15
       if (judgeType === JudgeType.DAY3_FINALS) {
-        // Check if the input progress is one of the allowed states
         if (!day3AllowedProgresses.includes(input.progress)) {
            throw new TRPCError({
              code: "BAD_REQUEST",
              message: "Day 3 judges can only set progress to SELECTED or TOP15.",
            });
         }
-        // Ensure the team is currently in either state before toggling
         const currentTeam = await ctx.db.team.findUnique({
             where: { id: input.teamId },
             select: { teamProgress: true }
         });
-        // Check if the current team progress is one of the allowed states
         if (!currentTeam || !day3AllowedProgresses.includes(currentTeam.teamProgress)) {
              throw new TRPCError({
                code: "BAD_REQUEST",
@@ -287,7 +273,6 @@ export const organiserRouter = createTRPCRouter({
              });
         }
       }
-      // Admins can set any progress state (existing logic)
 
       const team = await ctx.db.team.findUnique({
         where: {
@@ -318,8 +303,8 @@ export const organiserRouter = createTRPCRouter({
       });
       return updatedTeam;
     }),
+    
   getCollegeAnalytics: adminProcedure.query(async ({ ctx }) => {
-    // Get all colleges
     const colleges = await ctx.db.college.findMany({
       select: {
         id: true,
@@ -342,9 +327,7 @@ export const organiserRouter = createTRPCRouter({
       }
     });
 
-    // Process college data to get required metrics
     const collegeAnalytics = colleges.map(college => {
-      // Get unique teams from this college
       const uniqueTeamIds = new Set<string>();
       const confirmedTeamIds = new Set<string>();
       const selectedTeamIds = new Set<string>();
@@ -373,19 +356,14 @@ export const organiserRouter = createTRPCRouter({
       };
     });
 
-    // Calculate summary statistics
-    // Each college already has a unique ID from the database, so the length of the
-    // collegeAnalytics array is the correct count of unique colleges
     const totalColleges = collegeAnalytics.length;
     const collegesWithConfirmedTeams = collegeAnalytics.filter(c => c.confirmedTeams > 0).length;
     const collegesWithSelectedTeams = collegeAnalytics.filter(c => c.selectedTeams > 0).length;
     
-    // Sort colleges by selected teams (descending)
     const sortedColleges = [...collegeAnalytics].sort((a, b) => 
       b.selectedTeams - a.selectedTeams || b.confirmedTeams - a.confirmedTeams
     );
 
-    // Group colleges by state
     const stateAnalytics: Record<string, {
       totalColleges: number;
       collegesWithConfirmedTeams: number;
@@ -396,7 +374,6 @@ export const organiserRouter = createTRPCRouter({
       colleges: typeof collegeAnalytics;
     }> = {};
 
-    // Initialize state groups
     collegeAnalytics.forEach(college => {
       const stateName = college.state.toString();
       if (!stateAnalytics[stateName]) {
@@ -411,7 +388,6 @@ export const organiserRouter = createTRPCRouter({
         };
       }
       
-      // Add college to its state group
       stateAnalytics[stateName].colleges.push(college);
       stateAnalytics[stateName].totalColleges++;
       stateAnalytics[stateName].totalTeams += college.totalTeams;
@@ -426,7 +402,6 @@ export const organiserRouter = createTRPCRouter({
       }
     });
     
-    // Sort states by selected teams (descending)
     const sortedStates = Object.entries(stateAnalytics)
       .map(([state, data]) => ({ state, ...data }))
       .sort((a, b) => b.selectedTeams - a.selectedTeams || b.confirmedTeams - a.confirmedTeams);
@@ -439,6 +414,7 @@ export const organiserRouter = createTRPCRouter({
       stateAnalytics: sortedStates
     };
   }),
+  
   getCollegeTeams: adminProcedure
     .input(
       z.object({
@@ -448,7 +424,6 @@ export const organiserRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { collegeId } = input;
       
-      // Get all users from this college with their team information
       const collegeUsers = await ctx.db.user.findMany({
         where: {
           collegeId: collegeId,
@@ -466,10 +441,8 @@ export const organiserRouter = createTRPCRouter({
         }
       });
       
-      // Extract unique team IDs
       const teamIds = [...new Set(collegeUsers.map(user => user.teamId).filter(Boolean))];
       
-      // Get full team details including members and their submission
       const teams = await ctx.db.team.findMany({
         where: {
           id: {
@@ -512,6 +485,7 @@ export const organiserRouter = createTRPCRouter({
         })
       };
     }),
+    
   getAllTeamsForAllocation: adminProcedure.query(async ({ ctx }) => {
     return await ctx.db.team.findMany({
       where: {
@@ -556,7 +530,6 @@ export const organiserRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { teamId, boysDormitory, girlsDormitory, arena } = input;
       
-      // Check for arena conflicts before updating
       if (arena && arena !== 'NOT_ASSIGNED') {
         const existingArenaTeam = await ctx.db.team.findFirst({
           where: {
@@ -578,18 +551,15 @@ export const organiserRouter = createTRPCRouter({
       if (girlsDormitory !== undefined) updateData.girlsDormitory = girlsDormitory;
       if (arena !== undefined) updateData.arena = arena;
       
-      // Update team
       const updatedTeam = await ctx.db.team.update({
         where: { id: teamId },
         data: updateData
       });
       
-      // Create audit log
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
           auditType: "TEAM_ALLOCATION",
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           description: `Team ${teamId} allocation updated: ${String(JSON.stringify(updateData))}`,
         }
       });
@@ -598,7 +568,6 @@ export const organiserRouter = createTRPCRouter({
     }),
     
   getAllocationSummary: adminProcedure.query(async ({ ctx }) => {
-    // Get counts of teams allocated to each arena and dormitory
     const teams = await ctx.db.team.findMany({
       where: {
         OR: [
@@ -614,7 +583,6 @@ export const organiserRouter = createTRPCRouter({
       }
     });
     
-    // Initialize counters
     const arenaCounts: Record<string, number> = {
       ADL01: 0,
       ADL03: 0,
@@ -634,7 +602,6 @@ export const organiserRouter = createTRPCRouter({
       NOT_ASSIGNED: 0
     };
     
-    // Count allocations
     teams.forEach(team => {
       if (team.arena) {
         arenaCounts[team.arena] = (arenaCounts[team.arena] ?? 0) + 1;
@@ -654,11 +621,9 @@ export const organiserRouter = createTRPCRouter({
     };
   }),
 
-  // --- New Criteria Procedures ---
-
   getCriteria: adminProcedure.query(async ({ ctx }) => {
     return await ctx.db.criteria.findMany({
-      orderBy: { JudgeType: 'asc' } // Optional: order by type or name
+      orderBy: { JudgeType: 'asc' }
     });
   }),
 
@@ -673,7 +638,6 @@ export const organiserRouter = createTRPCRouter({
         },
       });
 
-      // Audit Log
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
@@ -697,7 +661,6 @@ export const organiserRouter = createTRPCRouter({
         },
       });
 
-      // Audit Log
       await ctx.db.auditLog.create({
         data: {
           sessionUser: ctx.session.user.email,
@@ -713,7 +676,6 @@ export const organiserRouter = createTRPCRouter({
     .input(deleteCriteriaInput)
     .mutation(async ({ ctx, input }) => {
       try {
-        // Check if any scores reference this criteria
         const existingScores = await ctx.db.scores.count({
           where: { criteriaId: input.id },
         });
@@ -729,7 +691,6 @@ export const organiserRouter = createTRPCRouter({
           where: { id: input.id },
         });
 
-        // Audit Log
         await ctx.db.auditLog.create({
           data: {
             sessionUser: ctx.session.user.email,
@@ -741,10 +702,8 @@ export const organiserRouter = createTRPCRouter({
         return { success: true, id: input.id };
       } catch (error) {
          if (error instanceof TRPCError) {
-           // Re-throw TRPC specific errors (like the CONFLICT one)
            throw error;
          }
-         // Handle potential Prisma errors or other issues
          console.error("Error deleting criteria:", error);
          throw new TRPCError({
            code: "INTERNAL_SERVER_ERROR",
@@ -753,4 +712,166 @@ export const organiserRouter = createTRPCRouter({
          });
       }
     }),
+
+  getTeamScores: dashboardProcedure.query(async ({ ctx }) => {
+    const teams = await ctx.db.team.findMany({
+      where: {
+        teamProgress: {
+          in: ['SELECTED', 'TOP15']
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        teamNo: true,
+        teamProgress: true,
+        Members: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            College: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
+        Scores: {
+          where: {
+            Criteria: {
+              JudgeType: {
+                in: [JudgeType.DAY2_ROUND1, JudgeType.DAY2_ROUND2]
+              }
+            }
+          },
+          include: {
+            Criteria: true,
+            Judge: {
+              include: {
+                User: {
+                  select: {
+                    name: true,
+                  }
+                }
+              }
+            }
+          }
+        },
+        Remark: {
+          include: {
+            Judge: {
+              include: {
+                User: {
+                  select: {
+                    name: true,
+                    id: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: [
+        { teamNo: 'asc' }
+      ]
+    });
+
+    // Get judge scoring ranges for normalization
+    const allJudgeScores = await ctx.db.scores.findMany({
+      where: {
+        Criteria: {
+          JudgeType: {
+            in: [JudgeType.DAY2_ROUND1, JudgeType.DAY2_ROUND2]
+          }
+        }
+      },
+      include: {
+        Judge: {
+          select: {
+            id: true
+          }
+        },
+        Criteria: true
+      },
+      orderBy: [
+        { judgeId: 'asc' }
+      ]
+    });
+
+    // Create a map of judge scoring ranges
+    const judgeRanges: Record<string, { 
+      min: number; 
+      max: number; 
+      criteriaCount: Record<string, number>;
+      maxPossible: Record<string, number>;
+    }> = {};
+
+    allJudgeScores.forEach(score => {
+      const judgeId = score.judgeId;
+      
+      if (!judgeRanges[judgeId]) {
+        judgeRanges[judgeId] = {
+          min: Infinity,
+          max: -Infinity,
+          criteriaCount: {},
+          maxPossible: {}
+        };
+      }
+      
+      // Track min/max score per judge
+      judgeRanges[judgeId].min = Math.min(judgeRanges[judgeId].min, score.score);
+      judgeRanges[judgeId].max = Math.max(judgeRanges[judgeId].max, score.score);
+      
+      // Track criteria counts per team for this judge
+      const teamId = score.teamId;
+      if (!judgeRanges[judgeId].criteriaCount[teamId]) {
+        judgeRanges[judgeId].criteriaCount[teamId] = 0;
+      }
+      judgeRanges[judgeId].criteriaCount[teamId]++;
+      
+      // Track max possible score per team for this judge
+      if (!judgeRanges[judgeId].maxPossible[teamId]) {
+        judgeRanges[judgeId].maxPossible[teamId] = 0;
+      }
+      judgeRanges[judgeId].maxPossible[teamId] += score.Criteria.maxScore;
+    });
+
+    const allCriteria = await ctx.db.criteria.findMany({
+      where: {
+        JudgeType: {
+          in: [JudgeType.DAY2_ROUND1, JudgeType.DAY2_ROUND2]
+        }
+      },
+      orderBy: [
+        { JudgeType: 'asc' },
+        { criteria: 'asc' }
+      ]
+    });
+
+    const judges = await ctx.db.judge.findMany({
+      where: {
+        type: {
+          in: [JudgeType.DAY2_ROUND1, JudgeType.DAY2_ROUND2]
+        }
+      },
+      include: {
+        User: {
+          select: {
+            name: true,
+            id: true
+          }
+        }
+      }
+    });
+
+    return {
+      teams,
+      criteria: allCriteria,
+      judges,
+      judgeRanges
+    };
+  }),
 });
