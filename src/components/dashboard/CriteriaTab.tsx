@@ -171,7 +171,7 @@ export default function CriteriaTab() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <h2 className="text-2xl font-semibold mb-4">Manage Judging Criteria</h2>
+      <h2 className="text-4xl text-center font-semibold mb-4">Manage Judging Criteria</h2>
 
       <form onSubmit={handleSubmit} className="p-4 rounded-lg shadow space-y-4">
         <h3 className="text-xl font-medium">{isEditing ? `Edit Criteria: ${currentCriteria.criteria}` : "Add New Criteria"}</h3>

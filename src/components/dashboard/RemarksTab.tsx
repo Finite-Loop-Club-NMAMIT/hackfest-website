@@ -74,7 +74,7 @@ export default function RemarksTab() {
 
   return (
     <div className="p-4 md:p-6">
-      <h2 className="text-2xl font-semibold mb-6">Team Remarks</h2>
+      <h2 className="text-4xl text-center  font-semibold mb-6">Team Remarks</h2>
       
       {/* Filters section */}
       <div className="mb-6 flex flex-col md:flex-row gap-4">

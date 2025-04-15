@@ -173,6 +173,21 @@ const RemarksModal = ({
     remarksByType[judgeType].push(remark);
   });
 
+  // Function to process remarks with ";;;" delimiter
+  const formatRemark = (remark: string) => {
+    if (remark.includes(";;;")) {
+      const points = remark.split(";;;").map(point => point.trim()).filter(point => point.length > 0);
+      return (
+        <ul className="list-disc pl-5 space-y-1">
+          {points.map((point, idx) => (
+            <li className="text-white" key={idx}>{point}</li>
+          ))}
+        </ul>
+      );
+    }
+    return <p className="text-white whitespace-pre-wrap">{remark}</p>;
+  };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={closeModal}>
@@ -228,9 +243,7 @@ const RemarksModal = ({
                                       {remarkItem.Judge.User[0]?.name ??
                                         "Unknown Judge"}
                                     </div>
-                                    <p className="text-gray-300 whitespace-pre-wrap">
-                                      {remarkItem.remark}
-                                    </p>
+                                    {formatRemark(remarkItem.remark)}
                                   </div>
                                 ))}
                               </div>
@@ -255,9 +268,7 @@ const RemarksModal = ({
                                   />
                                 )}
                               </div>
-                              <p className="text-gray-300 whitespace-pre-wrap">
-                                {remarkItem.remark}
-                              </p>
+                              {formatRemark(remarkItem.remark)}
                             </div>
                           ))}
                         </div>
@@ -392,93 +403,89 @@ const TeamProgressActions = ({
       <div className="flex flex-col gap-2 w-full">
         <div className="text-xs font-medium text-gray-400 mb-1">Promote to Winner Category</div>
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => updateProgress.mutate({
-              teamId: team.id,
-              progress: TeamProgress.WINNER
-            })}
-            disabled={isWinner || updateProgress.isLoading || (hasWinner && !isWinner)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
-              isWinner || (hasWinner && !isWinner)
-                ? "bg-yellow-900/30 text-yellow-300 border border-yellow-700 cursor-not-allowed opacity-60"
-                : "bg-yellow-900/30 text-yellow-400 border border-yellow-500 hover:bg-yellow-800/40 hover:border-yellow-400"
-            }`}
-            title={hasWinner && !isWinner ? "There can only be one overall winner" : ""}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8-2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            {isWinner ? "Winner" : (hasWinner && !isWinner) ? "Already has Winner" : "Winner"}
-          </button>
-          <button
-            onClick={() => updateProgress.mutate({
-              teamId: team.id,
-              progress: TeamProgress.RUNNER
-            })}
-            disabled={isRunner || updateProgress.isLoading || (hasRunner && !isRunner)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
-              isRunner || (hasRunner && !isRunner)
-                ? "bg-indigo-900/30 text-indigo-300 border border-indigo-700 cursor-not-allowed opacity-60"
-                : "bg-indigo-900/30 text-indigo-400 border border-indigo-500 hover:bg-indigo-800/40 hover:border-indigo-400"
-            }`}
-            title={hasRunner && !isRunner ? "There can only be one runner-up" : ""}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clipRule="evenodd" />
-            </svg>
-            {isRunner ? "Runner-Up" : (hasRunner && !isRunner) ? "Already has Runner-Up" : "Runner-Up"}
-          </button>
-          <button
-            onClick={() => updateProgress.mutate({
-              teamId: team.id,
-              progress: TeamProgress.SECOND_RUNNER
-            })}
-            disabled={isSecondRunner || updateProgress.isLoading || (hasSecondRunner && !isSecondRunner)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
-              isSecondRunner || (hasSecondRunner && !isSecondRunner)
-                ? "bg-purple-900/30 text-purple-300 border border-purple-700 cursor-not-allowed opacity-60"
-                : "bg-purple-900/30 text-purple-400 border border-purple-500 hover:bg-purple-800/40 hover:border-purple-400"
-            }`}
-            title={hasSecondRunner && !isSecondRunner ? "There can only be one 2nd runner-up" : ""}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clipRule="evenodd" />
-            </svg>
-            {isSecondRunner ? "2nd Runner-Up" : (hasSecondRunner && !isSecondRunner) ? "Already has 2nd Runner-Up" : "2nd Runner-Up"}
-          </button>
-          <button
-            onClick={() => updateProgress.mutate({
-              teamId: team.id,
-              progress: TeamProgress.TRACK
-            })}
-            disabled={isTrack || updateProgress.isLoading || hasTrackWinner}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
-              isTrack || hasTrackWinner
-                ? "bg-emerald-900/30 text-emerald-300 border border-emerald-700 cursor-not-allowed opacity-60"
-                : "bg-emerald-900/30 text-emerald-400 border border-emerald-500 hover:bg-emerald-800/40 hover:border-emerald-400"
-            }`}
-            title={hasTrackWinner ? `This track already has a winner` : ""}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-            </svg>
-            {isTrack ? "Track Winner" : hasTrackWinner ? `Track has Winner` : "Track Winner"}
-          </button>
-        </div>
-        <div className="flex items-center gap-2 mt-2">
-          <button
-            onClick={() => updateProgress.mutate({
-              teamId: team.id,
-              progress: TeamProgress.SELECTED
-            })}
-            disabled={updateProgress.isLoading}
-            className="px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all duration-200 bg-red-900/30 text-red-400 border border-red-500 hover:bg-red-800/40 hover:border-red-400"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
-            Demote to SELECTED
-          </button>
+          {/* Only show winner button if there's no winner yet or this team is already the winner */}
+          {(!hasWinner || isWinner) && (
+            <button
+              onClick={() => updateProgress.mutate({
+                teamId: team.id,
+                progress: TeamProgress.WINNER
+              })}
+              disabled={isWinner || updateProgress.isLoading}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
+                isWinner
+                  ? "bg-yellow-900/30 text-yellow-300 border border-yellow-700 cursor-not-allowed opacity-60"
+                  : "bg-yellow-900/30 text-yellow-400 border border-yellow-500 hover:bg-yellow-800/40 hover:border-yellow-400"
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8-2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              {isWinner ? "Winner" : "Winner"}
+            </button>
+          )}
+          
+          {/* Only show runner-up button if there's no runner-up yet or this team is already the runner-up */}
+          {(!hasRunner || isRunner) && (
+            <button
+              onClick={() => updateProgress.mutate({
+                teamId: team.id,
+                progress: TeamProgress.RUNNER
+              })}
+              disabled={isRunner || updateProgress.isLoading}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
+                isRunner
+                  ? "bg-indigo-900/30 text-indigo-300 border border-indigo-700 cursor-not-allowed opacity-60"
+                  : "bg-indigo-900/30 text-indigo-400 border border-indigo-500 hover:bg-indigo-800/40 hover:border-indigo-400"
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clipRule="evenodd" />
+              </svg>
+              {isRunner ? "Runner-Up" : "Runner-Up"}
+            </button>
+          )}
+          
+          {/* Only show second runner-up button if there's no second runner-up yet or this team is already the second runner-up */}
+          {(!hasSecondRunner || isSecondRunner) && (
+            <button
+              onClick={() => updateProgress.mutate({
+                teamId: team.id,
+                progress: TeamProgress.SECOND_RUNNER
+              })}
+              disabled={isSecondRunner || updateProgress.isLoading}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
+                isSecondRunner
+                  ? "bg-purple-900/30 text-purple-300 border border-purple-700 cursor-not-allowed opacity-60"
+                  : "bg-purple-900/30 text-purple-400 border border-purple-500 hover:bg-purple-800/40 hover:border-purple-400"
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clipRule="evenodd" />
+              </svg>
+              {isSecondRunner ? "2nd Runner-Up" : "2nd Runner-Up"}
+            </button>
+          )}
+          
+          {/* Only show track winner button if this track doesn't have a winner yet or this team is already the track winner */}
+          {(!hasTrackWinner || isTrack) && (
+            <button
+              onClick={() => updateProgress.mutate({
+                teamId: team.id,
+                progress: TeamProgress.TRACK
+              })}
+              disabled={isTrack || updateProgress.isLoading}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
+                isTrack
+                  ? "bg-emerald-900/30 text-emerald-300 border border-emerald-700 cursor-not-allowed opacity-60"
+                  : "bg-emerald-900/30 text-emerald-400 border border-emerald-500 hover:bg-emerald-800/40 hover:border-emerald-400"
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+              </svg>
+              {isTrack ? "Track Winner" : "Track Winner"}
+            </button>
+          )}
         </div>
       </div>
     );
@@ -488,41 +495,21 @@ const TeamProgressActions = ({
   if ((isSelected || isTop15) && !showExtendedOptions) {
     return (
       <div className="flex items-center gap-2">
-        <button
-          onClick={() => updateProgress.mutate({
-            teamId: team.id,
-            progress: TeamProgress.TOP15
-          })}
-          disabled={isTop15 || updateProgress.isLoading}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition-all duration-200 ${
-            isTop15
-              ? "bg-green-900/30 text-green-400 border border-green-700 cursor-not-allowed opacity-60"
-              : "bg-blue-900/30 text-blue-400 border border-blue-500 hover:bg-blue-800/40 hover:border-blue-400"
-          }`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-          </svg>
-          {isTop15 ? "TOP 15" : "Promote to TOP 15"}
-        </button>
-        
-        <button
-          onClick={() => updateProgress.mutate({
-            teamId: team.id,
-            progress: TeamProgress.SELECTED
-          })}
-          disabled={isSelected || updateProgress.isLoading}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition-all duration-200 ${
-            isSelected
-              ? "bg-gray-800/70 text-gray-400 border border-gray-700 cursor-not-allowed opacity-60"
-              : "bg-red-900/30 text-red-400 border border-red-500 hover:bg-red-800/40 hover:border-red-400"
-          }`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
-          </svg>
-          {isSelected ? "SELECTED" : "Demote to SELECTED"}
-        </button>
+        {!isTop15 && (
+          <button
+            onClick={() => updateProgress.mutate({
+              teamId: team.id,
+              progress: TeamProgress.TOP15
+            })}
+            disabled={updateProgress.isLoading}
+            className="px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition-all duration-200 bg-blue-900/30 text-blue-400 border border-blue-500 hover:bg-blue-800/40 hover:border-blue-400"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+            Promote to TOP 15
+          </button>
+        )}
       </div>
     );
   }
@@ -570,6 +557,9 @@ export default function ScoreTab() {
   const [selectedTrack, setSelectedTrack] = useState<string>("ALL");
   // Use BOTH as default filter to show all teams
   const [progressFilter, setProgressFilter] = useState<string>("BOTH");
+  
+  // Add sort state
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("none");
 
   // Add states to track winner selections
   const [hasWinner, setHasWinner] = useState(false);
@@ -590,18 +580,10 @@ export default function ScoreTab() {
   // Calculate team statistics and check existing winners
   useEffect(() => {
     if (data?.teams) {
-      // Use direct string comparison for more reliable matching
+      // Check if there are already teams with winner statuses
       const winnerTeam = (data.teams as TeamType[]).find(t => t.teamProgress === "WINNER");
       const runnerTeam = (data.teams as TeamType[]).find(t => t.teamProgress === "RUNNER");
       const secondRunnerTeam = (data.teams as TeamType[]).find(t => t.teamProgress === "SECOND_RUNNER");
-      
-      console.log("Winner detection:", { 
-        teamsCount: data.teams.length,
-        winnerExists: !!winnerTeam, 
-        winnerTeam: winnerTeam?.name,
-        winnerProgress: winnerTeam?.teamProgress,
-        allProgress: (data.teams as TeamType[]).map(t => t.teamProgress).join(', ')
-      });
       
       setHasWinner(!!winnerTeam);
       setHasRunner(!!runnerTeam);
@@ -717,44 +699,21 @@ export default function ScoreTab() {
   ) => {
     const normalizedScores: Record<
       string,
-      { rawTotal: number; normalizedTotal: number }
+      { rawTotal: number }
     > = {};
 
     let overallRawTotal = 0;
     let overallMaxPossibleRaw = 0;
-    let overallNormalizedTotal = 0;
-    let judgeCount = 0;
-
+  
     Object.entries(judgeScores).forEach(([judgeId, data]) => {
-      const scoreRange = data.maxScore - data.minScore;
-      let normalizedTotal = 0;
-
-      if (scoreRange > 0) {
-        normalizedTotal = Math.round(
-          ((data.total - data.minScore * Object.keys(data.scores).length) /
-            (scoreRange * Object.keys(data.scores).length)) *
-            100
-        );
-      } else if (data.maxScore > 0) {
-        normalizedTotal = 100;
-      } else {
-        normalizedTotal = 0;
-      }
-
       normalizedScores[judgeId] = {
-        rawTotal: data.total,
-        normalizedTotal: normalizedTotal,
+        rawTotal: data.total
       };
 
       overallRawTotal += data.total;
       const criteriaCount = Object.keys(data.scores).length;
       overallMaxPossibleRaw += data.maxScore * criteriaCount;
-      overallNormalizedTotal += normalizedTotal;
-      judgeCount++;
     });
-
-    const overallNormalizedPercentage =
-      judgeCount > 0 ? Math.round(overallNormalizedTotal / judgeCount) : 0;
 
     const overallRawPercentage =
       overallMaxPossibleRaw > 0
@@ -764,9 +723,7 @@ export default function ScoreTab() {
     return {
       judgeScores: normalizedScores,
       overallRawTotal,
-      overallRawPercentage,
-      overallNormalizedTotal,
-      overallNormalizedPercentage,
+      overallRawPercentage
     };
   };
 
@@ -779,7 +736,14 @@ export default function ScoreTab() {
       runner: 0,
       secondRunner: 0,
       track: 0,
-      trackBreakdown: {} as Record<string, number>
+      trackBreakdown: {} as Record<string, number>,
+      peopleSelected: 0,
+      peopleTop15: 0,
+      peopleWinner: 0,
+      peopleRunner: 0,
+      peopleSecondRunner: 0,
+      peopleTrack: 0,
+      peopleTrackBreakdown: {} as Record<string, number>
     };
     
     const stats = {
@@ -789,36 +753,54 @@ export default function ScoreTab() {
       runner: 0,
       secondRunner: 0,
       track: 0,
-      trackBreakdown: {} as Record<string, number>
+      trackBreakdown: {} as Record<string, number>,
+      peopleSelected: 0,
+      peopleTop15: 0,
+      peopleWinner: 0,
+      peopleRunner: 0,
+      peopleSecondRunner: 0,
+      peopleTrack: 0,
+      peopleTrackBreakdown: {} as Record<string, number>
     };
     
-    // Add debug logging to inspect team progress values
-    console.log("Team progress values:", (data.teams as TeamType[]).map(team => ({
-      name: team.name,
-      progress: team.teamProgress
-    })));
-    
-    // Use explicit enum string values to ensure proper matching
     (data.teams as TeamType[]).forEach(team => {
-      if (team.teamProgress === "SELECTED") stats.selected++;
-      else if (team.teamProgress === "TOP15") stats.top15++;
-      else if (team.teamProgress === "WINNER") stats.winner++;
-      else if (team.teamProgress === "RUNNER") stats.runner++;
-      else if (team.teamProgress === "SECOND_RUNNER") stats.secondRunner++;
+      const memberCount = team.Members.length;
+      
+      if (team.teamProgress === "SELECTED") {
+        stats.selected++;
+        stats.peopleSelected += memberCount;
+      }
+      else if (team.teamProgress === "TOP15") {
+        stats.top15++;
+        stats.peopleTop15 += memberCount;
+      }
+      else if (team.teamProgress === "WINNER") {
+        stats.winner++;
+        stats.peopleWinner += memberCount;
+      }
+      else if (team.teamProgress === "RUNNER") {
+        stats.runner++;
+        stats.peopleRunner += memberCount;
+      }
+      else if (team.teamProgress === "SECOND_RUNNER") {
+        stats.secondRunner++;
+        stats.peopleSecondRunner += memberCount;
+      }
       else if (team.teamProgress === "TRACK") {
         stats.track++;
+        stats.peopleTrack += memberCount;
         
         // Count by track
         const trackName = team.IdeaSubmission?.track ?? "UNKNOWN";
         if (!stats.trackBreakdown[trackName]) {
           stats.trackBreakdown[trackName] = 0;
+          stats.peopleTrackBreakdown[trackName] = 0;
         }
         stats.trackBreakdown[trackName]++;
+        // Fix TypeScript error by using the nullish coalescing operator
+        stats.peopleTrackBreakdown[trackName] = (stats.peopleTrackBreakdown[trackName] ?? 0) + memberCount;
       }
     });
-    
-    // Log final statistics for debugging
-    console.log("Calculated team statistics:", stats);
     
     return stats;
   }, [data?.teams]);
@@ -841,11 +823,12 @@ export default function ScoreTab() {
     }
   };
 
-  // Filter teams based on search query, selected track, and progress filter
+  // Filter and sort teams based on search query, selected track, progress filter, and sort order
   const filterTeams = (teams: TeamType[]): TeamType[] => {
     if (!teams) return [];
 
-    return teams.filter((team) => {
+    // Filter teams
+    const filtered = teams.filter((team) => {
       // Filter by search query (team name or team number)
       const matchesSearch =
         searchQuery === "" ||
@@ -864,6 +847,30 @@ export default function ScoreTab() {
 
       return matchesSearch && matchesTrack && matchesProgress;
     });
+
+    // Apply sorting if enabled
+    if (sortOrder !== "none") {
+      filtered.sort((a, b) => {
+        // Calculate scores
+        const aScores = a.Scores || [];
+        const bScores = b.Scores || [];
+        
+        const aTotal = aScores.reduce((sum, score) => sum + score.score, 0);
+        const bTotal = bScores.reduce((sum, score) => sum + score.score, 0);
+        
+        // Sort based on order
+        return sortOrder === "asc" ? aTotal - bTotal : bTotal - aTotal;
+      });
+    }
+
+    return filtered;
+  };
+
+  // Function to toggle sorting
+  const toggleSortOrder = () => {
+    if (sortOrder === "none") setSortOrder("desc");
+    else if (sortOrder === "desc") setSortOrder("asc");
+    else setSortOrder("none");
   };
 
   if (isLoading) {
@@ -894,46 +901,65 @@ export default function ScoreTab() {
 
   return (
     <div className="p-4 md:p-6">
-      <h2 className="text-2xl font-semibold mb-6">Jury Scoring Dashboard</h2>
+      <h2 className="text-4xl text-center font-semibold mb-6">Jury Scoring Dashboard</h2>
 
-      {/* Team Statistics Summary - Removed colors */}
-      <div className="mb-6 border border-gray-700 rounded-lg p-4">
+      {/* Team Statistics Summary */}
+      <div className="mb-6 bg-gray-800/70 border border-gray-700 rounded-lg p-4">
         <h3 className="text-lg font-medium mb-3 text-gray-200">Team Statistics</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="border border-gray-700 rounded-lg p-3 text-center">
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-center">
             <div className="text-sm text-gray-400">SELECTED</div>
-            <div className="text-2xl font-bold text-gray-100">{teamStats.selected}</div>
+            <div className="text-2xl font-bold text-white">{teamStats.selected}</div>
+            <div className="text-xs text-gray-400">
+              {teamStats.peopleSelected} {teamStats.peopleSelected === 1 ? 'person' : 'people'}
+            </div>
           </div>
-          <div className="border border-gray-700 rounded-lg p-3 text-center">
-            <div className="text-sm text-blue-400">TOP 15</div>
-            <div className="text-2xl font-bold text-gray-100">{teamStats.top15}</div>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-center">
+            <div className="text-sm text-gray-400">TOP 15</div>
+            <div className="text-2xl font-bold text-white">{teamStats.top15}</div>
+            <div className="text-xs text-gray-400">
+              {teamStats.peopleTop15} {teamStats.peopleTop15 === 1 ? 'person' : 'people'}
+            </div>
           </div>
-          <div className="border border-gray-700 rounded-lg p-3 text-center">
-            <div className="text-sm text-yellow-400">WINNER</div>
-            <div className="text-2xl font-bold text-gray-100">{teamStats.winner}</div>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-center">
+            <div className="text-sm text-gray-400">WINNER</div>
+            <div className="text-2xl font-bold text-white">{teamStats.winner}</div>
+            <div className="text-xs text-gray-400">
+              {teamStats.peopleWinner} {teamStats.peopleWinner === 1 ? 'person' : 'people'}
+            </div>
           </div>
-          <div className="border border-gray-700 rounded-lg p-3 text-center">
-            <div className="text-sm text-indigo-400">RUNNER-UP</div>
-            <div className="text-2xl font-bold text-gray-100">{teamStats.runner}</div>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-center">
+            <div className="text-sm text-gray-400">RUNNER-UP</div>
+            <div className="text-2xl font-bold text-white">{teamStats.runner}</div>
+            <div className="text-xs text-gray-400">
+              {teamStats.peopleRunner} {teamStats.peopleRunner === 1 ? 'person' : 'people'}
+            </div>
           </div>
-          <div className="border border-gray-700 rounded-lg p-3 text-center">
-            <div className="text-sm text-purple-400">2ND RUNNER-UP</div>
-            <div className="text-2xl font-bold text-gray-100">{teamStats.secondRunner}</div>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-center">
+            <div className="text-sm text-gray-400">2ND RUNNER-UP</div>
+            <div className="text-2xl font-bold text-white">{teamStats.secondRunner}</div>
+            <div className="text-xs text-gray-400">
+              {teamStats.peopleSecondRunner} {teamStats.peopleSecondRunner === 1 ? 'person' : 'people'}
+            </div>
           </div>
-          <div className="border border-gray-700 rounded-lg p-3 text-center">
-            <div className="text-sm text-emerald-400">TRACK WINNERS</div>
-            <div className="text-2xl font-bold text-gray-100">{teamStats.track}</div>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-center">
+            <div className="text-sm text-gray-400">TRACK WINNERS</div>
+            <div className="text-2xl font-bold text-white">{teamStats.track}</div>
+            <div className="text-xs text-gray-400">
+              {teamStats.peopleTrack} {teamStats.peopleTrack === 1 ? 'person' : 'people'}
+            </div>
           </div>
         </div>
         
-        {/* Track Winner Breakdown - Removed colors */}
+        {/* Track Winner Breakdown */}
         {Object.keys(teamStats.trackBreakdown).length > 0 && (
           <div className="mt-4">
             <h4 className="text-sm font-medium mb-2 text-gray-300">Track Winner Breakdown:</h4>
             <div className="flex flex-wrap gap-2">
               {Object.entries(teamStats.trackBreakdown).map(([track, count]) => (
-                <div key={track} className="border border-gray-700 rounded-full px-3 py-1 text-xs">
-                  <span className="text-emerald-400">{track.replace(/_/g, ' ')}:</span> {count}
+                <div key={track} className="bg-gray-800 border border-gray-700 rounded-full px-3 py-1 text-xs text-gray-300">
+                  <span>{track.replace(/_/g, ' ')}:</span> {count} team
+                  {count !== 1 ? 's' : ''} ({teamStats.peopleTrackBreakdown[track] ?? 0} {teamStats.peopleTrackBreakdown[track] === 1 ? 'person' : 'people'})
                 </div>
               ))}
             </div>
@@ -999,11 +1025,43 @@ export default function ScoreTab() {
             ))}
           </select>
         </div>
+
+        {/* Sort Button */}
+        <div>
+          <button
+            onClick={toggleSortOrder}
+            className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all duration-200 
+              ${sortOrder === "none" 
+                ? "bg-gray-800 border border-gray-600 text-gray-300" 
+                : sortOrder === "asc"
+                  ? "bg-blue-900/30 border border-blue-500 text-blue-400" 
+                  : "bg-purple-900/30 border border-purple-500 text-purple-400"}`}
+            title={sortOrder === "none" ? "Click to sort by score" : sortOrder === "asc" ? "Ascending order" : "Descending order"}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              {sortOrder === "none" && (
+                <path fillRule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l-3-3a1 1 0 010-1.414zM6.293 10.293a1 1 0 011.414 0L10 12.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+              )}
+              {sortOrder === "asc" && (
+                <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              )}
+              {sortOrder === "desc" && (
+                <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              )}
+            </svg>
+            {sortOrder === "none" ? "Sort by Score" : sortOrder === "asc" ? "Score (Low to High)" : "Score (High to Low)"}
+          </button>
+        </div>
       </div>
 
       {/* Search results count */}
       <div className="mb-4 text-sm text-gray-400">
         Showing {filteredTeams.length} of {teams.length} teams
+        {sortOrder !== "none" && (
+          <span className="ml-2">
+            (Sorted by score: {sortOrder === "asc" ? "ascending" : "descending"})
+          </span>
+        )}
       </div>
 
       {teams.length === 0 ? (
@@ -1023,7 +1081,6 @@ export default function ScoreTab() {
               judgeScores: normalizedJudgeScores,
               overallRawTotal,
               overallRawPercentage,
-              overallNormalizedTotal,
             } = normalizeJudgeScores(judgeScores);
 
             // Check if we should show extended options (only for TOP15 filter)
@@ -1077,28 +1134,25 @@ export default function ScoreTab() {
                           className="border border-gray-600"
                         />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <ScoreCard
-                          label="Normalized"
-                          score={overallNormalizedTotal}
-                          className="border border-gray-600"
-                        />
-                      </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       {/* Show progress actions conditionally based on filter */}
-                      {(progressFilter === "TOP15" || progressFilter === "SELECTED" || progressFilter === "BOTH" ||
-                         ["WINNER", "RUNNER", "SECOND_RUNNER", "TRACK"].includes(progressFilter) && 
-                         team.teamProgress === progressFilter) && (
-                        <TeamProgressActions
-                          team={team}
-                          onProgressChange={handleProgressChange}
-                          showExtendedOptions={showExtendedOptions}
-                          hasWinner={hasWinner}
-                          hasRunner={hasRunner}
-                          hasSecondRunner={hasSecondRunner}
-                          trackWinners={trackWinners}
-                        />
+                      {(
+                        // Only show actions for specific filters, not for "BOTH" (All Teams) or "SELECTED"
+                        (progressFilter === "TOP15" || 
+                         (["WINNER", "RUNNER", "SECOND_RUNNER", "TRACK"].includes(progressFilter) && 
+                          team.teamProgress === progressFilter))
+                        && (
+                          <TeamProgressActions
+                            team={team}
+                            onProgressChange={handleProgressChange}
+                            showExtendedOptions={showExtendedOptions}
+                            hasWinner={hasWinner}
+                            hasRunner={hasRunner}
+                            hasSecondRunner={hasSecondRunner}
+                            trackWinners={trackWinners}
+                          />
+                        )
                       )}
                       <div className="flex items-center">
                         <ActionButton
@@ -1142,7 +1196,7 @@ export default function ScoreTab() {
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
-                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3 005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                       </svg>
                     }
                   >
@@ -1224,14 +1278,6 @@ export default function ScoreTab() {
                                     score={
                                       normalizedJudgeScores[judgeId]?.rawTotal ?? 0
                                     }
-                                    className="border border-gray-600"
-                                  />
-                                  <ScoreCard
-                                    label="Normalized"
-                                    score={`${
-                                      normalizedJudgeScores[judgeId]
-                                        ?.normalizedTotal ?? 0
-                                    }`}
                                     className="border border-gray-600"
                                   />
                                 </div>

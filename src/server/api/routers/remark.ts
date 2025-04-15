@@ -68,11 +68,15 @@ export const remarkRouter = createTRPCRouter({
       where: {
         OR: [
               { teamProgress: "SELECTED" },
-              { teamProgress: "TOP15" }
+              { teamProgress: "TOP15" },
+              { teamProgress: "WINNER" },
+              { teamProgress: "RUNNER" },
+              { teamProgress: "SECOND_RUNNER" },
+              { teamProgress: "TRACK" },
             ],
         teamProgress: "SELECTED",
         Remark: {
-          some: {} // Teams that have at least one remark
+          some: {} 
         }
       },
       select: {

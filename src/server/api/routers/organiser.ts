@@ -804,7 +804,7 @@ export const organiserRouter = createTRPCRouter({
     const teams = await ctx.db.team.findMany({
       where: {
         teamProgress: {
-          in: ['SELECTED', 'TOP15']
+          in: ['SELECTED', 'TOP15','WINNER', 'RUNNER', 'SECOND_RUNNER', 'TRACK']
         }
       },
       select: {
@@ -872,66 +872,7 @@ export const organiserRouter = createTRPCRouter({
       ]
     });
 
-    // Get judge scoring ranges for normalization
-    const allJudgeScores = await ctx.db.scores.findMany({
-      where: {
-        Criteria: {
-          JudgeType: {
-            in: [JudgeType.DAY2_ROUND1, JudgeType.DAY2_ROUND2]
-          }
-        }
-      },
-      include: {
-        Judge: {
-          select: {
-            id: true
-          }
-        },
-        Criteria: true
-      },
-      orderBy: [
-        { judgeId: 'asc' }
-      ]
-    });
-
-    // Create a map of judge scoring ranges
-    const judgeRanges: Record<string, { 
-      min: number; 
-      max: number; 
-      criteriaCount: Record<string, number>;
-      maxPossible: Record<string, number>;
-    }> = {};
-
-    allJudgeScores.forEach(score => {
-      const judgeId = score.judgeId;
-      
-      if (!judgeRanges[judgeId]) {
-        judgeRanges[judgeId] = {
-          min: Infinity,
-          max: -Infinity,
-          criteriaCount: {},
-          maxPossible: {}
-        };
-      }
-      
-      // Track min/max score per judge
-      judgeRanges[judgeId].min = Math.min(judgeRanges[judgeId].min, score.score);
-      judgeRanges[judgeId].max = Math.max(judgeRanges[judgeId].max, score.score);
-      
-      // Track criteria counts per team for this judge
-      const teamId = score.teamId;
-      if (!judgeRanges[judgeId].criteriaCount[teamId]) {
-        judgeRanges[judgeId].criteriaCount[teamId] = 0;
-      }
-      judgeRanges[judgeId].criteriaCount[teamId]++;
-      
-      // Track max possible score per team for this judge
-      if (!judgeRanges[judgeId].maxPossible[teamId]) {
-        judgeRanges[judgeId].maxPossible[teamId] = 0;
-      }
-      judgeRanges[judgeId].maxPossible[teamId] += score.Criteria.maxScore;
-    });
-
+    // Remove judge scoring ranges for normalization
     const allCriteria = await ctx.db.criteria.findMany({
       where: {
         JudgeType: {
@@ -963,8 +904,7 @@ export const organiserRouter = createTRPCRouter({
     return {
       teams,
       criteria: allCriteria,
-      judges,
-      judgeRanges
+      judges
     };
   }),
 });
