@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
@@ -25,8 +25,15 @@ import { toast } from "sonner";
 import Spinner from "../spinner";
 import { type inferRouterOutputs } from "@trpc/server";
 import { type chatRotuer } from "~/server/api/routers/chat";
+import { pusherClient } from "~/utils/pusher";
 
-export default function ChatList() {
+export default function ChatList({
+  list,
+  status,
+}: {
+  list: inferRouterOutputs<typeof chatRotuer>["getChatRoomList"];
+  status: "error" | "loading" | "success";
+}) {
   const router = useRouter();
   const session = useSession();
 
@@ -40,9 +47,8 @@ export default function ChatList() {
   const [selectedContactId, setSelectedContactId] = useState<string | null>(
     null,
   );
-  const [chatList, setChatList] = useState<
-    inferRouterOutputs<typeof chatRotuer>["getChatRoomList"]
-  >([]);
+  const [chatList, setChatList] =
+    useState<inferRouterOutputs<typeof chatRotuer>["getChatRoomList"]>(list);
 
   // create and join values
   const [createRoom, setCreateRoom] = useState("");
@@ -52,7 +58,7 @@ export default function ChatList() {
   const [joinRoomDialog, setJoinRoomDialog] = useState(false);
 
   // Queries and mutations
-  const chatRoomQuery = api.chat.getChatRoomList.useQuery();
+  // const chatRoomQuery = api.chat.getChatRoomList.useQuery();
   const createRoomMutation = api.chat.createRoom.useMutation({
     onError: (error) => {
       toast.error(error.message);
@@ -60,7 +66,7 @@ export default function ChatList() {
     onSuccess: async () => {
       toast.success("Successfully create Room");
       setCreateRoomDialog(false);
-      await chatRoomQuery.refetch();
+      // await list.refetch();
     },
   });
   const joinRoomMutation = api.chat.joinRoom.useMutation({
@@ -70,9 +76,60 @@ export default function ChatList() {
     onSuccess: async () => {
       toast.success("Successfully joined Room");
       setJoinRoomDialog(false);
-      await chatRoomQuery.refetch();
+      // await chatRoomQuery.refetch();
     },
   });
+
+  // useEffect(() => {
+  //   if (chatRoomQuery.status === "success") {
+  //     setChatList(chatRoomQuery.data);
+  //   }
+  // }, [chatRoomQuery]);
+
+  useEffect(() => {
+    const channel = pusherClient.subscribe(session.data?.user.id ?? "pending");
+    channel.bind(
+      "notification",
+      (data: {
+        sender: string;
+        roomId: string;
+        data: {
+          id: string;
+          content: string;
+          createdAt: string;
+          sender: {
+            id: string | null;
+            name: string;
+          };
+        };
+      }) => {
+        const otherList = chatList.filter(
+          (contact) => contact.chatRoom.id !== data.roomId,
+        );
+        const newData = chatList.filter(
+          (contact) => contact.chatRoom.id === data.roomId,
+        );
+
+        const newList = [
+          ...otherList,
+          {
+            ...newData[0],
+            notification: (newData[0]?.notification ?? 0) + 1,
+          },
+        ] as unknown as inferRouterOutputs<
+          typeof chatRotuer
+        >["getChatRoomList"];
+        console.log(newList);
+
+        setChatList(newList);
+      },
+    );
+
+    return () => {
+      channel.unbind("notification");
+      pusherClient.unsubscribe(session.data?.user.id ?? "pending");
+    };
+  }, [session.data]);
 
   return (
     <div
@@ -85,12 +142,12 @@ export default function ChatList() {
           {!collapsed && <h2 className="pl-2 text-xl font-semibold">Chats</h2>}
           <button
             onClick={() => {
-              if(typeof window !== undefined){
-                if(window.innerWidth < 768){
+              if (typeof window !== undefined) {
+                if (window.innerWidth < 768) {
                   return;
                 }
               }
-              setCollapsed((val) => !val)
+              setCollapsed((val) => !val);
             }}
             className="flex items-center justify-center rounded-full p-3 text-white transition-colors duration-200 hover:bg-blue-900"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -257,10 +314,10 @@ export default function ChatList() {
         )}
 
         {/* Loader */}
-        {chatRoomQuery.status === "loading" && <Spinner />}
+        {status === "loading" && <Spinner />}
 
         {/* Error */}
-        {chatRoomQuery.status === "error" &&
+        {/* {status === "error" &&
           chatRoomQuery.error.data?.code === "UNAUTHORIZED" && (
             <div className="mt-8 flex flex-col items-center justify-center gap-4">
               <AlertCircle className="size-10 stroke-destructive" />
@@ -268,45 +325,58 @@ export default function ChatList() {
                 You are not allowed to use the chat feature
               </p>
             </div>
-          )}
+          )} */}
 
         {/* Contact List */}
         <div className="scrollbar-thin scrollbar-thumb-blue-900 scrollbar-track-transparent flex-grow overflow-y-auto">
-          {chatRoomQuery.status === "success" &&
-            chatRoomQuery.data.map((contact) => (
-              <div
-                key={contact.chatRoom.id}
-                className={`flex cursor-pointer items-center p-3 transition-colors hover:bg-blue-900/50 ${selectedContactId === contact.chatRoom.id ? "bg-blue-900" : ""}`}
-                onClick={async () => {
-                  setSelectedContactId(contact.chatRoom.id);
-                  await router.push(`/chat`, {
-                    query: {
-                      room: contact.chatRoom.id,
-                    },
-                  });
-                }}
-              >
-                <div className="relative">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-800 text-lg">
-                    {/* {contact.avatar} */}
-                    <Users />
-                  </div>
+          {chatList.map((contact) => (
+            <div
+              key={contact.chatRoom.id}
+              className={`flex cursor-pointer items-center p-3 transition-colors hover:bg-blue-900/50 ${selectedContactId === contact.chatRoom.id ? "bg-blue-900" : ""}`}
+              onClick={async () => {
+                setSelectedContactId(contact.chatRoom.id);
+                setChatList((prevList) =>
+                  prevList.map((item) =>
+                    item.chatRoom.id === contact.chatRoom.id
+                      ? { ...item, notification: 0 }
+                      : item
+                  )
+                );
+                await router.push(`/chat`, {
+                  query: {
+                    room: contact.chatRoom.id,
+                  },
+                });
+              }}
+            >
+              <div className="relative">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-800 text-lg">
+                  {/* {contact.avatar} */}
+                  <Users />
                 </div>
-
-                {!collapsed && (
-                  <>
-                    <div className="ml-3 overflow-hidden">
-                      <p className="truncate font-medium">
-                        {contact.chatRoom.name}
-                      </p>
-                      <p className="truncate text-xs text-blue-300">
-                        {contact.chatRoom.messages[0]?.content ?? ""}
-                      </p>
-                    </div>
-                  </>
-                )}
               </div>
-            ))}
+
+              {!collapsed && (
+                <>
+                  <div className="ml-3 w-full overflow-hidden">
+                    <p className="truncate font-medium">
+                      {contact.chatRoom.name}
+                    </p>
+                    <p className="truncate text-xs text-blue-300">
+                      {contact.chatRoom.messages[0]?.content ?? ""}
+                    </p>
+                  </div>
+                  {contact.notification > 0 && (
+                    <div className="text-sm text-white">
+                      <div className="flex size-6 items-center justify-center rounded-full bg-red-500 text-center">
+                        {/* {contact.notification} */}!
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>
