@@ -47,6 +47,15 @@ export const usePusher = ({
         bind(event.event, event.callback);
       });
     }
+
+    return () => {
+      if (binds && binds.length > 0) {
+        binds.forEach((event) => {
+          client.unbind(event.event, event.callback);
+        });
+      }
+      pusherClient.unsubscribe(channel);
+    }
   }, []);
 
   return {

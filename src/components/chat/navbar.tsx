@@ -1,7 +1,8 @@
 import Image from "next/image";
 import React from "react";
-import AuthButton from "../navbar/authButton";
 import Link from "next/link";
+
+import AuthButton from "../navbar/authButton";
 
 export default function ChatNavbar() {
   return (

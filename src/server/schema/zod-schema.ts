@@ -133,7 +133,17 @@ const createRoomZ = z
 
 const joinRoomZ = z
   .string()
-  .min(3, { message: "Room id should be atleast 3 characters" })
+  .min(3, { message: "Room id should be atleast 3 characters" });
+
+const roomInfoZ = z
+  .string()
+  .min(3, { message: "Room id should be atleast 3 characters" });
+
+const chatMessageZ = z.object({
+  content: z.string(),
+  // isCode: z.boolean(),
+  roomId: z.string()
+})
 
 export {
   editProfileZ,
@@ -151,4 +161,6 @@ export {
   paymentTransactionZ,
   createRoomZ,
   joinRoomZ,
+  roomInfoZ,
+  chatMessageZ
 };

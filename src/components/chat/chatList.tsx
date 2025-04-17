@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { useRouter } from "next/router";
+import { api } from "~/utils/api";
+import { useSession } from "next-auth/react";
 
 import {
   AlertCircle,
@@ -18,17 +21,20 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { DialogClose, DialogFooter } from "../ui/modal";
-import { api } from "~/utils/api";
 import { toast } from "sonner";
-import { useRouter } from "next/router";
+import Spinner from "../spinner";
+import { type inferRouterOutputs } from "@trpc/server";
+import { type chatRotuer } from "~/server/api/routers/chat";
 
 export default function ChatList() {
   const router = useRouter();
+  const session = useSession();
 
   const [collapsed, setCollapsed] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(
     null,
   );
+  const [chatList, setChatList] = useState<inferRouterOutputs<typeof chatRotuer>["getChatRoomList"]>([])
   // create and join values
   const [createRoom, setCreateRoom] = useState("");
   const [joinRoom, setJoinRoom] = useState("");
@@ -48,10 +54,16 @@ export default function ChatList() {
       await chatRoomQuery.refetch();
     },
   });
-
-  React.useEffect(() => {
-    console.log(chatRoomQuery.data)
-  },[chatRoomQuery])
+  const joinRoomMutation = api.chat.joinRoom.useMutation({
+    onError: (error) => {
+      toast.error(error.message);
+    },
+    onSuccess: async () => {
+      toast.success("Successfully joined Room");
+      setJoinRoomDialog(false);
+      await chatRoomQuery.refetch();
+    },
+  });
 
   return (
     <div
@@ -88,27 +100,36 @@ export default function ChatList() {
           )}
         </div> */}
 
-        <div className="flex flex-col gap-2 border-b border-blue-900 p-3">
-          {!collapsed ? (
+        {session.data?.user.role === "ADMIN" && (
+          <div className="flex flex-col gap-2 border-b border-blue-900 p-3">
             <>
               <Dialog
                 open={createRoomDialog}
                 onOpenChange={setCreateRoomDialog}
               >
                 <DialogTrigger asChild>
-                  <Button
-                    className="justify-start gap-2 bg-blue-900 hover:bg-blue-800"
-                    size="sm"
-                  >
-                    <Plus size={16} /> New Chat
-                  </Button>
+                  {!collapsed ? (
+                    <Button
+                      className="justify-start gap-2 bg-blue-900 hover:bg-blue-800"
+                      size="sm"
+                    >
+                      <Plus size={16} /> New Chat
+                    </Button>
+                  ) : (
+                    <Button
+                      className="mx-auto rounded-full bg-blue-900 p-2 hover:bg-blue-800"
+                      size="icon"
+                    >
+                      <Plus size={18} />
+                    </Button>
+                  )}
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>New Chat</DialogTitle>
                     <DialogDescription>
-                        Create a new Chat room for you and your team to
-                        communicate.
+                      Create a new Chat room for you and your team to
+                      communicate.
                       <Input
                         placeholder="Room name"
                         className="mt-4 placeholder:opacity-70"
@@ -155,12 +176,21 @@ export default function ChatList() {
 
               <Dialog open={joinRoomDialog} onOpenChange={setJoinRoomDialog}>
                 <DialogTrigger asChild>
-                  <Button
-                    className="justify-start gap-2 bg-blue-900 hover:bg-blue-800"
-                    size="sm"
-                  >
-                    <Users size={16} /> Join Chat
-                  </Button>
+                  {!collapsed ? (
+                    <Button
+                      className="justify-start gap-2 bg-blue-900 hover:bg-blue-800"
+                      size="sm"
+                    >
+                      <Users size={16} /> Join Chat
+                    </Button>
+                  ) : (
+                    <Button
+                      className="mx-auto rounded-full bg-blue-900 p-2 hover:bg-blue-800"
+                      size="icon"
+                    >
+                      <Users size={18} />
+                    </Button>
+                  )}
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -182,28 +212,38 @@ export default function ChatList() {
                         }}
                       />
                     </DialogDescription>
+                    <DialogFooter className="pt-2">
+                      <DialogClose asChild>
+                        <Button variant={"destructive"}>Cancel</Button>
+                      </DialogClose>
+                      <Button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+
+                          if (joinRoom.length < 3) {
+                            toast.error(
+                              "Room id must be greater than 3 characters",
+                            );
+                          } else {
+                            joinRoomMutation.mutate(joinRoom);
+                          }
+                        }}
+                      >
+                        Join
+                      </Button>
+                    </DialogFooter>
                   </DialogHeader>
                 </DialogContent>
               </Dialog>
             </>
-          ) : (
-            <>
-              <Button
-                className="mx-auto rounded-full bg-blue-900 p-2 hover:bg-blue-800"
-                size="icon"
-              >
-                <Plus size={18} />
-              </Button>
-              <Button
-                className="mx-auto rounded-full bg-blue-900 p-2 hover:bg-blue-800"
-                size="icon"
-              >
-                <Users size={18} />
-              </Button>
-            </>
-          )}
-        </div>
+          </div>
+        )}
 
+        {/* Loader */}
+        {chatRoomQuery.status === "loading" && <Spinner />}
+
+        {/* Error */}
         {chatRoomQuery.status === "error" &&
           chatRoomQuery.error.data?.code === "UNAUTHORIZED" && (
             <div className="mt-8 flex flex-col items-center justify-center gap-4">
@@ -221,21 +261,28 @@ export default function ChatList() {
               <div
                 key={contact.chatRoom.id}
                 className={`flex cursor-pointer items-center p-3 transition-colors hover:bg-blue-900/50 ${selectedContactId === contact.chatRoom.id ? "bg-blue-900" : ""}`}
-                onClick={async() => {
+                onClick={async () => {
                   setSelectedContactId(contact.chatRoom.id);
-                  await router.push(`/chat?room='${contact.chatRoom.id}'`)
+                  await router.push(`/chat`, {
+                    query: {
+                      room: contact.chatRoom.id,
+                    },
+                  });
                 }}
               >
                 <div className="relative">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-800 text-lg">
                     {/* {contact.avatar} */}
+                    <Users />
                   </div>
                 </div>
 
                 {!collapsed && (
                   <>
                     <div className="ml-3 overflow-hidden">
-                      <p className="truncate font-medium">{contact.chatRoom.name}</p>
+                      <p className="truncate font-medium">
+                        {contact.chatRoom.name}
+                      </p>
                       <p className="truncate text-xs text-blue-300">
                         {contact.chatRoom.messages[0]?.content ?? ""}
                       </p>
