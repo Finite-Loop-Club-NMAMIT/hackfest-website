@@ -41,14 +41,11 @@ import { LuChevronsUpDown } from "react-icons/lu";
 import { FaCheck, FaInfoCircle } from "react-icons/fa";
 import { FaCircleCheck } from "react-icons/fa6";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useGSAP } from "@gsap/react";
 
 export default function RegisterProfileForm() {
   const horizontalBar = useRef<HTMLDivElement>(null);
   const { data } = useSession();
-  const router = useRouter();
-
   const colleges = api.college.getColleges.useQuery();
   const updateProfileMutaion = api.user.updateProfile.useMutation({
     onSuccess: () => {
@@ -118,7 +115,7 @@ export default function RegisterProfileForm() {
         }
       }
     }
-  }, []);
+  }, [colleges.data, form]);
 
   function onSubmit(values: z.infer<typeof updateProfileZ>) {
     updateProfileMutaion.mutate(values);
@@ -136,8 +133,18 @@ export default function RegisterProfileForm() {
       },
     );
 
-    const data = (await response.json()) as { secure_url: string };
+    if (!response.ok) {
+      if (response.status === 413) {
+        toast.error(
+          "File too large. Please upload a file smaller than allowed limit.",
+        );
+      } else {
+        toast.error("Error uploading file");
+      }
+      return false;
+    }
 
+    const data = (await response.json()) as { secure_url: string };
     if (!data.secure_url) {
       return false;
     }
@@ -601,10 +608,10 @@ export default function RegisterProfileForm() {
 
           <div
             id="tab-2"
-            className="flex h-full flex-col basis-full min-h-96"
+            className="flex h-full min-h-96 basis-full flex-col"
             style={{ display: "none" }}
           >
-            <div className="mt-6 grid md:grid-cols-2 basis-full grid-cols-1 w-full gap-4 h-full min-h-96">
+            <div className="mt-6 grid h-full min-h-96 w-full basis-full grid-cols-1 gap-4 md:grid-cols-2">
               <DragAndDropFile
                 accept="image/*"
                 onChange={setAadhaar}
@@ -617,11 +624,11 @@ export default function RegisterProfileForm() {
               />
             </div>
 
-            <div className="mt-6 flex w-full flex-nowrap items-center h-fit justify-center gap-2 text-white/50">
-              <FaInfoCircle /> Drop image(jpg, png, jpeg) of size less than 2MB.
+            <div className="mt-6 flex h-fit w-full flex-nowrap items-center justify-center gap-2 text-white/50">
+              <FaInfoCircle /> Drop image(jpg, png, jpeg) of size less than 3MB.
             </div>
 
-            <div className="flex flex-row h-fit flex-nowrap justify-evenly pt-6">
+            <div className="flex h-fit flex-row flex-nowrap justify-evenly pt-6">
               <Button
                 disabled={submitting}
                 variant="secondary"
@@ -683,10 +690,10 @@ export default function RegisterProfileForm() {
                     }
 
                     if (
-                      aadhaar.size > 2 * 1000 * 1000 ||
-                      collegeId.size > 2 * 1000 * 1000
+                      aadhaar.size > 3 * 1024 * 1024 ||
+                      collegeId.size > 3 * 1024 * 1024
                     ) {
-                      toast.error("Uploads must be less than 2MB");
+                      toast.error("Uploads must be less than 3MB");
                       return;
                     }
 
@@ -710,13 +717,14 @@ export default function RegisterProfileForm() {
                         // FIXME: This timeout allows to wait for the state to get updated
                         const timeout = setTimeout(() => {
                           void form.handleSubmit(onSubmit)();
-                        }, 500);
+                        }, 1000);
 
                         return () => clearTimeout(timeout);
                         // await form.handleSubmit(onSubmit)();
                       }
                     } catch (error) {
                       toast.dismiss("submitting");
+                      console.error(error);
                       toast.error("Error Registering");
                       setSubmitting(false);
                     }

@@ -29,7 +29,6 @@ import { ScrollArea } from "../ui/scroll-area";
 import { api } from "~/utils/api";
 import { type inferRouterOutputs } from "@trpc/server";
 import { type collegeRouter } from "~/server/api/routers/college";
-import { z } from "zod";
 import { env } from "~/env";
 
 export const EditProfileForm: React.FC<{

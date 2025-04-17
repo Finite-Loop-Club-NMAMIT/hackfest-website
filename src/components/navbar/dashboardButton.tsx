@@ -1,64 +1,24 @@
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@radix-ui/react-popover";
-import Link from "next/link";
-import { Button } from "../ui/button";
-import { useEffect, useState } from "react";
-import { type Role } from "@prisma/client";
-import { Card, CardContent } from "../ui/card";
-export default function DashboardButton({ role }: { role: Role }) {
-  const [dashboards, setDashboards] = useState<string[]>([]);
+import React from 'react'
+import { useSession } from 'next-auth/react'
+import { LayoutDashboard } from 'lucide-react';
+import { Button } from '@headlessui/react';
 
-  useEffect(() => {
-    if (role) {
-      if (role === "ADMIN") {
-        setDashboards([
-          "attendance",
-          "team",
-          "organiser",
-          "validator",
-        ]);
-      } else if (role === "TEAM") {
-        setDashboards(["team", "attendance"]);
-      } else if (role === "VALIDATOR") {
-        setDashboards(["validator"]);
-      } else if (role === "JUDGE") {
-        setDashboards(["judge"]);
-      }
-    }
-  }, [role]);
+const DashboardButton = () => {
+  const { data: session } = useSession();
+  
+  if (!session?.user || session.user.role === 'PARTICIPANT') {
+    return null;
+  }
+
+  const handleNavigation = () => {
+    window.location.href = '/dashboard';
+  };
 
   return (
-    <>
-      {dashboards.length > 1 && (
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button>Dashboard</Button>
-          </PopoverTrigger>
-          <PopoverContent sideOffset={10} className="z-50">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex w-full flex-col gap-2 ">
-                  {dashboards.map((item, index) => (
-                    <Link href={`/dashboard/${item}`} key={index}>
-                      <Button className="dark w-full">
-                        {item[0]?.toUpperCase() + item.slice(1)}
-                      </Button>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </PopoverContent>
-        </Popover>
-      )}
-      {dashboards.length === 1 && (
-        <Link href={`/dashboard/${role?.toLowerCase()}`}>
-          <Button>Dashboard</Button>
-        </Link>
-      )}
-    </>
+    <Button size="icon" variant="ghost" onClick={handleNavigation}>
+      <LayoutDashboard className="h-5 w-5" />
+    </Button>
   );
 }
+
+export default DashboardButton

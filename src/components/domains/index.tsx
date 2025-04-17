@@ -4,9 +4,7 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import {
   useCursor,
   Environment,
-  useTexture,
   useProgress,
-  MeshReflectorMaterial,
   Html,
 } from "@react-three/drei";
 import { easing } from "maath";
@@ -142,7 +140,7 @@ export const Domains = ({
       console.log("domain fully loaded");
       onLoaded();
     }
-  }, [maxProgress]);
+  }, [maxProgress, loaded, total, onProgress, onLoaded]);
 
   return (
     <div className="relative h-screen w-screen" id="tracks">
@@ -302,7 +300,7 @@ type FrameProps = Domain & {
   isMobile: boolean;
 };
 
-function Frame({ isActive, onClick, isMobile, ...domain }: FrameProps) {
+function Frame({  onClick, ...domain }: FrameProps) {
   const [hovered, hover] = useState(false);
   const texture = useLoader(THREE.TextureLoader, domain.image.src);
 

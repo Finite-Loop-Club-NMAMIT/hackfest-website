@@ -177,7 +177,7 @@ export default function PrizePool({
     }
 
     console.log(loaded, maxProgress, onLoaded, total);
-  }, [loaded, maxProgress]);
+  }, [loaded, maxProgress, onLoaded, onProgress, total]);
 
   return (
     <div

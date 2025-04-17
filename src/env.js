@@ -32,6 +32,11 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: z.string(),
     ORGANIZATION_NAME: z.string(),
     GITHUB_PERSONAL_ACCESS_TOKEN: z.string(),
+
+    PUSHER_APP_ID: z.string(),
+    PUSHER_APP_KEY: z.string(),
+    PUSHER_APP_SECRET: z.string(),
+    PUSHER_APP_CLUSTER: z.string(),
   },
 
   /**
@@ -44,6 +49,8 @@ export const env = createEnv({
     NEXT_PUBLIC_CLOUDINARY_API_KEY: z.string(),
     NEXT_PUBLIC_CLOUDINARY_API_SECRET: z.string(),
     NEXT_PUBLIC_BASE_URL: z.string(),
+    NEXT_PUBLIC_PUSHER_APP_KEY: z.string(),
+    NEXT_PUBLIC_PUSHER_APP_CLUSTER: z.string(),
   },
 
   /**
@@ -65,6 +72,14 @@ export const env = createEnv({
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
     ORGANIZATION_NAME: process.env.ORGANIZATION_NAME,
     GITHUB_PERSONAL_ACCESS_TOKEN: process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+
+    PUSHER_APP_ID: process.env.PUSHER_APP_ID,
+    PUSHER_APP_KEY: process.env.PUSHER_APP_KEY,
+    PUSHER_APP_SECRET: process.env.PUSHER_APP_SECRET,
+    PUSHER_APP_CLUSTER: process.env.PUSHER_APP_CLUSTER,
+
+    NEXT_PUBLIC_PUSHER_APP_KEY: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
+    NEXT_PUBLIC_PUSHER_APP_CLUSTER: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

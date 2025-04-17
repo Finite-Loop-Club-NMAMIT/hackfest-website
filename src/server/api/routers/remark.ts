@@ -21,7 +21,7 @@ export const remarkRouter = createTRPCRouter({
       });
 
       if (remark) {
-        return ctx.db.remark.update({
+        await ctx.db.remark.update({
           where: {
             teamId_judgeId: {
               teamId: input.teamId,
@@ -32,13 +32,27 @@ export const remarkRouter = createTRPCRouter({
             remark: input.remark,
           },
         });
+        return await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "REMARK",
+            description: `Remark for team ${input.teamId} has been updated `,
+          },
+        });
       }
 
-      return ctx.db.remark.create({
+      await ctx.db.remark.create({
         data: {
           remark: input.remark,
           judgeId: input.judgeId,
           teamId: input.teamId,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "REMARK",
+          description: ` Remark for team ${input.teamId} has been added `,
         },
       });
     }),

@@ -1,4 +1,4 @@
-import { TeamNames } from "@prisma/client";
+import type { TeamNames } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
@@ -8,6 +8,7 @@ import {
   publicProcedure,
   teamProcedure,
 } from "~/server/api/trpc";
+import { dashboardProcedure } from "~/server/api/trpc";
 import {
   createTeamZ,
   getTeamDetailsByIdZ,
@@ -165,6 +166,13 @@ export const teamRouter = createTRPCRouter({
             name: input.teamName,
           },
         });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "TEAM",
+            description: `Team ${input.teamName} created by ${user.email} `,
+          },
+        });
         return {
           status: "success",
           message: "Team created successfully",
@@ -214,6 +222,14 @@ export const teamRouter = createTRPCRouter({
           IdeaSubmission: true,
         },
       });
+
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${team?.name} joined by ${user.email} `,
+        },
+      });
       if (!team) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Team not found" });
       }
@@ -252,6 +268,14 @@ export const teamRouter = createTRPCRouter({
         },
       });
 
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${team?.name} joined by ${user.email} `,
+        },
+      });
+
       const isComplete = res.Members.length === 3 || res.Members.length === 4;
       const joinedTeam = await ctx.db.team.update({
         where: {
@@ -261,6 +285,7 @@ export const teamRouter = createTRPCRouter({
           isComplete,
         },
       });
+
       return {
         status: "success",
         message: "Joined team successfully",
@@ -293,6 +318,13 @@ export const teamRouter = createTRPCRouter({
           Members: true,
         },
       });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `User ${user?.id} has left team ${team?.name} `,
+        },
+      });
       const isComplete =
         team?.Members.length === 3 || team?.Members.length === 4;
       if (!isComplete) {
@@ -312,6 +344,13 @@ export const teamRouter = createTRPCRouter({
           },
           data: {
             isComplete,
+          },
+        });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "TEAM",
+            description: `Team ${team?.name} is incomplete`,
           },
         });
       }
@@ -360,6 +399,13 @@ export const teamRouter = createTRPCRouter({
           id: user.team?.id,
         },
       });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${user.team?.id} has been deleted`,
+        },
+      });
 
       return { status: "success", message: "Team deleted successfully" };
     } catch (error) {
@@ -376,6 +422,13 @@ export const teamRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       if (!input.teamId || input.teamId.length === 0) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Team not found" });
+      }
+      const user = ctx.session.user;
+      if (user.team?.id !== input.teamId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Stop stalking other teams",
+        });
       }
       const team = await ctx.db.team.findUnique({
         where: {
@@ -395,7 +448,7 @@ export const teamRouter = createTRPCRouter({
       return team;
     }),
 
-  getTeamsList: adminProcedure.query(async ({ ctx }) => {
+  getTeamsList: dashboardProcedure.query(async ({ ctx }) => {
     return await ctx.db.team.findMany({
       include: {
         Members: {
@@ -428,13 +481,20 @@ export const teamRouter = createTRPCRouter({
       },
     });
   }),
-  moveToTop100: adminProcedure
+  moveToTop100: dashboardProcedure
     .input(
       z.object({
         teamId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.db.appSettings.findFirst();
+      if (settings?.isResultOpen) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot modify team status while results are published",
+        });
+      }
       await ctx.db.team.update({
         where: {
           id: input.teamId,
@@ -443,14 +503,28 @@ export const teamRouter = createTRPCRouter({
           teamProgress: "SEMI_SELECTED",
         },
       });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${input.teamId} has been moved to Top 100`,
+        },
+      });
     }),
-  moveToTop60: adminProcedure
+  moveToTop60: dashboardProcedure
     .input(
       z.object({
         teamId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.db.appSettings.findFirst();
+      if (settings?.isResultOpen) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot modify team status while results are published",
+        });
+      }
       await ctx.db.team.update({
         where: {
           id: input.teamId,
@@ -459,14 +533,28 @@ export const teamRouter = createTRPCRouter({
           teamProgress: "SELECTED",
         },
       });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${input.teamId} has been moved to Top 60`,
+        },
+      });
     }),
-  resetTeamProgress: adminProcedure
+  resetTeamProgress: dashboardProcedure
     .input(
       z.object({
         teamId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.db.appSettings.findFirst();
+      if (settings?.isResultOpen) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot modify team status while results are published",
+        });
+      }
       await ctx.db.team.update({
         where: {
           id: input.teamId,
@@ -475,20 +563,41 @@ export const teamRouter = createTRPCRouter({
           teamProgress: "NOT_SELECTED",
         },
       });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${input.teamId} has been reset`,
+        },
+      });
     }),
-  resetToTop100: adminProcedure
+  resetToTop100: dashboardProcedure
     .input(
       z.object({
         teamId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.db.appSettings.findFirst();
+      if (settings?.isResultOpen) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot modify team status while results are published",
+        });
+      }
       await ctx.db.team.update({
         where: {
           id: input.teamId,
         },
         data: {
           teamProgress: "SEMI_SELECTED",
+        },
+      });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Team ${input.teamId} has been reset to Top 100`,
         },
       });
     }),
@@ -512,8 +621,16 @@ export const teamRouter = createTRPCRouter({
           attended: !team?.attended,
         },
       });
+      await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "TEAM",
+          description: `Attendance for team ${input.teamId} has been updated`,
+        },
+      });
     }),
-  getTop60: publicProcedure.query(async ({ ctx }) => {
+
+  getTop60: dashboardProcedure.query(async ({ ctx }) => {
     return ctx.db.team.findMany({
       where: {
         teamProgress: "SELECTED",
@@ -528,4 +645,199 @@ export const teamRouter = createTRPCRouter({
       },
     });
   }),
+
+  getTop60Selected: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.team.findMany({
+      where: {
+        teamProgress: "SELECTED",
+      },
+      include: {
+        IdeaSubmission: {
+          select: {
+            track: true,
+          },
+        },
+        Members: {
+          select: {
+            College: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }),
+  getStatistics: dashboardProcedure.query(async ({ ctx }) => {
+    const allTeams = await ctx.db.team.findMany({
+      include: {
+        Members: {
+          select: {
+            id: true,
+            name: true,
+            College: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Get unique states from the college table
+    const collegeStates = await ctx.db.college.findMany({
+      select: {
+        state: true,
+      },
+    });
+
+    const team = await ctx.db.team.findMany({
+      select: {
+        id: true,
+        isComplete: true,
+      },
+      where: {
+        isComplete: true,
+      },
+    });
+    // Count stats
+    const teamsConfirmed = team.length;
+    const uniqueStates = new Set();
+    const uniqueColleges = new Set();
+    let internalCount = 0;
+    let externalCount = 0;
+    let totalParticipants = 0;
+
+    // Add states from colleges to uniqueStates set
+    collegeStates.forEach((college) => {
+      if (
+        college.state &&
+        typeof college.state === "string" &&
+        college.state.trim() !== ""
+      ) {
+        uniqueStates.add(college.state);
+      }
+    });
+
+    allTeams.forEach((team) => {
+      team.Members.forEach((member) => {
+        totalParticipants++;
+        if (member.College?.name) uniqueColleges.add(member.College.name);
+        if (member.College?.name === "NMAM Institute of Technology") {
+          internalCount++;
+        } else {
+          externalCount++;
+        }
+      });
+    });
+
+    return {
+      uniqueStatesCount: uniqueStates.size,
+      uniqueCollegesCount: uniqueColleges.size,
+      internalCount,
+      externalCount,
+      totalParticipants,
+      teamsConfirmed,
+      states: Array.from(uniqueStates),
+    };
+  }),
+
+  getTeamsByTotalScore: dashboardProcedure.query(async ({ ctx }) => {
+    // Get all teams with their scores
+    const teams = await ctx.db.team.findMany({
+      include: {
+        Members: {
+          select: {
+            id: true,
+            name: true,
+            isLeader: true,
+            image: true,
+            phone: true,
+            email: true,
+            College: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        IdeaSubmission: {
+          select: {
+            track: true,
+            pptUrl: true,
+          },
+        },
+        Scores: {
+          select: {
+            score: true,
+            Judge: {
+              select: {
+                type: true,
+              },
+            },
+          },
+        },
+        VideoSubmission: true,
+      },
+    });
+
+    // Calculate total scores for each team (only counting VALIDATOR scores)
+    const teamsWithTotalScores = teams.map((team) => {
+      const validatorScores = team.Scores.filter(
+        (score) =>
+          score.Judge.type === "VALIDATOR" ||
+          score.Judge.type === "SUPER_VALIDATOR",
+      );
+
+      const totalScore = validatorScores.reduce(
+        (sum, score) => sum + score.score,
+        0,
+      );
+
+      return {
+        ...team,
+        totalScore,
+      };
+    });
+
+    // Sort teams by total score in descending order
+    teamsWithTotalScores.sort((a, b) => b.totalScore - a.totalScore);
+
+    return teamsWithTotalScores;
+  }),
+
+  getTeamMembersDetails: dashboardProcedure
+    .input(z.object({ teamId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const members = await ctx.db.user.findMany({
+        where: {
+          teamId: input.teamId,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          phone: true,
+          isLeader: true,
+          course: true,
+          tShirtSize: true,
+          state: true,
+          github: true,
+          College: {
+            select: {
+              name: true,
+              state: true,
+            },
+          },
+        },
+        orderBy: {
+          isLeader: "desc",
+        },
+      });
+
+      return members;
+    }),
 });

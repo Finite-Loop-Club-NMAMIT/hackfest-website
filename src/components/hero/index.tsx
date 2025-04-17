@@ -36,7 +36,7 @@ const Hero = ({
       console.log("Hero fully loaded");
       onLoaded();
     }
-  }, [maxProgress]);
+  }, [maxProgress, loaded, onLoaded, onProgress, total]);
 
   return (
     <main className="relative mx-auto flex h-screen w-full items-center justify-center overflow-hidden">

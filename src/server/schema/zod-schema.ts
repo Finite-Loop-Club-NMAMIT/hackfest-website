@@ -96,17 +96,9 @@ const getTeamDetailsByIdZ = z.object({
   teamId: z.string().min(1, { message: "Team ID cannot be empty" }),
 });
 
-const addJudgeZ = z.object({
+const addJudge = z.object({
   userId: z.string(),
   type: z.nativeEnum(JudgeType),
-  track: z.enum([
-    "FINTECH",
-    "SUSTAINABLE_DEVELOPMENT",
-    "HEALTHCARE",
-    "LOGISTICS",
-    "OPEN_INNOVATION",
-    "ALL",
-  ]),
 });
 
 const finalSubmissionZ = z.object({
@@ -127,6 +119,32 @@ const appSettingsZ = z.object({
   isProfileEditOpen: z.boolean().optional(),
 });
 
+const paymentTransactionZ = z.object({
+  transactionId: z
+    .string()
+    .min(3, { message: "Transaction ID cannot be empty" }),
+  paymentProof: z.string().min(3, { message: "Payment proof required" }),
+});
+
+const createRoomZ = z
+  .string()
+  .min(3, { message: "Room name should be atleast 3 characters" })
+  .max(15, { message: "Room name cannot exceed 15 characters" });
+
+const joinRoomZ = z
+  .string()
+  .min(3, { message: "Room id should be atleast 3 characters" });
+
+const roomInfoZ = z
+  .string()
+  .min(3, { message: "Room id should be atleast 3 characters" });
+
+const chatMessageZ = z.object({
+  content: z.string(),
+  // isCode: z.boolean(),
+  roomId: z.string()
+})
+
 export {
   editProfileZ,
   updateUserZ,
@@ -136,8 +154,13 @@ export {
   joinTeamZ,
   createCollegeZ,
   getTeamDetailsByIdZ,
-  addJudgeZ,
+  addJudge,
   finalSubmissionZ,
   resumeSubmissionZ,
   appSettingsZ,
+  paymentTransactionZ,
+  createRoomZ,
+  joinRoomZ,
+  roomInfoZ,
+  chatMessageZ
 };

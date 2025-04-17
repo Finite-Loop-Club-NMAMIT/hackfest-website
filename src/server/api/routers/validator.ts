@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, validatorProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, validatorProcedure } from "~/server/api/trpc";
 
 export const validatorRouter = createTRPCRouter({
   getValidatorCriteria: validatorProcedure.query(async ({ ctx }) => {
@@ -10,10 +10,31 @@ export const validatorRouter = createTRPCRouter({
       },
     });
   }),
-  setScore: validatorProcedure
+  
+  // New query to fetch all scores for the validator judge
+  getAllScores: validatorProcedure.query(async ({ ctx }) => {
+    const user = ctx.session.user;
+    
+    // Get all scores for this validator
+    const scores = await ctx.db.scores.findMany({
+      where: {
+        Judge: {
+          id: user.id,
+        },
+      },
+      include: {
+        Team: true,
+        Criteria: true,
+      }
+    });
+    
+    return scores;
+  }),
+  
+  setScore: protectedProcedure
     .input(
       z.object({
-        score: z.number().min(1).max(10), //todo: set limits
+        score: z.number().min(1).max(10),
         teamId: z.string(),
         criteriaId: z.string(),
       }),
@@ -21,9 +42,9 @@ export const validatorRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       await ctx.db.$transaction(async (db) => {
         const user = ctx.session.user;
-        const judge = await db.judges.findFirst({
+        const judge = await db.judge.findFirst({
           where: {
-            userId: user.id,
+            id: user.id,
           },
         });
         const criteria = await db.criteria.findUnique({
@@ -35,13 +56,13 @@ export const validatorRouter = createTRPCRouter({
           throw new TRPCError({
             code: "NOT_FOUND",
             message:
-              "Judge or criteria not found or criteria is not for super validator",
+              "Judge or criteria not found or criteria is not for validator",
           });
 
         const oldScoreForCriteria = await db.scores.findFirst({
           where: {
             Judge: {
-              userId: user.id,
+              id: user.id,
             },
             criteriaId: input.criteriaId,
             teamId: input.teamId,
@@ -58,14 +79,11 @@ export const validatorRouter = createTRPCRouter({
                 judgeId: judge.id,
               },
             });
-            return await db.team.update({
-              where: {
-                id: input.teamId,
-              },
+            await db.auditLog.create({
               data: {
-                validatorScore: {
-                  increment: input.score,
-                },
+                sessionUser: ctx.session.user.email,
+                auditType: "SCORE",
+                description: `Score of ${input.score} set for team ${input.teamId} for criteria ${input.criteriaId}`,
               },
             });
           } else {
@@ -76,28 +94,55 @@ export const validatorRouter = createTRPCRouter({
           }
         }
 
-        const diffScore = input.score - oldScoreForCriteria.score;
+        // const diffScore = input.score - oldScoreForCriteria.score;
         await db.scores.update({
           where: {
             teamId_criteriaId_judgeId: {
               criteriaId: input.criteriaId,
               teamId: input.teamId,
-              judgeId: judge.userId,
+              judgeId: judge.id,
             },
           },
           data: {
             score: input.score,
           },
         });
-
-        return await db.team.update({
-          where: {
-            id: input.teamId,
-          },
+        await db.auditLog.create({
           data: {
-            validatorScore: {
-              increment: diffScore,
+            sessionUser: ctx.session.user.email,
+            auditType: "SCORE",
+            description: `Score of ${input.score} set for team ${input.teamId} for criteria ${input.criteriaId}`,
+          },
+        });
+      });
+    }),
+
+  clearScore: protectedProcedure
+    .input(
+      z.object({
+        teamId: z.string(),
+        criteriaId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db.$transaction(async (db) => {
+        const user = ctx.session.user;
+        
+        await db.scores.deleteMany({
+          where: {
+            teamId: input.teamId,
+            criteriaId: input.criteriaId,
+            Judge: {
+              id: user.id,
             },
+          },
+        });
+        
+        await db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "SCORE",
+            description: `Score cleared for team ${input.teamId} for criteria ${input.criteriaId}`,
           },
         });
       });

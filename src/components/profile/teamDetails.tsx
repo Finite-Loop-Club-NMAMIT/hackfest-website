@@ -1,5 +1,4 @@
 import { type inferRouterOutputs } from "@trpc/server";
-import router, { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 import { type userRouter } from "~/server/api/routers/user";
 import { api } from "~/utils/api";
@@ -23,6 +22,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Copy } from "lucide-react";
 import { BsWhatsapp } from "react-icons/bs";
+import { FaMoneyBill } from "react-icons/fa";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 interface User {
   name: string | null;
@@ -111,8 +113,10 @@ export default function TeamDetails({
                 alt="Team Image"
                 className="rounded-full"
               />
-              <h1 className="text-2xl font-semibold text-center">{user.Team.name}</h1>
-              <div className="flex items-center justify-center gap-2 sm:flex-row flex-col">
+              <h1 className="text-center text-2xl font-semibold">
+                {user.Team.name}
+              </h1>
+              <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
                 <button
                   className="flex items-center justify-center gap-2 rounded-full border border-white bg-white/50 px-4 py-2 text-xs font-semibold text-white backdrop-blur-2xl duration-300 hover:scale-105 hover:bg-white/70"
                   onClick={async () => {
@@ -140,12 +144,16 @@ export default function TeamDetails({
             <div className="flex h-full flex-col items-center justify-between">
               <TeamList teamId={user.Team.id} showTeamName={false} />
             </div>
+            {/* {
+              settings.settings?.isTop60Validated && session.data?.user.team?.teamProgress === "SELECTED" ? session.data.user.team.paymentStatus === "PENDING"  : ()
+            } */}
+            <PaymentButton />
             {settings.settings?.isRegistrationOpen ? (
               <>
                 {user.profileProgress === "FORM_TEAM" ? (
                   <TeamSettings leader={user.isLeader} team={teamMembers} />
                 ) : (
-                  <div className="w-full py-4 text-center opacity-50 text-sm sm:text-base">
+                  <div className="w-full py-4 text-center text-sm opacity-50 sm:text-base">
                     Your team has registered
                   </div>
                 )}
@@ -325,5 +333,78 @@ function TeamSettings({
         </Dialog>
       </div>
     );
+  }
+}
+
+function PaymentButton() {
+  const settings = useContext(settingsCtx);
+  const session = useSession();
+  const router = useRouter();
+
+  if (settings.settings?.isTop60Validated) {
+    if (session.data?.user.team?.teamProgress === "NOT_SELECTED" || session.data?.user.team?.teamProgress === "SEMI_SELECTED") {
+      return (
+        <Badge
+          variant={"destructive"}
+          className="mx-auto mt-6 w-fit text-center opacity-80"
+        >
+          Your team is not selected
+        </Badge>
+      );
+    } else {
+      if (settings.settings.isPaymentOpen) {
+        if (session.data?.user.team?.paymentStatus === "PENDING") {
+          return (
+            <Button
+              className="mx-auto mt-6 flex flex-row flex-nowrap gap-2"
+              onClick={async () => {
+                await router.push("/register");
+              }}
+            >
+              <FaMoneyBill className="size-6" />
+              Pay Registration Fee
+            </Button>
+          );
+        } else {
+          return (
+            <Badge
+              variant={"default"}
+              className="mx-auto mt-6 w-fit bg-green-500 text-center opacity-80"
+            >
+              Payment{" "}
+              {session.data?.user.team?.paymentStatus === "PAID"
+                ? "success"
+                : "requires verification"}
+            </Badge>
+          );
+        }
+      } else {
+        if (
+          session.data?.user.team?.paymentStatus === "PAID" ||
+          session.data?.user.team?.paymentStatus === "VERIFY"
+        ) {
+          return (
+            <Badge
+              variant={"default"}
+              className="mx-auto mt-6 w-fit bg-green-500 text-center opacity-80"
+            >
+              Payment{" "}
+              {session.data.user.team.paymentStatus === "PAID"
+                ? "success"
+                : "requires verification"}
+            </Badge>
+          );
+        } else {
+          return (
+            <Badge
+              variant={"destructive"}
+              className="mx-auto mt-6 w-fit text-center opacity-80"
+            >
+              Payment is closed
+            </Badge>
+          );
+        }
+      }
+    }
   }
 }

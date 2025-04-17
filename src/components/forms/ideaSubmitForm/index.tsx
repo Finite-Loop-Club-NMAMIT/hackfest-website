@@ -32,6 +32,7 @@ import { downloadPPT } from "~/utils/helper";
 
 export default function IdeaSubmitForm() {
   const { update } = useSession();
+  const user = useSession();
 
   const form = useForm<z.infer<typeof submitIdeaZ>>({
     resolver: zodResolver(submitIdeaZ),
@@ -44,6 +45,7 @@ export default function IdeaSubmitForm() {
     onSuccess: async () => {
       toast.dismiss("idea");
       toast.success("Idea Submitted Successfully");
+      // router.push("/profile");
       await update();
     },
     onError: (error) => {
@@ -56,7 +58,7 @@ export default function IdeaSubmitForm() {
   const upload = async (file: File) => {
     const allowedTypes = ["application/pdf"];
 
-    if (file.size > 5 * 1000 * 1000) {
+    if (file.size > 5 * 1024 * 1024) {
       return toast.error("Uploads must be less than 5MB");
     }
     if (!allowedTypes.includes(file.type))
@@ -100,10 +102,8 @@ export default function IdeaSubmitForm() {
   }
 
   const onSubmit = async (data: z.infer<typeof submitIdeaZ>) => {
-    submitIdea.mutate(data);
+    await submitIdea.mutateAsync(data);
   };
-
-  const user = useSession();
 
   return (
     <div

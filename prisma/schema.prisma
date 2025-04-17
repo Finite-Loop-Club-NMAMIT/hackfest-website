@@ -58,13 +58,16 @@ model User {
   teamId          String?
   collegeId       String?
   accounts        Account[]
-  Judges          Judges?
   sessions        Session[]
   College         College?   @relation(fields: [collegeId], references: [id])
   Team            Team?      @relation(fields: [teamId], references: [id])
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
-  Judge           Judge[]
+  Judge           Judge?     @relation(fields: [judgeId], references: [id], onDelete: SetNull)
+  judgeId         String?
+
+  messages  Message[]
+  chatRooms UserChatRoom[]
 
   @@index([collegeId])
   @@index([teamId])
@@ -86,27 +89,24 @@ model College {
 }
 
 model Team {
-  id                  String            @id @default(cuid())
-  name                String            @unique
-  teamNo              Int               @default(0)
-  teamProgress        TeamProgress      @default(NOT_SELECTED)
-  isComplete          Boolean           @default(false)
-  referralId          Int?
-  paymentStatus       PaymentStatus     @default(PENDING)
-  validatorScore      Int               @default(0)
-  superValidatorScore Int               @default(0)
-  judgeScore          Int               @default(0)
-  attended            Boolean           @default(false)
-  IdeaSubmission      IdeaSubmission?
-  github              Github?
-  paymentProof        String?
-  transactionId       String?
-  Members             User[]
-  VideoSubmission     VideoSubmissions?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  Scores              Scores[]
-  Remark              Remark[]
+  id              String            @id @default(cuid())
+  name            String            @unique
+  teamNo          Int               @default(0)
+  teamProgress    TeamProgress      @default(NOT_SELECTED)
+  isComplete      Boolean           @default(false)
+  referralId      Int?
+  paymentStatus   PaymentStatus     @default(PENDING)
+  attended        Boolean           @default(false)
+  IdeaSubmission  IdeaSubmission?
+  github          Github?
+  paymentProof    String?
+  transactionId   String?
+  Members         User[]
+  VideoSubmission VideoSubmissions?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  Scores          Scores[]
+  Remark          Remark[]
 }
 
 model VideoSubmissions {
@@ -124,13 +124,6 @@ model IdeaSubmission {
   Team   Team   @relation(fields: [teamId], references: [id])
 }
 
-model Judges {
-  id     String    @id @default(cuid())
-  userId String    @unique
-  type   JudgeType @default(VALIDATOR)
-  User   User      @relation(fields: [userId], references: [id])
-}
-
 model Github {
   id             String   @id @default(cuid())
   githubTeamId   Int
@@ -143,11 +136,10 @@ model Github {
 
 model Judge {
   id     String    @id @default(cuid())
-  userId String
   type   JudgeType
-  User   User      @relation(fields: [userId], references: [id])
   Scores Scores[]
   Remark Remark[]
+  User   User[]
 }
 
 model Criteria {
@@ -161,7 +153,7 @@ model Criteria {
 model Scores {
   id         Int      @id @default(autoincrement())
   Criteria   Criteria @relation(fields: [criteriaId], references: [id])
-  Judge      Judge    @relation(fields: [judgeId], references: [id])
+  Judge      Judge    @relation(fields: [judgeId], references: [id], onDelete: Cascade)
   score      Int
   Team       Team     @relation(fields: [teamId], references: [id])
   criteriaId String
@@ -171,6 +163,7 @@ model Scores {
   teamId     String
 
   @@unique([teamId, criteriaId, judgeId])
+  @@index([judgeId])
 }
 
 model AppSettings {
@@ -179,6 +172,9 @@ model AppSettings {
   isPaymentOpen         Boolean @default(true)
   isVideoSubmissionOpen Boolean @default(true)
   isProfileEditOpen     Boolean @default(true)
+  isTop60Validated      Boolean @default(false)
+  isEventStarted        Boolean @default(false)
+  isResultOpen          Boolean @default(false)
 }
 
 model Remark {
@@ -186,12 +182,12 @@ model Remark {
   remark String
 
   Team    Team   @relation(fields: [teamId], references: [id])
-  Judge   Judge  @relation(fields: [judgeId], references: [id])
+  Judge   Judge  @relation(fields: [judgeId], references: [id], onDelete: Cascade)
   teamId  String
   judgeId String
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@unique([teamId, judgeId])
 }
@@ -200,26 +196,70 @@ model TeamNames {
   name String @unique
 }
 
-
 model AuditLog {
-  id              Int      @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   sessionUser String? // User performing action
-  auditType      String // Type of audit entry
-  dateTime        DateTime @default(now())
-  description     String // Audit details
-}
-model webAnalytics {
-  id           Int      @id @default(autoincrement())
-  sessionUser String? // User session info
-  uniqueId     String // Unique visitor ID
-  routePath    String // Page accessed
-  isChecked    String // Verification status
-  timer        Int? // Time spent
-  startPing    DateTime // Session start
-  lastPing     DateTime // Last activity
-  device       String // User device info
+  auditType   String // Type of audit entry
+  dateTime    DateTime @default(now())
+  description String // Audit details
 }
 
+model webAnalytics {
+  id          Int      @id @default(autoincrement())
+  sessionUser String? // User session info
+  uniqueId    String // Unique visitor ID
+  routePath   String // Page accessed
+  isChecked   String // Verification status
+  timer       Int? // Time spent
+  startPing   DateTime // Session start
+  lastPing    DateTime // Last activity
+  device      String // User device info
+}
+
+model ChatRoom {
+  id   String @id @default(cuid())
+  name String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages     Message[]
+  participants UserChatRoom[]
+}
+
+model Message {
+  id String @id @default(cuid())
+
+  content String
+  // code    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
+
+  chatRoomId String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+
+  @@index([senderId])
+  @@index([chatRoomId])
+}
+
+model UserChatRoom {
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+  chatRoomId String
+
+  notification Int      @default(0)
+  joinedAt     DateTime @default(now())
+
+  @@id([userId, chatRoomId])
+  @@index([userId])
+  @@index([chatRoomId])
+}
 
 enum JudgeType {
   DAY1
@@ -247,6 +287,7 @@ enum Courses {
 
 enum PaymentStatus {
   PENDING
+  VERIFY
   PAID
 }
 

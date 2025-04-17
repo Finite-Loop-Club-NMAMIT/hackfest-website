@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { IdeaSubmission, Team, User } from "@prisma/client";
 import { useState } from "react";
 
@@ -10,8 +11,8 @@ export default function TeamsList({
     | (Team & { members: User[] } & { ideaSubmission: IdeaSubmission | null })
     | null
   >(null);
-  const handleTeamDetails = async (teamId: string) => {
-    // setTeamDetails(await getTeamDetailsById(teamId));
+  const handleTeamDetails = async (_teamId: string) => {
+    // setTeamDetails(await getTeamDetailsById(_teamId));
   };
   return (
     <>

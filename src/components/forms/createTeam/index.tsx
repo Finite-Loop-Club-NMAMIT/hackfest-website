@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { api } from "~/utils/api";
@@ -5,7 +6,7 @@ import { useRouter } from "next/router";
 import { toast } from "sonner";
 import gsap from "gsap";
 import { useSession } from "next-auth/react";
-import { Team } from "@prisma/client";
+import type { Team } from "@prisma/client";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,

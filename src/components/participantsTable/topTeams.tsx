@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import {
   TableCell,
@@ -14,7 +15,6 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-  getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
   type ColumnDef,
@@ -24,9 +24,9 @@ import {
 } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import { IdeaSubmission, Team, TeamProgress } from "@prisma/client";
-import { Check, X } from "lucide-react";
-import { superValidatorRouter } from "~/server/api/routers/super-validator";
+import type { IdeaSubmission, Team } from "@prisma/client";
+import type { superValidatorRouter } from "~/server/api/routers/super-validator";
+import { Badge } from "../ui/badge";
 
 interface MembersRow {
   members: { college: { name: string } }[];
@@ -118,29 +118,13 @@ export default function TopTeams({
       header: "Team Name",
     },
     {
-      accessorKey: "members",
-      header: "College",
-      cell: (members) => (
-        <span>
-          {(members.row.original as MembersRow).members[0]!.college.name}
-        </span>
-      ),
-    },
-    
-    {
       accessorKey: "ideaSubmission",
       header: "Actions",
       cell: (cell) => {
         return (
           <>
             <a
-              href={
-                (
-                  cell.cell.row.original as Team & {
-                    ideaSubmission: IdeaSubmission | null;
-                  }
-                ).ideaSubmission?.pptUrl?.split(";")[0]
-              }
+              href={(cell.cell.row.original as Team & {ideaSubmission: IdeaSubmission | null}).ideaSubmission?.pptUrl?.split(";")[0]}
               target="_blank"
             >
               <Button>View PDF</Button>
@@ -149,44 +133,26 @@ export default function TopTeams({
         );
       },
     },
-    
     {
       accessorKey: "teamProgress",
-      header: "Actions",
+      header: "Status",
       cell: (cell) => {
+        const team = cell.cell.row.original as Team;
+        const isSelected = team.teamProgress === "SELECTED";
         return (
-          <>
-            <button
-              className={`${(cell.cell.row.original as Team).teamProgress === "SELECTED" ? "bg-green-700 text-white" : "bg-white text-black"} rounded-lg px-4 py-2`}
-              onClick={async () => {
-                await moveToTop60.mutateAsync({
-                  teamId: (cell.cell.row.original as Team).id,
-                });
-              }}
-            >
-              Top 60
-            </button>
-          </>
-        );
-      },
-    },
-    {
-      accessorKey: "teamProgress",
-      header: "Actions",
-      cell: (cell) => {
-        return (
-          <>
-            <button
-              className={`${(cell.cell.row.original as Team).teamProgress === "NOT_SELECTED" ? "pointer-events-none" : "bg-red-400 text-black"} rounded-lg px-4 py-2`}
-              onClick={async () => {
-                await resetProgress.mutateAsync({
-                  teamId: (cell.cell.row.original as Team).id,
-                });
-              }}
-            >
-              Reset
-            </button>
-          </>
+          <Button
+            variant={isSelected ? "destructive" : "default"}
+            className="w-42"
+            onClick={async () => {
+              if (isSelected) {
+                await resetProgress.mutateAsync({ teamId: team.id });
+              } else {
+                await moveToTop60.mutateAsync({ teamId: team.id });
+              }
+            }}
+          >
+            {isSelected ? "Remove from Top 60" : "Move to Top 60"}
+          </Button>
         );
       },
     },

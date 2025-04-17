@@ -1,16 +1,13 @@
 import AuthButtons from "./authButton";
 import { navLinks } from "~/constants";
-import { useSession } from "next-auth/react";
-import DashboardButton from "./dashboardButton";
-
 import React, { useState } from "react";
 import { MenuIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import DashButtom from "./dashboardButton";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const user = useSession();
 
   return (
     <div className="fixed  z-[9999] flex w-full justify-center pt-4">
@@ -41,12 +38,12 @@ const NavBar = () => {
               ))}
             </div>
             <div className="hidden md:flex">
-              <DashboardButton role={user.data?.user.role ?? "PARTICIPANT"} />
+              <DashButtom />
               <AuthButtons />
             </div>
 
             {/* Mobile Nav toggle */}
-            <div className="flex gap-6 md:hidden">
+            <div className="flex gap-2 md:hidden">
               <AuthButtons />
               <button
                 onClick={() => setIsOpen(!isOpen)}
@@ -75,7 +72,7 @@ const NavBar = () => {
                   </a>
                 ))}
 
-                <DashboardButton role={user.data?.user.role ?? "PARTICIPANT"} />
+                <DashButtom />
               </div>
             </div>
           )}

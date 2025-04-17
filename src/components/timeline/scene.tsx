@@ -39,16 +39,10 @@ const TimeLineScene = () => {
     return points.length > 0 ? curve.getPoints(30000) : [];
   }, [curve, points]);
 
-  const shape = useMemo(() => {
-    const shape = new THREE.Shape();
-    shape.moveTo(0, 0);
-    shape.lineTo(0, 0.1);
-    return shape;
-  }, []);
 
   const easedScrollRef = useRef(0);
 
-  useFrame((_state, delta) => {
+  useFrame((_state) => {
     if (!linePoints.length) return;
     const scrollEasing = 0.92; // Adjust for different smoothing amounts
     easedScrollRef.current +=

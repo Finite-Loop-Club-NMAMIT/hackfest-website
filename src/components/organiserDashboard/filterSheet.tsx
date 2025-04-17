@@ -1,4 +1,5 @@
-import React, { Dispatch, FunctionComponent, SetStateAction } from "react";
+import React from "react";
+import type { Dispatch, FunctionComponent, SetStateAction } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,

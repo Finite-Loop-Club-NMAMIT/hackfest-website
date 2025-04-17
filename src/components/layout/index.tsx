@@ -8,7 +8,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
 
   return (
     <div
-      className={`dark text-white ${router.pathname === "/" ? "" : "bg-black"}`}
+      className={`dark relative text-white ${router.pathname === "/" ? "" : "bg-black"}`}
     >
       <ProgressBarProvider>
         <Toaster richColors expand={false} position="bottom-center" />

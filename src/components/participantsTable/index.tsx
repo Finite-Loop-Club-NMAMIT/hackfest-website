@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import {
   TableCell,
@@ -24,16 +25,14 @@ import {
 } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import {
+import type {
   IdeaSubmission,
   Team,
-  TeamProgress,
   VideoSubmissions,
 } from "@prisma/client";
 import { Check, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
-import { members } from "~/types";
-import Link from "next/link";
+import type { members } from "~/types";
 
 interface MembersRow {
   members: { college: { name: string } }[];

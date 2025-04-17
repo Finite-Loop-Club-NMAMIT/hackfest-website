@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import type { FunctionComponent } from "react";
 import {
   TableCell,
   TableHead,
@@ -7,47 +7,97 @@ import {
   TableBody,
   TableHeader,
 } from "~/components/ui/table";
-import Spinner from "../spinner";
 import { api } from "~/utils/api";
-import { JudgeType, Judges, Tracks, User } from "@prisma/client";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { Input } from "../ui/input";
 
-interface TableProps {
-  data: User[] | undefined;
-  refetch: () => void;
-}
+const VolunteersTable: FunctionComponent = () => {
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-const VolunteersTable: FunctionComponent<TableProps> = ({ data, refetch }) => {
+  const { data, refetch } = api.organiser.getVolunteerList.useQuery();
+
   const deleteVolunteer = api.organiser.removeVolunteer.useMutation({
     onSuccess: async () => {
       toast.dismiss();
       toast.success("Volunteer deleted");
-      refetch();
+      void refetch();
     },
     onError: async () => {
       toast.error("Error adding Volunteer");
     },
   });
+
+  const handleDeleteClick = (userId: string) => {
+    setSelectedUserId(userId);
+    setConfirmDialogOpen(true);
+    setConfirmText("");
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedUserId) return;
+    if (confirmText !== "CONFIRM") {
+      toast.error("Please type CONFIRM to delete");
+      return;
+    }
+
+    toast.loading("Deleting volunteer...");
+    deleteVolunteer.mutate({
+      userId: selectedUserId,
+    });
+    setConfirmDialogOpen(false);
+    setConfirmText("");
+    setSelectedUserId(null);
+  };
+
   return (
-    <div className="flex w-full items-center justify-center">
-      <div className="h-full max-w-screen-2xl rounded-md border p-10">
-        {!data ? (
-          <Table>
-            <TableBody>
-              <TableRow>
-                No data to display
-              </TableRow>
-            </TableBody>
-          </Table>
-        ) : (
-          <Table>
+    <div className="w-full">
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <p className="text-white">Type CONFIRM to delete this volunteer</p>
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Type CONFIRM"
+            />
+          </div>
+          <div className="flex justify-end gap-4">
+            <Button className="text-white" variant="outline" onClick={() => setConfirmDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmDelete}>
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {!data ? (
+        <div className="flex justify-center py-8">
+          Loading...
+        </div>
+      ) : (
+        <div className="w-full overflow-x-auto">
+          <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Delete</TableHead>
+                <TableHead className="w-1/4">Name</TableHead>
+                <TableHead className="w-1/4">Role</TableHead>
+                <TableHead className="w-1/4">Contact</TableHead>
+                <TableHead className="w-1/4">Delete</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -61,12 +111,7 @@ const VolunteersTable: FunctionComponent<TableProps> = ({ data, refetch }) => {
                     </TableCell>
                     <TableCell>
                       <Button
-                        onClick={() => {
-                          toast.loading("Deleting judge...");
-                          deleteVolunteer.mutate({
-                            userId: volunteer.id,
-                          });
-                        }}
+                        onClick={() => handleDeleteClick(volunteer.id)}
                       >
                         Delete
                       </Button>
@@ -74,15 +119,17 @@ const VolunteersTable: FunctionComponent<TableProps> = ({ data, refetch }) => {
                   </TableRow>
                 );
               })}
+              {data?.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8">
+                    No volunteers found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
-        )}
-        {data?.length === 0 && (
-          <div className="flex w-full justify-center p-5">
-            No Data To Display
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -32,7 +32,6 @@ export default function TeamInfo({
   userId,
   userProgress,
   refetchTeam,
-  userIsLeader,
   userRefetch,
 }: {
   teamdata:

@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, judgeProcedure } from "../trpc";
 import { z } from "zod";
-import { JudgeType } from "@prisma/client";
+import { JudgeType, Role } from "@prisma/client";
+
 export const JudgeRouter = createTRPCRouter({
   getTeams: judgeProcedure.query(async ({ ctx }) => {
     const user = ctx.session.user;
@@ -14,7 +15,7 @@ export const JudgeRouter = createTRPCRouter({
         Scores: {
           where: {
             Judge: {
-              userId: user.id,
+              id: user.id,
             },
           },
         },
@@ -50,7 +51,7 @@ export const JudgeRouter = createTRPCRouter({
         Scores: {
           where: {
             Judge: {
-              userId: user.id,
+              id: user.id,
             },
           },
         },
@@ -65,10 +66,12 @@ export const JudgeRouter = createTRPCRouter({
   }),
   getDay: judgeProcedure.query(async ({ ctx }) => {
     const user = ctx.session.user;
-    const judges = await ctx.db.judges.findFirst({
+    const judges = await ctx.db.judge.findFirst({
       where: {
         User: {
-          id: user.id,
+          some: {
+            id: user.id,
+          },
         },
       },
       select: {
@@ -89,9 +92,9 @@ export const JudgeRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       await ctx.db.$transaction(async (db) => {
         const user = ctx.session.user;
-        const judge = await db.judges.findFirst({
+        const judge = await db.judge.findFirst({
           where: {
-            userId: user.id,
+            id: user.id,
           },
         });
         const criteria = await db.criteria.findUnique({
@@ -113,7 +116,7 @@ export const JudgeRouter = createTRPCRouter({
         const oldScoreForCriteria = await db.scores.findFirst({
           where: {
             Judge: {
-              userId: user.id,
+              id: user.id,
             },
             criteriaId: input.criteriaId,
             teamId: input.teamId,
@@ -122,12 +125,20 @@ export const JudgeRouter = createTRPCRouter({
 
         if (!oldScoreForCriteria) {
           if (input.score <= criteria.maxScore) {
-            return await db.scores.create({
+            
+            await db.scores.create({
               data: {
                 score: input.score,
                 criteriaId: input.criteriaId,
                 teamId: input.teamId,
                 judgeId: judge.id,
+              },
+            });
+            return await ctx.db.auditLog.create({
+              data: {
+                sessionUser: ctx.session.user.email,
+                auditType: "SCORE",
+                description: `  Score of ${input.score} set for team ${input.teamId} for criteria ${input.criteriaId}`,
               },
             });
           } else {
@@ -138,19 +149,169 @@ export const JudgeRouter = createTRPCRouter({
           }
         }
 
-        const diffScore = input.score - oldScoreForCriteria.score;
-        return await db.scores.update({
+        // const diffScore = input.score - oldScoreForCriteria.score;
+         await db.scores.update({
           where: {
             teamId_criteriaId_judgeId: {
               criteriaId: input.criteriaId,
               teamId: input.teamId,
-              judgeId: judge.userId,
+              judgeId: judge.id,
             },
           },
           data: {
             score: input.score,
           },
         });
+        return      await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "SCORE",
+            description: `Score of ${input.score} set for team ${input.teamId} for criteria ${input.criteriaId}`,
+          },
+        });
+      });
+    }),
+
+  getAllJudges: judgeProcedure.query(async ({ ctx }) => {
+    const judges = await ctx.db.judge.findMany({
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            image: true,
+          }
+        }
+      }
+    });
+    return judges;
+  }),
+  
+  updateJudge: judgeProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        type: z.nativeEnum(JudgeType),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db.judge.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          type: input.type,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "Role Change",
+          description: `Judge ${input.id} has been updated to ${input.type} `,
+        },
+      });
+    }),
+
+  getAllUsers: judgeProcedure.query(async ({ ctx }) => {
+    const users = await ctx.db.user.findMany({
+      where: {
+        role: {
+          not: Role.JUDGE,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        image: true,
+        role: true,
+      },
+    });
+    return users;
+  }),
+  
+  addJudge: judgeProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        type: z.nativeEnum(JudgeType),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        // Create new judge
+        const newJudge = await tx.judge.create({
+          data: {
+            type: input.type,
+            User: {
+              connect: {
+                id: input.userId,
+              },
+            },
+          },
+        });
+        
+        
+        // Update user role and connect to judge
+        await tx.user.update({
+          where: {
+            id: input.userId,
+          },
+          data: {
+            role: Role.JUDGE,
+            judgeId: newJudge.id, // Connect user to judge
+          },
+        });
+
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "Role Change",
+            description: `User ${input.userId} has been assigned as a Judge for ${input.type}`,
+          },
+        });
+        
+        return newJudge;
+      });
+    }),
+  
+  deleteJudge: judgeProcedure
+    .input(
+      z.object({
+        judgeId: z.string(),
+        userId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        // Update user role back to participant
+        await tx.user.update({
+          where: {
+            id: input.userId,
+          },
+          data: {
+            role: Role.PARTICIPANT,
+            judgeId: null,
+          },
+        });
+        
+        // Delete the judge entry
+        await tx.judge.delete({
+          where: {
+            id: input.judgeId,
+          },
+        });
+        await ctx.db.auditLog.create({
+          data: {
+            sessionUser: ctx.session.user.email,
+            auditType: "Role Change",
+            description: `User ${input.userId} has been removed as a Judge`,
+          },
+        });
+        return { success: true };
       });
     }),
 });

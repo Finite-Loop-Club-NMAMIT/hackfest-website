@@ -9,7 +9,7 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Loader2Icon, Plus } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { States } from "@prisma/client";
 import { toast } from "sonner";
 import {
@@ -93,7 +93,7 @@ const CreateCollege = ({
                 <FormField
                   control={form.control}
                   name="name"
-                  render={({ field, formState, fieldState }) => {
+                  render={({ field }) => {
                     return (
                       <FormItem className="w-full">
                         <FormLabel className="">Name</FormLabel>
@@ -108,7 +108,7 @@ const CreateCollege = ({
                 <FormField
                   control={form.control}
                   name="state"
-                  render={({ field, formState, fieldState }) => (
+                  render={({ field }) => (
                     <FormItem className="w-full">
                       <FormLabel className="">State</FormLabel>
                       <FormControl>

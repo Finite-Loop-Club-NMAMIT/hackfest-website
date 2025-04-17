@@ -4,19 +4,42 @@ import { TRPCError } from "@trpc/server";
 
 export const superValidatorRouter = createTRPCRouter({
   getTop100: superValidatorProcedure.query(async ({ ctx }) => {
-    return await ctx.db.team.findMany({
+    const teams = await ctx.db.team.findMany({
       where: {
         OR: [{ teamProgress: "SEMI_SELECTED" }, { teamProgress: "SELECTED" }],
       },
-      orderBy: {
-        validatorScore: "desc",
-      },
       include: {
-        Members: true,
-        IdeaSubmission: true,
-        Scores: true,
+        Members: {
+          include: {
+            College:{
+              select:{
+                name:true
+              }
+            },
+          },
+        },
+        IdeaSubmission: {
+          select: {
+            pptUrl: true,
+            track: true,
+          },
+        },
+        Scores: {
+          select: {
+            score: true,
+          },
+        },
       },
     });
+    
+    // Calculate total score for each team and sort
+    return teams.map(team => {
+      const totalScore = team.Scores.reduce((sum, scoreRecord) => sum + scoreRecord.score, 0);
+      return {
+        ...team,
+        totalScore // Add total score property for sorting (won't be displayed in UI)
+      };
+    }).sort((a, b) => b.totalScore - a.totalScore); // Sort in descending order
   }),
 
   setScore: superValidatorProcedure
@@ -30,9 +53,9 @@ export const superValidatorRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       await ctx.db.$transaction(async (db) => {
         const user = ctx.session.user;
-        const judge = await db.judges.findFirst({
+        const judge = await db.judge.findFirst({
           where: {
-            userId: user.id,
+            id: user.id,
           },
         });
         const criteria = await db.criteria.findUnique({
@@ -50,7 +73,7 @@ export const superValidatorRouter = createTRPCRouter({
         const oldScoreForCriteria = await db.scores.findFirst({
           where: {
             Judge: {
-              userId: user.id,
+              id: user.id,
             },
             criteriaId: input.criteriaId,
             teamId: input.teamId,
@@ -72,9 +95,9 @@ export const superValidatorRouter = createTRPCRouter({
                 id: input.teamId,
               },
               data: {
-                superValidatorScore: {
-                  increment: input.score,
-                },
+                // superValidatorScore: {
+                //   increment: input.score,
+                // },
               },
             });
           } else {
@@ -84,14 +107,12 @@ export const superValidatorRouter = createTRPCRouter({
             });
           }
         }
-
-        const diffScore = input.score - oldScoreForCriteria.score;
         await db.scores.update({
           where: {
             teamId_criteriaId_judgeId: {
               criteriaId: input.criteriaId,
               teamId: input.teamId,
-              judgeId: judge.userId,
+              judgeId: judge.id,
             },
           },
           data: {
@@ -104,11 +125,81 @@ export const superValidatorRouter = createTRPCRouter({
             id: input.teamId,
           },
           data: {
-            superValidatorScore: {
-              increment: diffScore,
-            },
+            // superValidatorScore: {
+            //   increment: diffScore,
+            // },
           },
         });
       });
+    }),
+
+    moveToSelected: superValidatorProcedure
+    .input(
+      z.object({
+      teamId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.db.appSettings.findFirst();
+      if (settings?.isResultOpen) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Cannot modify team status while results are published",
+      });
+      }
+
+      const team = await ctx.db.team.findUnique({
+      where: { id: input.teamId },
+      });
+
+      if (!team) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Team not found",
+      });
+      }
+
+      if (team.teamProgress === "SEMI_SELECTED") {
+      return await ctx.db.team.update({
+        where: { id: input.teamId },
+        data: { teamProgress: "SELECTED" },
+      });
+      } else {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Team must be in Top 100 to move to Top 60",
+      });
+      }
+    }),
+
+    resetToTop100: superValidatorProcedure
+    .input(
+      z.object({
+      teamId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const team = await ctx.db.team.findUnique({
+        where: { id: input.teamId },
+      });
+
+      if (!team) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Team not found",
+        });
+      }
+
+      if (team.teamProgress === "SELECTED") {
+        return await ctx.db.team.update({
+          where: { id: input.teamId },
+          data: { teamProgress: "SEMI_SELECTED" },
+        });
+      } else {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Team must be in Top 60 to move back to Top 100",
+        });
+      }
     }),
 });

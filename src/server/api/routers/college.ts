@@ -1,10 +1,14 @@
 import { type States } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from "~/server/api/trpc";
 import { createCollegeZ } from "~/server/schema/zod-schema";
 
 export const collegeRouter = createTRPCRouter({
-  createCollege: protectedProcedure
+  createCollege: adminProcedure
     .input(createCollegeZ)
     .mutation(async ({ input, ctx }) => {
       try {

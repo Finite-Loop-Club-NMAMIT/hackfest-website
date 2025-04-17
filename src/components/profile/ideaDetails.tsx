@@ -1,15 +1,51 @@
 import { useSession } from "next-auth/react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Download } from "lucide-react";
 import { useRouter } from "next/router";
 import { downloadPPT } from "~/utils/helper";
+import PdfPreview from "../pdf";
 
 export default function IdeaDetails({ order }: { order: number }) {
   const { data } = useSession();
   const router = useRouter();
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
-  console.log(data?.user.team?.ideaSubmission);
+  useEffect(() => {
+    if (data?.user.team?.ideaSubmission) {
+      const url = data.user.team.ideaSubmission.split(";")[0];
+      if (url) {
+        void fetch(url)
+          .then(async (res) => {
+            const blob = await res.blob();
+            const file = new File([blob], "Ideappt.pdf", {
+              type: "application/pdf",
+            });
+            if (file) {
+              setPdfFile(file);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    }
+  }, [data?.user.team?.ideaSubmission]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   if (order !== 0) {
     if (data?.user.team?.ideaSubmission) {
@@ -20,19 +56,37 @@ export default function IdeaDetails({ order }: { order: number }) {
         >
           <h1 className="text-xl">Idea Details</h1>
           <div className="mb-4 flex h-full w-full flex-col items-center justify-center gap-4">
-            {/* FIXME: pdf preview and pdf download not working. cloudinary issue. */}
-            {/* <PdfPreview /> */}
-            {/* <Button onClick={async() => { await fetchIdeaSubmission()}}>click</Button> */}
-            {/* <iframe src={data.user.team.ideaSubmission.split(";")[0]}></iframe> */}
-            {/* <Button className="mx-auto" onClick={async() => {
-                  const a = document.createElement("a");
-                  a.href = data.user.team.ideaSubmission.split(";")[0];
-                  a.download = "Idea_Submission.pdf";
-                  a.click();
-                  }}>Download</Button> */}
-            <p className="w-full max-w-md px-4 text-center opacity-80">
+            {pdfFile && (
+              <>
+                <PdfPreview
+                  file={pdfFile}
+                  pages={[1]}
+                  height={isMobile ? 150 : 200}
+                  width={isMobile ? 200 : 300}
+                  className="mx-auto w-fit"
+                />
+                <Button
+                  variant={"outline"}
+                  onClick={() => {
+                    const url = URL.createObjectURL(pdfFile);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${data.user.team?.name}_idea.pdf`;
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  Download
+                </Button>
+              </>
+            )}
+            <p className="w-full max-w-md px-4 text-center text-sm opacity-80 md:text-base">
               You have successfully submitted you idea. We wish you to be in the
               top <span className="font-semibold">60</span>💐
+            </p>
+            <p className="text-sm text-orange-500">
+              Note: Top 60 teams will be announced on 27 March 2025{" "}
             </p>
           </div>
         </div>
@@ -78,7 +132,5 @@ export default function IdeaDetails({ order }: { order: number }) {
         </div>
       );
     }
-    // }
-    // return <div style={{ order: order }}>IdeaDetails</div>;
   }
 }
