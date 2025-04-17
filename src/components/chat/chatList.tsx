@@ -30,11 +30,20 @@ export default function ChatList() {
   const router = useRouter();
   const session = useSession();
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(
+    typeof window !== "undefined"
+      ? window.innerWidth < 768 // Typically, 768px or less is considered mobile view
+        ? true
+        : false
+      : false,
+  );
   const [selectedContactId, setSelectedContactId] = useState<string | null>(
     null,
   );
-  const [chatList, setChatList] = useState<inferRouterOutputs<typeof chatRotuer>["getChatRoomList"]>([])
+  const [chatList, setChatList] = useState<
+    inferRouterOutputs<typeof chatRotuer>["getChatRoomList"]
+  >([]);
+
   // create and join values
   const [createRoom, setCreateRoom] = useState("");
   const [joinRoom, setJoinRoom] = useState("");
@@ -75,7 +84,14 @@ export default function ChatList() {
         <div className="flex h-16 w-full items-center justify-between border-b border-blue-900 px-3">
           {!collapsed && <h2 className="pl-2 text-xl font-semibold">Chats</h2>}
           <button
-            onClick={() => setCollapsed((val) => !val)}
+            onClick={() => {
+              if(typeof window !== undefined){
+                if(window.innerWidth < 768){
+                  return;
+                }
+              }
+              setCollapsed((val) => !val)
+            }}
             className="flex items-center justify-center rounded-full p-3 text-white transition-colors duration-200 hover:bg-blue-900"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >

@@ -178,7 +178,7 @@ export default function MessageList({ roomId }: { roomId: string }) {
       {/* Message input */}
       <div className="border-t border-blue-900 p-4">
         <div className="flex items-center gap-2 rounded-full bg-blue-900/50 px-4 py-2">
-        {/* is code toggle */}
+          {/* is code toggle */}
           {/* <button
             className="h-8 w-16 rounded-full bg-blue-800 text-blue-300 transition-colors duration-300 hover:bg-blue-700"
             onClick={() => setIsCode((val) => !val)}
@@ -198,14 +198,15 @@ export default function MessageList({ roomId }: { roomId: string }) {
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="max-h-32 flex-grow resize-none bg-transparent pl-2 text-white placeholder-blue-300 focus:outline-none"
+            className="max-h-32 w-full min-w-40 max-w-full flex-grow resize-none bg-transparent pl-2 text-white placeholder-blue-300 focus:outline-none md:pl-3"
+            // className="bg-white min-w-40 max-w-full w-full"
             rows={1}
           />
           <Button
             onClick={handleSend}
             disabled={!message.trim()}
             size="icon"
-            className={`rounded-full ${!message.trim() ? "bg-blue-800 text-blue-400" : "bg-blue-600 text-white hover:bg-blue-500"}`}
+            className={`aspect-square rounded-full ${!message.trim() ? "bg-blue-800 text-blue-400" : "bg-blue-600 text-white hover:bg-blue-500"}`}
           >
             <Send size={18} />
           </Button>
