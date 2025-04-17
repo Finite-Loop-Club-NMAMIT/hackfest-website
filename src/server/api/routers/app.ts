@@ -198,6 +198,11 @@ export const appSettingsRouter = createTRPCRouter({
           },
         });
       }
+
+      return {
+        message: "Chat rooms created successfully",
+        status: "success"
+      }
     } catch (error) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
