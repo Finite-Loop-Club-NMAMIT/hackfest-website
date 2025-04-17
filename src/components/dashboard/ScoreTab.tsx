@@ -736,68 +736,24 @@ export default function ScoreTab() {
       }
     >
   ) => {
-    const normalizedScores: Record<
-      string,
-      { rawTotal: number; normalizedTotal: number }
-    > = {};
-
     let overallRawTotal = 0;
     let overallMaxPossibleRaw = 0;
-    let overallNormalizedTotal = 0;
     
-    // Find the global min and max across all judges
-    let globalMin = Infinity;
-    let globalMax = -Infinity;
-    
-    Object.entries(judgeScores).forEach(([_, data]) => {
-      if (data.minScore < globalMin) globalMin = data.minScore;
-      if (data.maxScore > globalMax) globalMax = data.maxScore;
-    });
-    
-    // Handle edge case where min and max are the same (all scores are identical)
-    const normalizationRange = globalMax - globalMin || 1; // Avoid division by zero
-
-    Object.entries(judgeScores).forEach(([judgeId, data]) => {
-      // Calculate normalized total by normalizing each score and summing
-      let normalizedTotal = 0;
-      let scoreCount = 0;
-      
-      Object.values(data.scores).forEach(score => {
-        // Apply min-max normalization formula: (x - min) / (max - min) * 10
-        // This scales the score to a 0-10 range
-        const normalizedScore = ((score - globalMin) / normalizationRange) * 10;
-        normalizedTotal += normalizedScore;
-        scoreCount++;
-      });
-      
-      // Average the normalized scores
-      const avgNormalized = scoreCount > 0 ? normalizedTotal / scoreCount : 0;
-      
-      normalizedScores[judgeId] = {
-        rawTotal: data.total,
-        normalizedTotal: Math.round(avgNormalized) // Round to integer
-      };
-
+    // Calculate overall raw total and max possible
+    Object.entries(judgeScores).forEach(([, data]) => {
       overallRawTotal += data.total;
       overallMaxPossibleRaw += data.maxScore * Object.keys(data.scores).length;
-      overallNormalizedTotal += normalizedTotal;
     });
 
-    const judgeCount = Object.keys(normalizedScores).length;
     const overallRawPercentage =
       overallMaxPossibleRaw > 0
         ? Math.round((overallRawTotal / overallMaxPossibleRaw) * 100)
         : 0;
-    const overallNormalizedScore = 
-      judgeCount > 0 
-        ? Math.round((overallNormalizedTotal / judgeCount) / 10 * 10) // Round to integer for 0-10 scale
-        : 0;
 
     return {
-      judgeScores: normalizedScores,
+      judgeScores: judgeScores,
       overallRawTotal,
-      overallRawPercentage,
-      overallNormalizedScore
+      overallRawPercentage
     };
   };
 
@@ -1152,9 +1108,7 @@ export default function ScoreTab() {
             const judgeScores = organizeScoresByJudge(team.Scores);
             const judgesByType = groupJudgesByType(judgeScores);
             const {
-              judgeScores: normalizedJudgeScores,
               overallRawTotal,
-              overallNormalizedScore,
             } = normalizeJudgeScores(judgeScores);
 
             // Check if we should show extended options (only for TOP15 filter)
@@ -1198,14 +1152,9 @@ export default function ScoreTab() {
                     <div className="flex flex-col items-end gap-2">
                       <div className="flex items-center gap-2">
                         <ScoreCard
-                          label="Raw Score"
+                          label="Total Score"
                           score={overallRawTotal}
                           className="border border-gray-600"
-                        />
-                        <ScoreCard
-                          label="Normalized"
-                          score={overallNormalizedScore}
-                          variant="normalized"
                         />
                       </div>
                     </div>
@@ -1354,18 +1303,9 @@ export default function ScoreTab() {
                                 </div>
                                 <div className="flex items-center space-x-3">
                                   <ScoreCard
-                                    label="Raw Score"
-                                    score={
-                                      normalizedJudgeScores[judgeId]?.rawTotal ?? 0
-                                    }
+                                    label="Score"
+                                    score={data.total}
                                     className="border border-gray-600"
-                                  />
-                                  <ScoreCard
-                                    label="Normalized"
-                                    score={
-                                      normalizedJudgeScores[judgeId]?.normalizedTotal ?? 0
-                                    }
-                                    variant="normalized"
                                   />
                                 </div>
                               </div>
