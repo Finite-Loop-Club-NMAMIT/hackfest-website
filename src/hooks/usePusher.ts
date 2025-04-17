@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { pusherClient } from "~/utils/pusher";
 
 export const usePusher = ({
@@ -32,14 +32,14 @@ export const usePusher = ({
    * @param callback
    * @returns
    */
-  const bind = (event: string, callback: (data: unknown) => void) => {
+  const bind = useCallback((event: string, callback: (data: unknown) => void) => {
     const exists = client.callbacks.get(event);
     if (exists && exists.length > 0) {
       console.error("Event already bound inside hook", event);
       return;
     }
     client.bind(event, callback);
-  };
+  }, [client]);
 
   useEffect(() => {
     if (binds && binds.length > 0) {
@@ -56,7 +56,7 @@ export const usePusher = ({
       }
       pusherClient.unsubscribe(channel);
     }
-  }, []);
+  }, [bind, binds, channel, client]);
 
   return {
     client,

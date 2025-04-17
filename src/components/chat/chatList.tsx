@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 
 import {
-  AlertCircle,
   PanelLeftOpen,
   PanelRightOpen,
   Plus,
@@ -129,7 +130,7 @@ export default function ChatList({
       channel.unbind("notification");
       pusherClient.unsubscribe(session.data?.user.id ?? "pending");
     };
-  }, [session.data]);
+  }, [chatList, session.data]);
 
   return (
     <div

@@ -1,10 +1,9 @@
 import React from 'react';
-import { useRouter } from 'next/router';
+
 import { MessageCircle } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 
 export default function ChatButton() {
-  const router = useRouter();
 
   return (
     <div className="fixed bottom-6 right-6 z-50">

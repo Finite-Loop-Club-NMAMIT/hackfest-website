@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { cn } from "~/lib/utils";
 import ChatNavbar from "../chat/navbar";
 import ChatList from "../chat/chatList";
@@ -6,7 +7,6 @@ import { Toaster } from "sonner";
 import { api } from "~/utils/api";
 
 export default function ChatLayout({
-  children,
   className,
 }: {
   children?: React.ReactNode;

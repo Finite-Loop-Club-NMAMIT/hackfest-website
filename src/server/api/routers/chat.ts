@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, chatProcedure, createTRPCRouter } from "../trpc";
-import { z } from "zod";
 import {
   chatMessageZ,
   createRoomZ,
@@ -10,6 +10,49 @@ import {
 import pusherServer from "~/server/pusher";
 
 const ROOM_LIMIT = 5;
+
+type RoomWithMessageAndNotification = {
+  notification: number;
+  chatRoom: {
+    id: string;
+    name: string;
+    participants: Array<unknown>;
+    messages: Array<{
+      content: string;
+    }>;
+  };
+};
+
+type RoomWithChatRoom = {
+  chatRoom: {
+    id: string;
+    name: string;
+  };
+};
+
+
+type UserRoom = {
+  chatRoom: {
+    id: string;
+    name: string | null;
+    participants: Array<{
+      user: {
+        id: string;
+        name: string | null;
+      };
+    }>;
+  };
+};
+
+type MessageWithSender = {
+  id: string;
+  content: string;
+  createdAt: Date;
+  sender: {
+    id: string;
+    name: string | null;
+  };
+};
 
 export const chatRotuer = createTRPCRouter({
   getChatRoomList: chatProcedure.query(async ({ ctx }) => {
@@ -35,7 +78,7 @@ export const chatRotuer = createTRPCRouter({
             },
           },
         },
-      });
+      }) as RoomWithMessageAndNotification[];
 
       return rooms;
     } catch (error) {
@@ -58,7 +101,7 @@ export const chatRotuer = createTRPCRouter({
             },
           },
         },
-      });
+      }) as RoomWithChatRoom[];
 
       if (userRooms.length >= ROOM_LIMIT) {
         throw new TRPCError({
@@ -96,7 +139,7 @@ export const chatRotuer = createTRPCRouter({
           },
         },
       },
-    });
+    }) as RoomWithChatRoom[];
 
     if (userRooms.length >= ROOM_LIMIT) {
       throw new TRPCError({
@@ -171,7 +214,7 @@ export const chatRotuer = createTRPCRouter({
             },
           },
         },
-      });
+      }) as { chatRoom: UserRoom["chatRoom"] } | null;
 
       return {
         status: "success",
@@ -209,7 +252,7 @@ export const chatRotuer = createTRPCRouter({
           orderBy: {
             createdAt: "asc",
           },
-        });
+        }) as MessageWithSender[];
 
         return {
           status: "success",
@@ -229,6 +272,11 @@ export const chatRotuer = createTRPCRouter({
     .input(chatMessageZ)
     .mutation(async ({ ctx, input }) => {
       try {
+        type TransactionResult = [
+          MessageWithSender, 
+          Array<{userId: string}>
+        ];
+        
         const data = await ctx.db.$transaction([
           // create message
           ctx.db.message.create({
@@ -261,7 +309,7 @@ export const chatRotuer = createTRPCRouter({
               userId: true,
             },
           }),
-        ]);
+        ]) as TransactionResult;
 
         if (data[0] === null) {
           throw new TRPCError({
@@ -275,15 +323,15 @@ export const chatRotuer = createTRPCRouter({
         });
 
         if (data[1] !== null) {
-          await Promise.all([
+          await Promise.all(
             data[1].map((user) =>
               pusherServer.trigger(user.userId, "notification", {
                 sender: ctx.session.user.id,
                 roomId: input.roomId,
                 data: data[0],
-              }),
-            ),
-          ]);
+              })
+            )
+          );
         }
 
         return {

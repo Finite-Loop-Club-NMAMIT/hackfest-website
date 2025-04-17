@@ -21,6 +21,10 @@ const serverSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string(),
   ORGANIZATION_NAME: z.string(),
   GITHUB_PERSONAL_ACCESS_TOKEN: z.string(),
+  PUSHER_APP_ID: z.string().min(1),
+  PUSHER_KEY: z.string().min(1),
+  PUSHER_SECRET: z.string().min(1),
+  PUSHER_CLUSTER: z.string().min(1),
 });
 
 const clientSchema = z.object({
@@ -28,6 +32,8 @@ const clientSchema = z.object({
   NEXT_PUBLIC_CLOUDINARY_API_KEY: z.string(),
   NEXT_PUBLIC_CLOUDINARY_API_SECRET: z.string(),
   NEXT_PUBLIC_BASE_URL: z.string(),
+  NEXT_PUBLIC_PUSHER_KEY: z.string().min(1),
+  NEXT_PUBLIC_PUSHER_CLUSTER: z.string().min(1),
 });
 
 // Validate environment variables
@@ -44,6 +50,12 @@ const runtimeEnv = {
   NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
   ORGANIZATION_NAME: process.env.ORGANIZATION_NAME,
   GITHUB_PERSONAL_ACCESS_TOKEN: process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+  PUSHER_APP_ID: process.env.PUSHER_APP_ID,
+  PUSHER_KEY: process.env.PUSHER_KEY,
+  PUSHER_SECRET: process.env.PUSHER_SECRET,
+  PUSHER_CLUSTER: process.env.PUSHER_CLUSTER,
+  NEXT_PUBLIC_PUSHER_KEY: process.env.NEXT_PUBLIC_PUSHER_KEY,
+  NEXT_PUBLIC_PUSHER_CLUSTER: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
 };
 
 // Validate server-side and client-side schemas
