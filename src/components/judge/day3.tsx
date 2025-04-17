@@ -23,7 +23,6 @@ import Tutorial from "./tutorial";
 import type { Step } from 'react-joyride';
 
 type RemarkWithJudge = NonNullable<RouterOutputs["judges"]["getDay3Teams"][number]["Remark"]>[number];
-type Team = RouterOutputs["judges"]["getDay3Teams"][number];
 
 const REMARK_DELIMITER = ';;;';
 
@@ -35,10 +34,10 @@ export default function DAY3() {
   });
   const teams = useMemo(() => teamsQuery.data ?? [], [teamsQuery.data]);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchTeamNo, setSearchTeamNo] = useState("");
+  // Update search states to match Day 1 and Day 2
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedTrack, setSelectedTrack] = useState<string>("all");
-  const [filteredTeams, setFilteredTeams] = useState<Team[]>([]);
+  
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -62,27 +61,27 @@ export default function DAY3() {
     return Array.from(tracks);
   }, [teamsQuery.data]);
 
-  useEffect(() => {
-    let currentTeams = teams;
-
+  // Update filtered teams to use unified search approach
+  const filteredTeams = useMemo(() => {
+    let filtered = teams;
+    
+    // Filter by track if not "all"
     if (selectedTrack !== "all") {
-      currentTeams = currentTeams.filter(team => team.IdeaSubmission?.track === selectedTrack);
+      filtered = filtered.filter(team => 
+        team.IdeaSubmission?.track === selectedTrack
+      );
     }
-
+    
+    // Filter by combined search (name or team number)
     if (searchQuery.trim() !== "") {
-      currentTeams = currentTeams.filter(team =>
-        team.name.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(team =>
+        team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        team.teamNo.toString().includes(searchQuery.trim())
       );
     }
-
-    if (searchTeamNo.trim() !== "") {
-      currentTeams = currentTeams.filter(team =>
-        team.teamNo.toString().includes(searchTeamNo.trim())
-      );
-    }
-
-    setFilteredTeams(currentTeams);
-  }, [teams, selectedTrack, searchQuery, searchTeamNo]);
+    
+    return filtered;
+  }, [teams, selectedTrack, searchQuery]);
 
   useEffect(() => {
       if (judgeInfoQuery.isSuccess && judgeInfoQuery.data && !judgeInfoQuery.data.tutorialShown) {
@@ -108,20 +107,19 @@ export default function DAY3() {
      });
   };
 
+  // Update the search handler to match Day 1 and Day 2
   const handleSearch = () => {
-      const index = filteredTeams.findIndex(team =>
-          searchQuery.trim() !== ""
-              ? team.name.toLowerCase().includes(searchQuery.toLowerCase())
-              : searchTeamNo.trim() !== ""
-              ? team.teamNo.toString().includes(searchTeamNo.trim())
-              : false
-      );
+      if (carouselApi && filteredTeams.length > 0) {
+          const index = filteredTeams.findIndex(team =>
+              team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              team.teamNo.toString().includes(searchQuery.trim())
+          );
 
-      if (index !== -1 && carouselApi) {
-          carouselApi.scrollTo(index);
-      } else if (searchQuery.trim() !== "" || searchTeamNo.trim() !== "") {
-          const searchTerm = searchQuery.trim() !== "" ? searchQuery : searchTeamNo;
-          toast.info(`Team matching "${searchTerm}" not found in the current filter.`);
+          if (index !== -1) {
+              carouselApi.scrollTo(index);
+          } else if (searchQuery.trim() !== "") {
+              toast.info(`No team matching "${searchQuery}" found in the current filter.`);
+          }
       }
   };
 
@@ -149,7 +147,7 @@ export default function DAY3() {
     };
   }, [carouselApi]);
 
-  // Simplified tutorial steps
+  // Update tutorial steps to match the updated search UI
   const day3TutorialSteps: Step[] = [
     {
       target: 'body',
@@ -159,7 +157,7 @@ export default function DAY3() {
     },
     {
       target: '.filter-search-controls',
-      content: 'Use these controls to find specific teams or filter by track.',
+      content: 'Use these controls to find specific teams by name or number, and filter by track.',
       placement: 'bottom',
     },
     {
@@ -211,40 +209,23 @@ export default function DAY3() {
       {teamsQuery.isSuccess && (
         <div className="flex h-screen w-full flex-col items-center justify-start px-2 py-4 md:p-8">
 
+          {/* Updated search and filter controls to match Day 1 and Day 2 */}
           <div className="filter-search-controls mb-4 flex w-full max-w-full flex-col items-center gap-3 px-2 md:max-w-4xl md:flex-row md:gap-4">
-            <div className="flex w-full flex-col gap-1 md:w-1/3">
-              <Label htmlFor="search-team-name" className="text-xs font-medium text-muted-foreground">Search Name</Label>
+            <div className="flex w-full flex-col gap-1 md:w-2/3">
+              <Label htmlFor="search-team" className="text-xs font-medium text-muted-foreground">Search Team Name or Number</Label>
               <div className="flex items-center gap-2">
                 <Input
-                  id="search-team-name"
+                  id="search-team"
                   type="text"
-                  placeholder="Team name..."
+                  placeholder="Enter team name or number..."
                   value={searchQuery}
-                  onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setSearchTeamNo("");
-                  }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-grow"
                 />
-                 <Button onClick={handleSearch} size="icon" variant="outline" aria-label="Search by Name" disabled={!searchQuery && !searchTeamNo} className="search-button">
-                   <Search className="h-4 w-4" />
-                 </Button>
+                <Button onClick={handleSearch} size="icon" variant="outline" aria-label="Search" className="search-button">
+                  <Search className="h-4 w-4" />
+                </Button>
               </div>
-            </div>
-
-            <div className="flex w-full flex-col gap-1 md:w-1/3">
-              <Label htmlFor="search-team-no" className="text-xs font-medium text-muted-foreground">Search Team #</Label>
-              <Input
-                id="search-team-no"
-                type="number"
-                placeholder="Team number..."
-                value={searchTeamNo}
-                onChange={(e) => {
-                    setSearchTeamNo(e.target.value);
-                    setSearchQuery("");
-                }}
-                className="flex-grow"
-              />
             </div>
 
             <div className="flex w-full flex-col gap-1 md:w-1/3">
@@ -287,8 +268,8 @@ export default function DAY3() {
 
                     return (
                       <CarouselItem key={team.id}>
-                        <Card className="h-[75vh] overflow-hidden rounded-lg border border-border bg-card shadow-lg md:h-[75vh]">
-                          <CardContent className="flex h-full flex-col items-center justify-between p-4 md:p-6 lg:p-8">
+                        <Card className="min-h-[75vh] overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-card shadow-lg md:min-h-[75vh]">
+                          <CardContent className="flex flex-col items-center justify-between p-4 md:p-6 lg:p-8">
                             <div className="team-info-header flex w-full flex-col items-center justify-center gap-3 border-b border-border pb-4 md:gap-4 md:pb-6">
                               <div className="flex w-full flex-col items-center gap-2 md:flex-row md:items-start md:justify-between">
                                  <div className="flex flex-col items-center text-center md:items-start md:text-left">
@@ -323,7 +304,7 @@ export default function DAY3() {
                               </div>
                             </div>
 
-                            <div className="judge-remarks-section flex h-auto max-h-[30%] w-full flex-col items-center justify-start overflow-y-auto py-3 md:max-h-[35%] md:py-4">
+                            <div className="judge-remarks-section flex w-full flex-col items-center justify-start py-3 md:py-4">
                               <h3 className="mb-2 text-base font-semibold text-foreground md:mb-3 md:text-lg">Judge Remarks</h3>
                               <div className="w-full space-y-2 rounded-lg border border-border bg-background/50 p-2 shadow-inner md:space-y-3 md:p-3">
                                 {allRemarks.length > 0 ? (

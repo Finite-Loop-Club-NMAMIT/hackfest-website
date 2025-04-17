@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import type { MouseEvent } from "react";
 import {
   Carousel,
@@ -12,7 +12,7 @@ import { api, type RouterOutputs } from "~/utils/api";
 import Spinner from "../spinner";
 import { Card, CardContent } from "../ui/card";
 import { toast } from "sonner";
-import { UserCircle, Info, X, Plus, Edit } from "lucide-react";
+import { UserCircle, Info, X, Plus, Edit, Search } from "lucide-react";
 import Image from "next/image";
 import {
   Tooltip,
@@ -33,6 +33,8 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import Tutorial from "./tutorial";
 import type { Step } from 'react-joyride';
 
@@ -203,6 +205,10 @@ export default function DAY2() {
   });
   const judgeType = judgeInfoQuery.data?.type;
 
+  // Add search and filter states
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedTrack, setSelectedTrack] = useState<string>("all");
+
   const criteriasQuery = api.judges.getCriterias.useQuery(
     {
       judgeType: judgeType as "DAY2_ROUND1" | "DAY2_ROUND2",
@@ -258,6 +264,42 @@ export default function DAY2() {
   const isError = teamsQuery.isError || judgeInfoQuery.isError || criteriasQuery.isError;
   const errorMessage = teamsQuery.error?.message ?? judgeInfoQuery.error?.message ?? criteriasQuery.error?.message;
 
+  // Filter teams based on search query and track
+  const filteredTeams = useMemo(() => {
+    if (!teams) return [];
+    
+    let filtered = teams;
+    
+    // Filter by track if not "all"
+    if (selectedTrack !== "all") {
+      filtered = filtered.filter(team => 
+        team.IdeaSubmission?.track === selectedTrack
+      );
+    }
+    
+    // Filter by team name or team number
+    if (searchQuery.trim() !== "") {
+      filtered = filtered.filter(team =>
+        team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        team.teamNo.toString().includes(searchQuery.trim())
+      );
+    }
+    
+    return filtered;
+  }, [teams, selectedTrack, searchQuery]);
+
+  // Get unique tracks for the filter dropdown
+  const uniqueTracks = useMemo(() => {
+    const tracks = new Set<string>();
+    tracks.add("all");
+    (teams ?? []).forEach(team => {
+      if (team.IdeaSubmission?.track) {
+        tracks.add(team.IdeaSubmission.track);
+      }
+    });
+    return Array.from(tracks);
+  }, [teams]);
+
   useEffect(() => {
       if (judgeInfoQuery.isSuccess && judgeInfoQuery.data && !judgeInfoQuery.data.tutorialShown) {
           const timer = setTimeout(() => setShowTutorial(true), 500);
@@ -301,6 +343,7 @@ export default function DAY2() {
   const handleRemarkChange = (index: number, value: string) => {
     const newRemarks = [...editingRemarks];
     newRemarks[index] = value;
+    setEditingRemarks(newRemarks);
   };
 
   const openRemarkModal = (team: TeamWithRemarks) => {
@@ -356,13 +399,34 @@ export default function DAY2() {
       markTutorialMutation.mutate();
   };
 
-  // Completely remade tutorial steps with simplified targeting
+  // Handle search button click
+  const handleSearch = () => {
+    if (carouselApi && filteredTeams.length > 0) {
+      const index = filteredTeams.findIndex(team =>
+          team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          team.teamNo.toString().includes(searchQuery.trim())
+      );
+
+      if (index !== -1) {
+          carouselApi.scrollTo(index);
+      } else if (searchQuery.trim() !== "") {
+          toast.info(`No team matching "${searchQuery}" found in the current filter.`);
+      }
+    }
+  };
+
+  // Update tutorial steps to include the new search and filter UI
   const day2TutorialSteps: Step[] = [
     {
       target: 'body',
       content: 'Welcome to the Day 2 Judging Dashboard! Let\'s walk through the scoring process.',
       placement: 'center',
       disableBeacon: true,
+    },
+    {
+      target: '.search-filter-controls',
+      content: 'Use these controls to search for teams by name or number, and filter by track.',
+      placement: 'bottom',
     },
     {
       target: '.carousel-container',
@@ -411,162 +475,210 @@ export default function DAY2() {
       )}
 
       {!isLoading && !isError && teams && teams.length > 0 && criterias && criterias.length > 0 && (
-        <div className="carousel-container flex w-full items-center justify-center px-2 py-4 md:px-6 md:py-10 overflow-hidden bg-background">
-          <Carousel 
-            className="m-auto flex w-full max-w-full items-center justify-center md:max-w-7xl" 
-            setApi={setCarouselApi}
-            opts={{
-              align: "center",
-              containScroll: "trimSnaps",
-            }}
-          >
-            <CarouselContent className="overflow-visible">
-              {teams.map((team, _index) => {
-                 const allRemarks = team.Remark ?? [];
-                 const judgeId = session?.user?.id;
-                 const currentJudgeRemark = judgeId ? allRemarks.find(r => r.Judge?.User?.some(u => u?.id === judgeId)) : undefined;
-                 const currentJudgeRemarkPoints = currentJudgeRemark?.remark ? currentJudgeRemark.remark.split(REMARK_DELIMITER).filter(p => p.trim() !== '') : [];
+        <div className="flex w-full flex-col items-center justify-center px-2 py-4 md:px-6 md:py-10 overflow-hidden bg-background">
+          {/* Search and Filter Controls */}
+          <div className="search-filter-controls mb-4 flex w-full max-w-full flex-col items-center gap-3 px-2 md:max-w-4xl md:flex-row md:gap-4">
+            <div className="flex w-full flex-col gap-1 md:w-2/3">
+              <Label htmlFor="search-team" className="text-xs font-medium text-muted-foreground">Search Team Name or Number</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="search-team"
+                  type="text"
+                  placeholder="Enter team name or number..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-grow"
+                />
+                <Button onClick={handleSearch} size="icon" variant="outline" aria-label="Search" className="search-button">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
 
-                return (
-                  <CarouselItem key={team.id}>
-                    <Card className="rounded-xl shadow-lg overflow-visible">
-                      <CardContent className="flex flex-col items-center justify-start p-4 md:p-6 lg:p-10 overflow-visible">
-                        <div className="team-info-header mb-4 flex w-full flex-col items-center justify-center gap-3 pb-4 md:mb-8 md:gap-5 md:pb-8">
-                          <div className="mb-4 flex w-full flex-col items-center justify-center gap-3 pb-4 md:mb-8 md:gap-5 md:pb-8">
-                            <div className="flex w-full flex-col items-center gap-2 md:flex-row md:items-start md:justify-between md:gap-4">
-                              <div className="flex w-full flex-col items-center text-center md:w-auto md:items-start md:text-left">
-                                <h1 className="w-full truncate text-center text-2xl font-bold text-foreground md:text-left md:text-4xl lg:text-6xl">
-                                  {team.name}
-                                </h1>
-                                <span className="mt-1 text-sm font-medium text-primary md:mt-1.5 md:text-lg">Team #{team.teamNo}</span>
-                              </div>
-                              <div className="flex flex-col items-center gap-2 flex-shrink-0 md:items-end">
-                                <TooltipProvider delayDuration={100}>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-muted-foreground md:px-4 md:py-1.5 md:text-base">
-                                        <Info className="h-3 w-3 md:h-5 md:w-5" />
-                                        <span className="hidden sm:inline">Track:</span> {team.IdeaSubmission?.track.replace(/_/g, ' ') ?? 'N/A'}
+            <div className="flex w-full flex-col gap-1 md:w-1/3">
+              <Label htmlFor="track-filter" className="text-xs font-medium text-muted-foreground">Filter by Track</Label>
+              <Select
+                value={selectedTrack}
+                onValueChange={(value) => setSelectedTrack(value)}
+              >
+                <SelectTrigger id="track-filter" className="flex-grow">
+                  <SelectValue placeholder="Select Track" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Tracks</SelectItem>
+                  {uniqueTracks.filter(track => track !== "all").map(track => (
+                    <SelectItem key={track} value={track}>
+                      {track.replace(/_/g, ' ')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {filteredTeams.length > 0 ? (
+            <div className="carousel-container flex w-full items-center justify-center overflow-hidden">
+              <Carousel 
+                className="m-auto flex w-full max-w-full items-center justify-center md:max-w-7xl" 
+                setApi={setCarouselApi}
+                opts={{
+                  align: "center",
+                  containScroll: "trimSnaps",
+                }}
+              >
+                <CarouselContent className="overflow-visible">
+                  {filteredTeams.map((team, _index) => {
+                     const allRemarks = team.Remark ?? [];
+                     const judgeId = session?.user?.id;
+                     const currentJudgeRemark = judgeId ? allRemarks.find(r => r.Judge?.User?.some(u => u?.id === judgeId)) : undefined;
+                     const currentJudgeRemarkPoints = currentJudgeRemark?.remark ? currentJudgeRemark.remark.split(REMARK_DELIMITER).filter(p => p.trim() !== '') : [];
+
+                    return (
+                      <CarouselItem key={team.id}>
+                        <Card className="rounded-xl shadow-lg overflow-visible">
+                          <CardContent className="flex flex-col items-center justify-start p-4 md:p-6 lg:p-10 overflow-visible">
+                            <div className="team-info-header mb-4 flex w-full flex-col items-center justify-center gap-3 pb-4 md:mb-8 md:gap-5 md:pb-8">
+                              <div className="mb-4 flex w-full flex-col items-center justify-center gap-3 pb-4 md:mb-8 md:gap-5 md:pb-8">
+                                <div className="flex w-full flex-col items-center gap-2 md:flex-row md:items-start md:justify-between md:gap-4">
+                                  <div className="flex w-full flex-col items-center text-center md:w-auto md:items-start md:text-left">
+                                    <h1 className="w-full truncate text-center text-2xl font-bold text-foreground md:text-left md:text-4xl lg:text-6xl">
+                                      {team.name}
+                                    </h1>
+                                    <span className="mt-1 text-sm font-medium text-primary md:mt-1.5 md:text-lg">Team #{team.teamNo}</span>
+                                  </div>
+                                  <div className="flex flex-col items-center gap-2 flex-shrink-0 md:items-end">
+                                    <TooltipProvider delayDuration={100}>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <div className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-muted-foreground md:px-4 md:py-1.5 md:text-base">
+                                            <Info className="h-3 w-3 md:h-5 md:w-5" />
+                                            <span className="hidden sm:inline">Track:</span> {team.IdeaSubmission?.track.replace(/_/g, ' ') ?? 'N/A'}
+                                          </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>The track this team submitted their idea under.</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  </div>
+                                </div>
+
+                                <div className="flex w-full flex-wrap items-start justify-center gap-x-3 gap-y-2 pt-3 md:gap-x-6 md:pt-5">
+                                    {team.Members.map((member) => (
+                                      <div key={member.name} className="flex w-16 flex-col items-center text-center md:w-24">
+                                        {member.image ? (
+                                          <Image
+                                            src={member.image}
+                                            alt={member.name ?? 'Member'}
+                                            width={40}
+                                            height={40}
+                                            className="rounded-full object-cover ring-2 ring-offset-2 ring-offset-card ring-border transition-transform duration-200 hover:scale-110 hover:ring-primary md:h-14 md:w-14"
+                                          />
+                                        ) : (
+                                          <UserCircle className="h-10 w-10 text-muted-foreground transition-colors duration-200 hover:text-primary md:h-14 md:w-14" />
+                                        )}
+                                        <span className="mt-1 w-full text-[10px] text-muted-foreground md:mt-2 md:text-sm">{member.name}</span>
                                       </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>The track this team submitted their idea under.</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
+                                    ))}
+                                </div>
                               </div>
                             </div>
 
-                            <div className="flex w-full flex-wrap items-start justify-center gap-x-3 gap-y-2 pt-3 md:gap-x-6 md:pt-5">
-                                {team.Members.map((member) => (
-                                  <div key={member.name} className="flex w-16 flex-col items-center text-center md:w-24">
-                                    {member.image ? (
-                                      <Image
-                                        src={member.image}
-                                        alt={member.name ?? 'Member'}
-                                        width={40}
-                                        height={40}
-                                        className="rounded-full object-cover ring-2 ring-offset-2 ring-offset-card ring-border transition-transform duration-200 hover:scale-110 hover:ring-primary md:h-14 md:w-14"
-                                      />
-                                    ) : (
-                                      <UserCircle className="h-10 w-10 text-muted-foreground transition-colors duration-200 hover:text-primary md:h-14 md:w-14" />
+                            <div className="flex w-full flex-grow flex-col gap-y-4 pt-2 md:gap-y-6 md:pt-4">
+                              <div className="remarks-section flex w-full flex-col items-center justify-start">
+                                 <div className="mb-3 flex w-full items-center justify-between md:mb-6">
+                                    <h3 className="text-xl font-semibold text-foreground md:text-3xl lg:text-4xl">Judge Remarks</h3>
+                                    {(judgeType === "DAY2_ROUND1" || judgeType === "DAY2_ROUND2") && (
+                                        <Button variant="outline" size="sm" onClick={() => openRemarkModal(team)} className="edit-remarks-button md:size-sm">
+                                            <Edit className="mr-1 h-3 w-3 md:mr-2 md:h-4 md:w-4" />
+                                            {currentJudgeRemarkPoints.length > 0 ? "Edit" : "Add"} <span className="hidden md:inline ml-1">Remarks</span>
+                                        </Button>
                                     )}
-                                    <span className="mt-1 w-full text-[10px] text-muted-foreground md:mt-2 md:text-sm">{member.name}</span>
-                                  </div>
-                                ))}
+                                 </div>
+                                 <div className="w-full flex-grow space-y-3 overflow-y-auto rounded-lg border border-border p-2 shadow-inner md:space-y-4 md:p-4">
+                                   {allRemarks.length > 0 ? (
+                                     allRemarks.map((remarkEntry, remarkIdx) => {
+                                       const remarkPoints = remarkEntry.remark ? remarkEntry.remark.split(REMARK_DELIMITER).filter(point => point.trim() !== '') : [];
+                                       const judgeName = remarkEntry.Judge?.User?.[0]?.name ?? `Unknown Judge (${remarkEntry.Judge?.type ?? 'N/A'})`;
+                                       const isCurrentUser = remarkEntry.Judge?.User?.some(u => u?.id === judgeId);
+
+                                       if (remarkPoints.length === 0) return null;
+
+                                       return (
+                                         <div key={remarkIdx} className={`mb-2 rounded-md p-2 ${isCurrentUser ? 'border border-primary/30' : ''} md:mb-3 md:p-3`}>
+                                           <p className={`mb-1 text-xs font-semibold ${isCurrentUser ? 'text-primary' : 'text-muted-foreground'} md:mb-2 md:text-sm`}>
+                                             {isCurrentUser ? "Your Remarks:" : `${judgeName}'s Remarks:`}
+                                           </p>
+                                           <ul className="list-disc space-y-0.5 pl-4 text-sm text-muted-foreground md:space-y-1 md:pl-5 md:text-base">
+                                             {remarkPoints.map((point, pointIdx) => (
+                                               <li key={`${remarkIdx}-${pointIdx}`}>{point}</li>
+                                             ))}
+                                           </ul>
+                                         </div>
+                                       );
+                                     })
+                                   ) : (
+                                     <p className="flex h-full items-center justify-center text-center text-sm text-muted-foreground md:text-base">
+                                       No remarks were found for this team.
+                                     </p>
+                                   )}
+                                   {allRemarks.length > 0 && allRemarks.every(r => !r.remark || r.remark.split(REMARK_DELIMITER).every(p => p.trim() === '')) && (
+                                      <p className="flex h-full items-center justify-center text-center text-sm text-muted-foreground md:text-base">
+                                          No remarks were found for this team.
+                                      </p>
+                                   )}
+                                 </div>
+                              </div>
+
+                              <div className="scoring-section flex w-full flex-col items-center justify-start">
+                                <h3 className="mb-3 text-xl font-semibold text-foreground md:mb-6 md:text-3xl lg:text-4xl">Score Criteria</h3>
+                                <div className="w-full space-y-4 rounded-lg border border-border p-2 pr-3 shadow-inner md:space-y-5 md:p-4 md:pr-5">
+                                  {criterias.map((criteria, criteriaIndex) => {
+                                    const currentScore = team.Scores?.find(
+                                      (score) => score.criteriaId === criteria.id,
+                                    )?.score;
+
+                                    return (
+                                      <div
+                                        className="grid grid-cols-5 items-center gap-2 rounded-md p-1.5 transition-colors md:grid-cols-3 md:gap-4 md:p-3"
+                                        key={criteria.id}
+                                      >
+                                        <span className="col-span-3 text-sm font-medium text-foreground md:col-span-2 md:text-lg">{criteria.criteria}</span>
+                                        <div className={`col-span-2 flex justify-end pr-0 relative pb-3 md:col-span-1 md:pr-10 md:pb-0 ${criteriaIndex === 0 ? 'star-rating-example' : ''}`}>
+                                           <StarRating
+                                              currentRating={currentScore}
+                                              onRatingChange={(newRating) => {
+                                                  updateScore.mutate({
+                                                      teamId: team.id,
+                                                      criteriaId: criteria.id,
+                                                      score: newRating,
+                                                  });
+                                              }}
+                                              numberOfStars={5}
+                                              size={20}
+                                           />
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-
-                        <div className="flex w-full flex-grow flex-col gap-y-4 pt-2 md:gap-y-6 md:pt-4">
-                          <div className="remarks-section flex w-full flex-col items-center justify-start">
-                             <div className="mb-3 flex w-full items-center justify-between md:mb-6">
-                                <h3 className="text-xl font-semibold text-foreground md:text-3xl lg:text-4xl">Judge Remarks</h3>
-                                {(judgeType === "DAY2_ROUND1" || judgeType === "DAY2_ROUND2") && (
-                                    <Button variant="outline" size="sm" onClick={() => openRemarkModal(team)} className="edit-remarks-button md:size-sm">
-                                        <Edit className="mr-1 h-3 w-3 md:mr-2 md:h-4 md:w-4" />
-                                        {currentJudgeRemarkPoints.length > 0 ? "Edit" : "Add"} <span className="hidden md:inline ml-1">Remarks</span>
-                                    </Button>
-                                )}
-                             </div>
-                             <div className="w-full flex-grow space-y-3 overflow-y-auto rounded-lg border border-border p-2 shadow-inner md:space-y-4 md:p-4">
-                               {allRemarks.length > 0 ? (
-                                 allRemarks.map((remarkEntry, remarkIdx) => {
-                                   const remarkPoints = remarkEntry.remark ? remarkEntry.remark.split(REMARK_DELIMITER).filter(point => point.trim() !== '') : [];
-                                   const judgeName = remarkEntry.Judge?.User?.[0]?.name ?? `Unknown Judge (${remarkEntry.Judge?.type ?? 'N/A'})`;
-                                   const isCurrentUser = remarkEntry.Judge?.User?.some(u => u?.id === judgeId);
-
-                                   if (remarkPoints.length === 0) return null;
-
-                                   return (
-                                     <div key={remarkIdx} className={`mb-2 rounded-md p-2 ${isCurrentUser ? 'border border-primary/30' : ''} md:mb-3 md:p-3`}>
-                                       <p className={`mb-1 text-xs font-semibold ${isCurrentUser ? 'text-primary' : 'text-muted-foreground'} md:mb-2 md:text-sm`}>
-                                         {isCurrentUser ? "Your Remarks:" : `${judgeName}'s Remarks:`}
-                                       </p>
-                                       <ul className="list-disc space-y-0.5 pl-4 text-sm text-muted-foreground md:space-y-1 md:pl-5 md:text-base">
-                                         {remarkPoints.map((point, pointIdx) => (
-                                           <li key={`${remarkIdx}-${pointIdx}`}>{point}</li>
-                                         ))}
-                                       </ul>
-                                     </div>
-                                   );
-                                 })
-                               ) : (
-                                 <p className="flex h-full items-center justify-center text-center text-sm text-muted-foreground md:text-base">
-                                   No remarks were found for this team.
-                                 </p>
-                               )}
-                               {allRemarks.length > 0 && allRemarks.every(r => !r.remark || r.remark.split(REMARK_DELIMITER).every(p => p.trim() === '')) && (
-                                  <p className="flex h-full items-center justify-center text-center text-sm text-muted-foreground md:text-base">
-                                      No remarks were found for this team.
-                                  </p>
-                               )}
-                             </div>
-                          </div>
-
-                          <div className="scoring-section flex w-full flex-col items-center justify-start">
-                            <h3 className="mb-3 text-xl font-semibold text-foreground md:mb-6 md:text-3xl lg:text-4xl">Score Criteria</h3>
-                            <div className="w-full space-y-4 rounded-lg border border-border p-2 pr-3 shadow-inner md:space-y-5 md:p-4 md:pr-5">
-                              {criterias.map((criteria, criteriaIndex) => {
-                                const currentScore = team.Scores?.find(
-                                  (score) => score.criteriaId === criteria.id,
-                                )?.score;
-
-                                return (
-                                  <div
-                                    className="grid grid-cols-5 items-center gap-2 rounded-md p-1.5 transition-colors md:grid-cols-3 md:gap-4 md:p-3"
-                                    key={criteria.id}
-                                  >
-                                    <span className="col-span-3 text-sm font-medium text-foreground md:col-span-2 md:text-lg">{criteria.criteria}</span>
-                                    <div className={`col-span-2 flex justify-end pr-0 relative pb-3 md:col-span-1 md:pr-10 md:pb-0 ${criteriaIndex === 0 ? 'star-rating-example' : ''}`}>
-                                       <StarRating
-                                          currentRating={currentScore}
-                                          onRatingChange={(newRating) => {
-                                              updateScore.mutate({
-                                                  teamId: team.id,
-                                                  criteriaId: criteria.id,
-                                                  score: newRating,
-                                              });
-                                          }}
-                                          numberOfStars={5}
-                                          size={20}
-                                       />
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                );
-              })}
-            </CarouselContent>
-            <CarouselPrevious className="carousel-navigation-prev absolute left-1 top-1/2 -translate-y-1/2 w-10 p-1 text-foreground hover:text-foreground hidden lg:inline-flex lg:left-[-70px] lg:w-16 lg:p-2" />
-            <CarouselNext className="carousel-navigation-next absolute right-1 top-1/2 -translate-y-1/2 w-10 p-1 text-foreground hover:text-foreground hidden lg:inline-flex lg:right-[-70px] lg:w-16 lg:p-2" />
-          </Carousel>
+                          </CardContent>
+                        </Card>
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+                <CarouselPrevious className="carousel-navigation-prev absolute left-1 top-1/2 -translate-y-1/2 w-10 p-1 text-foreground hover:text-foreground hidden lg:inline-flex lg:left-[-70px] lg:w-16 lg:p-2" />
+                <CarouselNext className="carousel-navigation-next absolute right-1 top-1/2 -translate-y-1/2 w-10 p-1 text-foreground hover:text-foreground hidden lg:inline-flex lg:right-[-70px] lg:w-16 lg:p-2" />
+              </Carousel>
+            </div>
+          ) : (
+             <div className="flex flex-grow items-center justify-center">
+                 <p className="text-xl text-muted-foreground">No teams match the current filter or search.</p>
+             </div>
+          )}
         </div>
       )}
 
