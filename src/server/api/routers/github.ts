@@ -35,6 +35,7 @@ export const githubRouter = createTRPCRouter({
         select: {
           id: true,
           name: true,
+          teamNo: true,
           Members: {
             select: {
               github: true
@@ -48,8 +49,8 @@ export const githubRouter = createTRPCRouter({
       const failedTeams: string[] = [];
 
       for (const team of teams) {
-        const githubTeamName = tName2GHTName(team.name)
-        const githubRepoName = tName2GHRName(team.name)
+        const githubTeamName = tName2GHTName(team.teamNo.toString())
+        const githubRepoName = tName2GHRName(team.teamNo.toString())
 
         try {
           const githubTeam = await octokit.rest.teams.create({
@@ -574,7 +575,9 @@ export const githubRouter = createTRPCRouter({
         include: {
           team: {
             select: {
-              name: true
+              name: true,
+              // FIXME: changed to teamNo
+              teamNo: true,
             }
           }
         }
@@ -585,7 +588,7 @@ export const githubRouter = createTRPCRouter({
         throw new TRPCClientError("Could not find team")
       }
 
-      const githubRepoName = tName2GHRName(githubTeam.team.name, githubTeam.githubRepoId.length + 1)
+      const githubRepoName = tName2GHRName(githubTeam.team.teamNo.toString(), githubTeam.githubRepoId.length + 1)
 
       const githubRepo = await octokit.request('POST /orgs/{org}/repos', {
         org: ORGANIZATION_NAME,

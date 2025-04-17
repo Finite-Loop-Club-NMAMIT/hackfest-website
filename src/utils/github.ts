@@ -1,9 +1,9 @@
 function tName2GHTName(name: string) {
-  return `HF24-${name}`
+  return `HF25-${name}`
 }
 
 function tName2GHRName(name: string, which?: number) {
-  return `HF24-${name}${which ? "-" + which : ""}`
+  return `HF25-${name}${which ? "-" + which : ""}`
 }
 
 export {

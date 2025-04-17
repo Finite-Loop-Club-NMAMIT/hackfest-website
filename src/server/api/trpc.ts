@@ -236,4 +236,30 @@ export const remarkProcedure = t.procedure.use(({ ctx, next }) => {
   });
 });
 
+export const chatProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (!ctx.session || !ctx.session.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
 
+  const user = await ctx.db.user.findFirst({
+    where: { id: ctx.session.user.id },
+  });
+
+  // who among the core can access the chat feature
+  // currently only ADMIN and attended PARTICIPANTS can access the chat feature
+  const isCore = ["ADMIN"];
+
+  if (
+    user !== null &&
+    (isCore.includes(user.role) ||
+      (user.role === "PARTICIPANT" && user.attended))
+  ) {
+    return next({
+      ctx: {
+        session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  }
+
+  throw new TRPCError({ code: "UNAUTHORIZED" });
+});
