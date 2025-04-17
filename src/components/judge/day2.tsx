@@ -167,7 +167,7 @@ const StarRating: React.FC<StarRatingProps> = ({
              aria-label={`Rating: ${currentTextScore} out of ${MAX_SCORE}`} 
            >
               <div className="flex" aria-hidden="true">
-                {[...Array(numberOfStars)].map((_, index) => (
+                {[...Array<number>(numberOfStars)].map((_, index: number) => (
                   <StarIcon key={`bg-${index}`} size={size} color="currentColor" className="text-gray-300" />
                 ))}
               </div>
@@ -177,7 +177,7 @@ const StarRating: React.FC<StarRatingProps> = ({
                 style={{ width: `${fillPercentage}%` }} 
                 aria-hidden="true"
               >
-                {[...Array(numberOfStars)].map((_, index) => (
+                {[...Array<number>(numberOfStars)].map((_, index: number) => (
                    <StarIcon key={`fg-${index}`} size={size} color="currentColor" className="text-yellow-400" />
                 ))}
               </div>

@@ -49,7 +49,6 @@ const config = {
    * @see https://github.com/vercel/next.js/issues/41980
    */
 
-  distDir: process.env.BUILD_DIR ?? ".next",
   i18n: {
     locales: ["en"],
     defaultLocale: "en",

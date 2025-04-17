@@ -161,7 +161,7 @@ export default function WinnersPage() {
   );
 
   const trackWinners = data?.teams.filter(
-    (team) => team.teamProgress === "TRACK_WINNER"
+    (team) => team.teamProgress === "TRACK"
   );
 
   return (
