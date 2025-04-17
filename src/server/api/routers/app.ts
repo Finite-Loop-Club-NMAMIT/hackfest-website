@@ -15,6 +15,10 @@ export const appSettingsRouter = createTRPCRouter({
     return appSettings?.isResultOpen;
   }),
   
+  getHackfestStartTime: publicProcedure.query(async ({ ctx }) => {
+    const appSettings = await ctx.db.appSettings.findFirst();
+    return appSettings?.isHackfestStarted;
+  }),
 
   isWinnersDeclared: publicProcedure.query(async ({ ctx }) => {
     const appSettings = await ctx.db.appSettings.findFirst();
@@ -143,6 +147,24 @@ export const appSettingsRouter = createTRPCRouter({
           sessionUser: ctx.session.user.email,
           auditType: "App Settings",
           description: `Winners declared status set to ${input ? "declared" : "not declared"}`,
+        },
+      });
+    }),
+  
+  setHackfestStartTime: adminProcedure
+    .input(z.boolean())
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.appSettings.update({
+        where: { id: 1 },
+        data: {
+          isHackfestStarted: input ? new Date() : null,
+        },
+      });
+      return await ctx.db.auditLog.create({
+        data: {
+          sessionUser: ctx.session.user.email,
+          auditType: "App Settings",
+          description: `Hackfest start time ${input ? "set to current time" : "reset to null"}`,
         },
       });
     }),

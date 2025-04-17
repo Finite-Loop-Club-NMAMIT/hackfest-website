@@ -15,7 +15,6 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-  getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
   type ColumnDef,
@@ -23,14 +22,17 @@ import {
   type SortingState,
   type ColumnFiltersState,
 } from "@tanstack/react-table";
-import { Button } from "../ui/button";
 import { toast } from "sonner";
 import type { Team } from "@prisma/client";
-import { Check, X } from "lucide-react";
 import { TickButton, WrongButton } from "~/components/ui/monochrome-buttons";
 
-interface MembersRow {
-  members: { college: { name: string } }[];
+interface TeamWithMembers extends Team {
+  Members: {
+    id: string;
+    name: string;
+    email: string;
+    isLeader: boolean;
+  }[];
 }
 
 export default function FinalParticipantsTable({
@@ -38,7 +40,7 @@ export default function FinalParticipantsTable({
   dataRefecth,
 }: {
   data:
-    | inferRouterOutputs<typeof teamRouter>["getTeamsList"]
+    | inferRouterOutputs<typeof teamRouter>["getAttendanceList"]
     | null
     | undefined;
   dataRefecth: () => void;
@@ -69,47 +71,76 @@ export default function FinalParticipantsTable({
 
   const columns: ColumnDef<
     unknown,
-    inferRouterOutputs<typeof teamRouter>["getTeamsList"]
+    inferRouterOutputs<typeof teamRouter>["getAttendanceList"]
   >[] = [
     {
-      accessorKey: "name",
+      id: "index",
       header: "ID",
+      cell: (cell) => cell.row.index,
     },
     {
-      accessorKey: "members",
+      accessorKey: "name",
       header: "Team Name",
-      cell: (members) => {
-        const team = members.row.original as MembersRow;
+    },
+    {
+      accessorKey: "teamNo",
+      header: "Team Number", 
+      cell: (cell) => {
+        const team = cell.cell.row.original as Team;
         return (
-          <span>
-            {team.members && team.members.length > 0
-              ? team.members[0]?.college?.name
-              : "No college"}
+          <span className="font-medium text-primary px-2 py-1 rounded-md bg-primary/10">
+            {team.teamNo}
           </span>
         );
       },
     },
     {
+      accessorKey: "Members",
+      header: "Team Members",
+      cell: (cell) => {
+        const team = cell.cell.row.original as TeamWithMembers;
+        return (
+          <div className="flex flex-col gap-1">
+            {team.Members && team.Members.length > 0 ? (
+              team.Members.map((member) => (
+                <div key={member.id} className="flex items-center">
+                  <span className={member.isLeader ? "font-bold" : ""}>
+                    {member.name} {member.isLeader && "(Leader)"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <span>No Members</span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "",
-      header: "College",
+      header: "Actions",
       cell: (cell) => {
         const team = cell.cell.row.original as Team;
         return (
-          <div className="flex">
+          <div className="flex justify-center">
             {!team.attended ? (
-              <TickButton
+              <button
                 onClick={async () => {
                   await ToggleAttendance(team.id);
                 }}
-                active={false}
-              />
+                className="px-4 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                PRESENT
+              </button>
             ) : (
-              <WrongButton
+              <button
                 onClick={async () => {
                   await ToggleAttendance(team.id);
                 }}
-                active={false}
-              />
+                className="px-4 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                ABSENT
+              </button>
             )}
           </div>
         );
@@ -121,11 +152,9 @@ export default function FinalParticipantsTable({
     data: data ?? [],
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    // onRowSelectionChange: getSelection,
     state: {
       sorting,
       columnFilters,
@@ -143,7 +172,7 @@ export default function FinalParticipantsTable({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-center">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -158,14 +187,13 @@ export default function FinalParticipantsTable({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, index) => (
+              table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
-                  <TableCell key={index}>{index}</TableCell>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-center">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -186,41 +214,6 @@ export default function FinalParticipantsTable({
             )}
           </TableBody>
         </Table>
-
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.firstPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            {"<<"}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            {"<"}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            {">"}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.lastPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            {">>"}
-          </Button>
-        </div>
       </div>
     </>
   );

@@ -177,6 +177,7 @@ model AppSettings {
   isEventStarted        Boolean @default(false)
   isResultOpen          Boolean @default(false)
   isWinnersDeclared      Boolean @default(false)
+  isHackfestStarted     DateTime? 
 }
 
 model Remark {

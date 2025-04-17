@@ -19,45 +19,51 @@ import {
 } from "~/components/ui/select";
 
 export default function TeamAttendance() {
-  const res = api.team.getTeamsList.useQuery();
+  const res = api.team.getAttendanceList.useQuery();
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [judgeSearchQuery] = useState<string>("");
+  const [selectedTrack, setSelectedTrack] = useState<string>("ALL");
 
   const [selectedTeams, setSelectedTeams] = useState(res.data);
-  const [paymentQuery, setPaymentQuery] = useState("ALL");
-  const [selectedJudge, setSelectedJudge] = useState("ALL");
 
   const { data, status } = useSession();
 
-  // Simulated judges data (replace with actual API call if available)
-  const judges = [
-    { id: "1", name: "Judge One" },
-    { id: "2", name: "Judge Two" },
-    { id: "3", name: "Judge Three" },
-    { id: "4", name: "Judge Four" },
+  // Track options based on your existing system
+  const trackOptions = [
+    "ALL",
+    "FINTECH",
+    "HEALTHCARE",
+    "SUSTAINABLE_DEVELOPMENT",
+    "LOGISTICS",
+    "OPEN_INNOVATION"
   ];
-
-  const filteredJudges = judges.filter(judge => 
-    judge.name.toLowerCase().includes(judgeSearchQuery.toLowerCase())
-  );
 
   useEffect(() => {
     setSelectedTeams(() => {
       if (!res) return [];
-      if (searchQuery === "" && paymentQuery === "ALL") return res.data;
-      const newSearchQuery = searchQuery.trim().toLowerCase();
-      const partiallyFiltered = res?.data?.filter((team) => {
-        const teamName = team.name.toLowerCase();
-        return (
-          teamName.includes(newSearchQuery) || team.id.includes(newSearchQuery)
-        );
-      });
-      if (paymentQuery === "ALL") return partiallyFiltered;
-      return partiallyFiltered?.filter(
-        (team) => team.paymentStatus === paymentQuery,
-      );
+      
+      let filteredTeams = res.data;
+      
+      // Filter by search query
+      if (searchQuery !== "") {
+        const newSearchQuery = searchQuery.trim().toLowerCase();
+        filteredTeams = filteredTeams?.filter((team) => {
+          const teamName = team.name.toLowerCase();
+          return (
+            teamName.includes(newSearchQuery) || team.teamNo.toString().includes(newSearchQuery)
+          );
+        });
+      }
+      
+      // Filter by track
+      if (selectedTrack !== "ALL") {
+        filteredTeams = filteredTeams?.filter((team) => {
+          return team.IdeaSubmission?.track === selectedTrack;
+        });
+      }
+      
+      return filteredTeams;
     });
-  }, [res.data, searchQuery, paymentQuery, res]);
+  }, [res.data, searchQuery, selectedTrack, res]);
 
   if (status === "loading")
     return (
@@ -89,48 +95,30 @@ export default function TeamAttendance() {
             <CardTitle>Search & Filter Teams</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <p className="text-sm font-medium">Team ID/Name</p>
                 <Input
                   placeholder="Search Team ID/Name"
-                  className="w-full  text-gray-300 focus:border-gray-500"
+                  className="w-full text-gray-300 focus:border-gray-500"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-
+              
               <div className="space-y-2">
-                <p className="text-sm font-medium">Payment Status</p>
-                <Select value={paymentQuery} onValueChange={setPaymentQuery}>
-                  <SelectTrigger className=" text-gray-300">
-                    <SelectValue placeholder="All" />
+                <p className="text-sm font-medium">Track</p>
+                <Select value={selectedTrack} onValueChange={setSelectedTrack}>
+                  <SelectTrigger className="text-gray-300">
+                    <SelectValue placeholder="Select Track" />
                   </SelectTrigger>
-                  <SelectContent className="">
+                  <SelectContent className="max-h-[200px]">
                     <SelectGroup>
-                      <SelectLabel>Status</SelectLabel>
-                      <SelectItem value="ALL">All</SelectItem>
-                      <SelectItem value="PAID">Paid</SelectItem>
-                      <SelectItem value="PENDING">Pending</SelectItem>
-                      <SelectItem value="FAILED">Failed</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Assign Judge</p>
-                <Select value={selectedJudge} onValueChange={setSelectedJudge}>
-                  <SelectTrigger className=" text-gray-300">
-                    <SelectValue placeholder="Select Judge" />
-                  </SelectTrigger>
-                  <SelectContent className=" max-h-[200px]">
-                    <SelectGroup>
-                      <SelectLabel>Judge</SelectLabel>
-                      <SelectItem value="ALL">All Judges</SelectItem>
-                      {filteredJudges.map(judge => (
-                        <SelectItem key={judge.id} value={judge.name}>
-                          {judge.name}
+                      <SelectLabel>Track</SelectLabel>
+                      {trackOptions.map(track => (
+                        <SelectItem key={track} value={track}>
+                          {track === "OPEN_INNOVATION" ? "Open Innovation" : 
+                            track.charAt(0).toUpperCase() + track.slice(1).toLowerCase()}
                         </SelectItem>
                       ))}
                     </SelectGroup>
@@ -155,7 +143,13 @@ export default function TeamAttendance() {
               ) : (
                 <FinalParticipantsTable
                   data={selectedTeams?.filter(
-                    (team) => team.teamProgress === "SELECTED",
+                    (team) =>
+                      team.teamProgress === "SELECTED" ||
+                      team.teamProgress === "TOP15" ||
+                      team.teamProgress === "WINNER" ||
+                      team.teamProgress === "RUNNER" ||
+                      team.teamProgress === "SECOND_RUNNER" ||
+                      team.teamProgress === "TRACK",
                   )}
                   dataRefecth={res.refetch}
                 />

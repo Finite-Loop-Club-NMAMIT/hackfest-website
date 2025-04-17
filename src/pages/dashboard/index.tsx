@@ -9,6 +9,7 @@ import Organiser from "./organiser";
 import TeamAttendance from "./team";
 import SuperVaildator from "./super-validator";
 import Judge from "./judge";
+import { CountdownTimer } from "~/components/CountdownTimer";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -133,8 +134,8 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="max-w-[100vw] overflow-x-hidden">
-        {/* Enhanced Google-style Clock with Internet Time */}
-        <div className="flex justify-center items-center mb-8">
+        {/* Enhanced Google-style Clock with Internet Time and Countdown */}
+        <div className="flex justify-center items-center gap-4 mb-8 flex-wrap">
           <div className="rounded-2xl shadow-lg p-6 backdrop-blur-lg min-w-[320px]">
             {isLoadingTime ? (
               <div className="flex flex-col items-center justify-center">
@@ -162,6 +163,7 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+          <CountdownTimer />
         </div>
 
         {availableTabs.length > 1 && (

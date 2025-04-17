@@ -978,7 +978,7 @@ export default function ScoreTab() {
       <h2 className="text-4xl text-center font-semibold mb-6">Jury Scoring Dashboard</h2>
 
       {/* Team Statistics Summary */}
-      <div className="mb-6 bg-gray-800/70 border border-gray-700 rounded-lg p-4">
+      <div className="mb-6 border border-gray-700 rounded-lg p-4">
         <h3 className="text-lg font-medium mb-3 text-gray-200">Team Statistics</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-center">
@@ -1114,7 +1114,7 @@ export default function ScoreTab() {
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               {sortOrder === "none" && (
-                <path fillRule="evenodd" d="M10 3a1 1 0 000 2h2a1 1 0 100-2H9zM6.293 10.293a1 1 0 011.414 0L10 12.586l2.293-2.293a1 1 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414zM6.293 10.293a1 1 0 011.414 0L10 12.586l2.293-2.293a1 1 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M10 3a1 1 0 000 2h2a1 1 0 100-2H9zM6.293 10.293a1 1 0 011.414 0L10 12.586l3.293-3.293a1 1 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414zM6.293 10.293a1 1 0 011.414 0L10 12.586l2.293-2.293a1 1 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
               )}
               {sortOrder === "asc" && (
                 <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l-6-6a1 1 0 011.414-1.414l6 6a1 1 0 011.414 0l6-6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />

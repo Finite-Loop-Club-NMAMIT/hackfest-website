@@ -17,6 +17,7 @@ export const ResultsVisibilityToggle = () => {
     top60Validated: false,
     eventStarted: false,
     winnersDeclared: false,
+    hackfestStarted: false,
   });
 
   type ToggleKey = keyof typeof loadingStates;
@@ -71,6 +72,13 @@ export const ResultsVisibilityToggle = () => {
     onSettled: () => updateLoadingState("winnersDeclared", false),
   });
 
+  const hackfestStartMutation = api.appSettings.setHackfestStartTime.useMutation({
+    onMutate: () => updateLoadingState("hackfestStarted", true),
+    onSuccess: handleSuccess("Hackfest start time updated"),
+    onError: handleError,
+    onSettled: () => updateLoadingState("hackfestStarted", false),
+  });
+
   // Helper functions
   function updateLoadingState(key: ToggleKey, value: boolean): void {
     setLoadingStates(prev => ({ ...prev, [key]: value }));
@@ -96,6 +104,7 @@ export const ResultsVisibilityToggle = () => {
     top60: () => top60Mutation.mutate(!appSettings?.isTop60Validated),
     event: () => eventMutation.mutate(!appSettings?.isEventStarted),
     winners: () => winnersMutation.mutate(!appSettings?.isWinnersDeclared),
+    hackfest: () => hackfestStartMutation.mutate(appSettings?.isHackfestStarted ? false : true),
   };
 
   if (!appSettings) return <div>Loading settings...</div>;
@@ -312,6 +321,38 @@ export const ResultsVisibilityToggle = () => {
               </Switch>
               <span className="text-sm">
                 {loadingStates.winnersDeclared ? "Updating..." : appSettings.isWinnersDeclared ? "Declared" : "Not Declared"}
+              </span>
+            </div>
+          </div>
+
+          {/* Hackfest Start Time */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Hackfest Timer</h3>
+              <p className="text-sm text-gray-500">
+                {appSettings.isHackfestStarted 
+                  ? `Hackfest timer started at ${appSettings.isHackfestStarted.toLocaleString()}` 
+                  : "Hackfest timer not started"}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={!!appSettings.isHackfestStarted}
+                onChange={toggleSetting.hackfest}
+                disabled={loadingStates.hackfestStarted}
+                className={`${
+                  appSettings.isHackfestStarted ? 'bg-blue-600' : 'bg-gray-200'
+                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+              >
+                <span className="sr-only">Toggle hackfest timer</span>
+                <span
+                  className={`${
+                    appSettings.isHackfestStarted ? 'translate-x-6' : 'translate-x-1'
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                />
+              </Switch>
+              <span className="text-sm">
+                {loadingStates.hackfestStarted ? "Updating..." : appSettings.isHackfestStarted ? "Started" : "Not Started"}
               </span>
             </div>
           </div>

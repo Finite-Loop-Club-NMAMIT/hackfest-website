@@ -462,6 +462,44 @@ export const teamRouter = createTRPCRouter({
       },
     });
   }),
+  getAttendanceList: dashboardProcedure.query(async ({ ctx }) => {
+    return await ctx.db.team.findMany({
+      where: {
+        teamProgress: {
+          in: ['SELECTED', 'TOP15', 'WINNER', 'RUNNER', 'SECOND_RUNNER', 'TRACK'],
+        },
+      },
+      select: {
+        id: true,
+        teamNo: true,
+        name: true,
+        IdeaSubmission: {
+          select: {
+            track: true,
+          },
+        },
+        teamProgress: true,
+        attended: true,
+        Members: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            isLeader: true,
+          },
+          orderBy: {
+            isLeader: 'desc'
+          }
+        },
+        Scores: true,
+        VideoSubmission: true,
+      },
+      orderBy: {
+        teamNo: "asc",
+      },
+    });
+  }),
+  
   top15: adminProcedure.query(async ({ ctx }) => {
     return await ctx.db.team.findMany({
       where: {
