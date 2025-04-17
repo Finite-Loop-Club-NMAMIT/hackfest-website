@@ -246,8 +246,8 @@ export const chatProcedure = t.procedure.use(async ({ ctx, next }) => {
   });
 
   // who among the core can access the chat feature
-  // currently only ADMIN, TEAM and attended PARTICIPANTS can access the chat feature
-  const isCore = ["ADMIN", "TEAM"];
+  // currently only ADMIN and attended PARTICIPANTS can access the chat feature
+  const isCore = ["ADMIN"];
 
   if (
     user !== null &&

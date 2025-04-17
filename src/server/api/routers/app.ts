@@ -1,10 +1,7 @@
 import { appSettingsZ } from "~/server/schema/zod-schema";
 import { z } from "zod";
-import {
-  adminProcedure,
-  createTRPCRouter,
-  publicProcedure,
-} from "../trpc";
+import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
+import { TRPCError } from "@trpc/server";
 
 export const appSettingsRouter = createTRPCRouter({
   getAppSettings: publicProcedure.query(async ({ ctx }) => {
@@ -14,7 +11,7 @@ export const appSettingsRouter = createTRPCRouter({
     const appSettings = await ctx.db.appSettings.findFirst();
     return appSettings?.isResultOpen;
   }),
-  
+
   setResultVisibility: adminProcedure
     .input(z.boolean())
     .mutation(async ({ ctx, input }) => {
@@ -32,7 +29,7 @@ export const appSettingsRouter = createTRPCRouter({
         },
       });
     }),
-  
+
   setRegistrationStatus: adminProcedure
     .input(z.boolean())
     .mutation(async ({ ctx, input }) => {
@@ -50,7 +47,7 @@ export const appSettingsRouter = createTRPCRouter({
         },
       });
     }),
-    
+
   setPaymentStatus: adminProcedure
     .input(z.boolean())
     .mutation(async ({ ctx, input }) => {
@@ -68,7 +65,7 @@ export const appSettingsRouter = createTRPCRouter({
         },
       });
     }),
-    
+
   setProfileEditStatus: adminProcedure
     .input(z.boolean())
     .mutation(async ({ ctx, input }) => {
@@ -86,7 +83,7 @@ export const appSettingsRouter = createTRPCRouter({
         },
       });
     }),
-    
+
   setTop60ValidationStatus: adminProcedure
     .input(z.boolean())
     .mutation(async ({ ctx, input }) => {
@@ -104,7 +101,7 @@ export const appSettingsRouter = createTRPCRouter({
         },
       });
     }),
-    
+
   setEventStatus: adminProcedure
     .input(z.boolean())
     .mutation(async ({ ctx, input }) => {
@@ -122,7 +119,7 @@ export const appSettingsRouter = createTRPCRouter({
         },
       });
     }),
-  
+
   updateAppSettings: adminProcedure
     .input(appSettingsZ)
     .mutation(async ({ ctx, input }) => {
@@ -130,7 +127,7 @@ export const appSettingsRouter = createTRPCRouter({
         Object.entries(input).filter(([_, value]) => value !== null),
       );
 
-       await ctx.db.appSettings.update({
+      await ctx.db.appSettings.update({
         where: { id: 1 },
         data: {
           ...filteredInput,
@@ -144,4 +141,68 @@ export const appSettingsRouter = createTRPCRouter({
         },
       });
     }),
+
+  createChatRooms: adminProcedure.mutation(async ({ ctx }) => {
+    // parallelize the queries to get admins and teams
+    const [admins, teams] = await ctx.db.$transaction([
+      ctx.db.user.findMany({
+        where: {
+          role: "ADMIN",
+        },
+        select: {
+          id: true,
+        },
+      }),
+      ctx.db.team.findMany({
+        where: {
+          attended: true,
+        },
+        select: {
+          id: true,
+          teamNo: true,
+          Members: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    if(admins.length === 0 || teams.length === 0) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch admins and teams"
+      })
+    }
+
+    try {
+      // create rooms for each teams
+      for (const team of teams) {
+        await ctx.db.chatRoom.create({
+          data: {
+            name: "HF25-" + team.teamNo,
+            participants: {
+              createMany: {
+                data: [
+                  ...admins.map((admin) => ({
+                    userId: admin.id,
+                  })),
+                  ...team.Members.map((member) => ({
+                    userId: member.id,
+                  })),
+                ],
+                skipDuplicates: true,
+              },
+            },
+          },
+        });
+      }
+    } catch (error) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to create chat rooms",
+      });
+    }
+  }),
 });
