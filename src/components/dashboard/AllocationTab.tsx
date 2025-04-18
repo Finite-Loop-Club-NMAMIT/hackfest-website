@@ -220,7 +220,6 @@ const AllocationTab: React.FC = () => {
                       <option value="SMV52">SMV52</option>
                       <option value="SMV53">SMV53</option>
                       <option value="SMV22">SMV22</option>
-                      <option value="SMV23">SMV23</option>
                       <option value="SMV24">SMV24</option>
                     </select>
                   </td>
