@@ -14,6 +14,21 @@ import TridentSpinner from "~/components/spinner/thunderSpinner";
 import ProfilePhoto from "~/components/profile/profilePhoto";
 import * as Appsetting from "~/components/appSettingValidator";
 
+function getArenaNumber(arenaCode: string | undefined | null): string {
+  if (!arenaCode) return "";
+  
+  const arenaMap: Record<string, number> = {
+    "ADL03": 1,
+    "ADL04": 2,
+    "SMVL51": 3,
+    "SMVL52": 4,
+    "SMVL54": 5
+  };
+  
+  const arenaNumber = arenaMap[arenaCode];
+  return arenaNumber ? `${arenaCode} (Arena ${arenaNumber})` : arenaCode;
+}
+
 export default function ProfilePage() {
   const { data, status } = useSession();
   const [delay, setDelay] = useState(true);
@@ -119,7 +134,7 @@ function Content({
           order={[2, 5, 3, 4]}
           boysDormitory={user.Team?.boysDormitory}
           girlsDormitory={user.Team?.girlsDormitory}
-          arena={user.Team?.arena}
+          arena={getArenaNumber(user.Team?.arena)}
         />
       );
   }
