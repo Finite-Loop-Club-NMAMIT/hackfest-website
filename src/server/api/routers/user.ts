@@ -269,6 +269,8 @@ export const userRouter = createTRPCRouter({
             id: true,
             name: true,
             arena: true,
+            teamProgress: true,
+            teamNo: true,
             boysDormitory: true,
             girlsDormitory:true,
             isComplete: true,

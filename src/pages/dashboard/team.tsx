@@ -157,6 +157,35 @@ export default function TeamAttendance() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Statistics Card */}
+        <Card className="w-full mx-auto mt-6">
+          <CardHeader>
+            <CardTitle>Attendance Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
+                <span className="text-sm font-medium text-muted-foreground">Present Teams</span>
+                <span className="text-3xl font-bold">
+                  {selectedTeams?.filter(team => team.attended === true).length ?? 0}
+                </span>
+              </div>
+              <div className="flex flex-col p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
+                <span className="text-sm font-medium text-muted-foreground">Present Participants</span>
+                <span className="text-3xl font-bold">
+                  {selectedTeams?.reduce((acc, team) => {
+                    // If team is present, add the count of all team members
+                    if (team.attended === true) {
+                      return acc + (team.Members?.length || 0);
+                    }
+                    return acc;
+                  }, 0) ?? 0}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

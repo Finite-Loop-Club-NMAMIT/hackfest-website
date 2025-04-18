@@ -39,6 +39,7 @@ interface TeamDetailsProps {
   boysDormitory?: string | null;
   girlsDormitory?: string | null;
   arena?: string | null;
+  teamNo?: number; // Add teamNo property
 }
 
 export default function TeamDetails({
@@ -47,6 +48,7 @@ export default function TeamDetails({
   boysDormitory,
   girlsDormitory,
   arena,
+  teamNo, // Include teamNo in the props
 }: TeamDetailsProps) {
   const settings = useContext(settingsCtx);
   const [teamMembers, setTeamMembers] = useState<{
@@ -125,6 +127,16 @@ export default function TeamDetails({
               <h1 className="text-center text-2xl font-semibold">
                 {user.Team.name}
               </h1>
+              
+              {/* Team Number Badge - Display when team is selected */}
+              {user.Team?.isComplete && user.Team?.teamProgress === "SELECTED" && teamNo && (
+                <div className="mb-2 mt-1">
+                  <Badge className="bg-gradient-to-r from-emerald-600 to-blue-600 px-3 py-1 text-sm">
+                    Team Number: <span className="ml-1 font-bold">{teamNo}</span>
+                  </Badge>
+                </div>
+              )}
+              
               <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
                 <button
                   className="flex items-center justify-center gap-2 rounded-full border border-white bg-white/50 px-4 py-2 text-xs font-semibold text-white backdrop-blur-2xl duration-300 hover:scale-105 hover:bg-white/70"

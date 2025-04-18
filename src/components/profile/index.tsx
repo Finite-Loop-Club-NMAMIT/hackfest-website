@@ -13,6 +13,7 @@ interface ProfileCardProps {
   boysDormitory?: string | null; // Expect string | null | undefined
   girlsDormitory?: string | null; // Expect string | null | undefined
   arena?: string | null; // Expect string | null | undefined
+  teamNo?: number; // Added teamNo prop
 }
 
 export default function ProfileCard({
@@ -21,18 +22,20 @@ export default function ProfileCard({
   boysDormitory,
   girlsDormitory,
   arena,
+  teamNo,
 }: ProfileCardProps) {
   return (
     <>
       <PersonalDeatils user={user} order={order[0] ?? 2} />
       <IdentityDetails user={user} order={order[1] ?? 3} />
-      {/* Pass allocation props to TeamDetails */}
+      {/* Pass allocation props and teamNo to TeamDetails */}
       <TeamDetails
         user={user}
         order={order[2] ?? 4}
         boysDormitory={boysDormitory}
         girlsDormitory={girlsDormitory}
         arena={arena}
+        teamNo={teamNo}
       />
       <IdeaDetails order={order[3] ?? 5} />
       {/* Removed the Allocation Details section from here */}

@@ -118,6 +118,7 @@ function Content({
         <ProfileCard
           user={user}
           order={[3, 4, 2, 0]}
+          teamNo={user.Team?.teamProgress === "SELECTED" ? user.Team?.teamNo : undefined}
         />
       );
     case "SUBMIT_IDEA":
@@ -125,6 +126,7 @@ function Content({
         <ProfileCard
           user={user}
           order={[3, 5, 4, 2]}
+          teamNo={user.Team?.teamProgress === "SELECTED" ? user.Team?.teamNo : undefined}
         />
       );
     case "COMPLETE":
@@ -135,6 +137,7 @@ function Content({
           boysDormitory={user.Team?.boysDormitory}
           girlsDormitory={user.Team?.girlsDormitory}
           arena={getArenaNumber(user.Team?.arena)}
+          teamNo={user.Team?.teamProgress === "SELECTED" ? user.Team?.teamNo : undefined}
         />
       );
   }
