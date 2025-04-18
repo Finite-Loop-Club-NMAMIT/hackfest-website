@@ -216,9 +216,12 @@ const AllocationTab: React.FC = () => {
                       <option value="NC61">NC61</option>
                       <option value="NC62">NC62</option>
                       <option value="NC63">NC63</option>
-                      <option value="SMV54">SMV54</option>
-                      <option value="SMV55">SMV55</option>
-                      <option value="SMV56">SMV56</option>
+                      <option value="SMV51">SMV51</option>
+                      <option value="SMV52">SMV52</option>
+                      <option value="SMV53">SMV53</option>
+                      <option value="SMV22">SMV22</option>
+                      <option value="SMV23">SMV23</option>
+                      <option value="SMV24">SMV24</option>
                     </select>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
@@ -235,9 +238,12 @@ const AllocationTab: React.FC = () => {
                       <option value="NC61">NC61</option>
                       <option value="NC62">NC62</option>
                       <option value="NC63">NC63</option>
-                      <option value="SMV54">SMV54</option>
-                      <option value="SMV55">SMV55</option>
-                      <option value="SMV56">SMV56</option>
+                      <option value="SMV51">SMV51</option>
+                      <option value="SMV52">SMV52</option>
+                      <option value="SMV53">SMV53</option>
+                      <option value="SMV22">SMV22</option>
+                      <option value="SMV23">SMV23</option>
+                      <option value="SMV24">SMV24</option>
                     </select>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
@@ -251,11 +257,11 @@ const AllocationTab: React.FC = () => {
                       disabled={updateAllocationMutation.isLoading}
                     >
                       <option value="NOT_ASSIGNED">Not Assigned</option>
-                      <option value="ADL01">ADL01</option>
                       <option value="ADL03">ADL03</option>
                       <option value="ADL04">ADL04</option>
-                      <option value="SMV54">SMV54</option>
-                      <option value="SMV55">SMV55</option>
+                      <option value="SMVL51">SMVL51</option>
+                      <option value="SMVL52">SMVL52</option>
+                      <option value="SMVL54">SMVL54</option>
                     </select>
                   </td>
                   <td className="px-6 py-4">

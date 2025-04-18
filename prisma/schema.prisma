@@ -379,17 +379,20 @@ enum Dormitory {
   NC61
   NC62
   NC63
-  SMV54
-  SMV55
-  SMV56
+  SMV51
+  SMV52
+  SMV53
+  SMV22
+  SMV23
+  SMV24
   NOT_ASSIGNED
 }
 
 enum Arena {
-  ADL01
   ADL03
   ADL04
-  SMV54
-  SMV55
+  SMVL51
+  SMVL52
+  SMVL54
   NOT_ASSIGNED
 }
