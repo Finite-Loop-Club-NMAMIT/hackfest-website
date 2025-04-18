@@ -29,6 +29,7 @@ declare module "next-auth" {
             ideaSubmission: string | undefined;
             teamProgress: TeamProgress;
             paymentStatus: PaymentStatus;
+            attended: boolean;
           }
         | null
         | undefined;
@@ -79,6 +80,7 @@ export const authOptions: NextAuthOptions = {
           ideaSubmission: dbUser?.Team?.IdeaSubmission?.pptUrl,
           teamProgress: dbUser?.Team?.teamProgress,
           paymentStatus: dbUser?.Team?.paymentStatus,
+          attended: dbUser.Team.attended
         };
         session.user.team = team;
       } else session.user.team = null;
