@@ -601,7 +601,7 @@ export const organiserRouter = createTRPCRouter({
           }
         }
       },
-      orderBy: { name: 'asc' }
+      orderBy: { teamNo: 'asc' }
     });
   }),
   
