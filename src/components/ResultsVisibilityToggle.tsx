@@ -3,6 +3,8 @@ import { api } from "~/utils/api";
 import { Card, CardContent } from "~/components/ui/card";
 import { Switch } from "@headlessui/react";
 import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 export const ResultsVisibilityToggle = () => {
   const utils = api.useContext();
@@ -18,6 +20,7 @@ export const ResultsVisibilityToggle = () => {
     eventStarted: false,
     winnersDeclared: false,
     hackfestStarted: false,
+    chatRooms: false,
   });
 
   type ToggleKey = keyof typeof loadingStates;
@@ -77,6 +80,18 @@ export const ResultsVisibilityToggle = () => {
     onSuccess: handleSuccess("Hackfest start time updated"),
     onError: handleError,
     onSettled: () => updateLoadingState("hackfestStarted", false),
+  });
+
+  const createChatRoomsMutation = api.appSettings.createChatRooms.useMutation({
+    onMutate: () => updateLoadingState("chatRooms", true),
+    onSuccess: () => {
+      toast("Chat rooms created successfully");
+      updateLoadingState("chatRooms", false);
+    },
+    onError: (error) => {
+      toast(error.message || "Failed to create chat rooms");
+      updateLoadingState("chatRooms", false);
+    },
   });
 
   // Helper functions
@@ -354,6 +369,33 @@ export const ResultsVisibilityToggle = () => {
               <span className="text-sm">
                 {loadingStates.hackfestStarted ? "Updating..." : appSettings.isHackfestStarted ? "Started" : "Not Started"}
               </span>
+            </div>
+          </div>
+
+          {/* Create Chat Rooms */}
+          <div className="border-t pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium">Team Chat Rooms</h3>
+                <p className="text-sm text-gray-500">
+                  Create chat rooms for all teams that have attended the event. Each room will include team members and all admin users.
+                </p>
+              </div>
+              <Button
+                onClick={() => createChatRoomsMutation.mutate()}
+                disabled={loadingStates.chatRooms}
+                variant="default"
+                className="min-w-[120px]"
+              >
+                {loadingStates.chatRooms ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Chat Rooms"
+                )}
+              </Button>
             </div>
           </div>
         </div>
