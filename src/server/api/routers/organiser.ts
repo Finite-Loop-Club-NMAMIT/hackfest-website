@@ -617,22 +617,8 @@ export const organiserRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { teamId, boysDormitory, girlsDormitory, arena } = input;
       
-      if (arena && arena !== 'NOT_ASSIGNED') {
-        const existingArenaTeam = await ctx.db.team.findFirst({
-          where: {
-            arena: arena,
-            id: { not: teamId }
-          },
-          select: { id: true, name: true }
-        });
-        
-        if (existingArenaTeam) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: `Arena ${String(arena)} is already allocated to team '${existingArenaTeam.name}'`
-          });
-        }
-      }
+      // Remove the arena uniqueness check that was here
+      
       const updateData: { boysDormitory?: Dormitory; girlsDormitory?: Dormitory; arena?: Arena } = {};
       if (boysDormitory !== undefined) updateData.boysDormitory = boysDormitory;
       if (girlsDormitory !== undefined) updateData.girlsDormitory = girlsDormitory;

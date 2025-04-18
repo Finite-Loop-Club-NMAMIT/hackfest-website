@@ -293,7 +293,7 @@ const AllocationTab: React.FC = () => {
           Allocate dormitories and arenas to teams using the dropdown menus above. Each team can be assigned one arena and separate dormitories for boys and girls.
         </p>
         <p className="mt-2 text-gray-400">
-          <strong>Note:</strong> Arenas must be uniquely assigned. The system will prevent duplicate arena assignments.
+          <strong>Note:</strong> Multiple teams can be assigned to the same arena or dormitory as needed.
         </p>
       </div>
     </div>
