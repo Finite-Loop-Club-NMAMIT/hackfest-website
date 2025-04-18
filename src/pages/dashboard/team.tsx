@@ -22,6 +22,8 @@ export default function TeamAttendance() {
   const res = api.team.getAttendanceList.useQuery();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedTrack, setSelectedTrack] = useState<string>("ALL");
+  const [presentTeamsCount, setPresentTeamsCount] = useState<number>(0);
+  const [presentMembersCount, setPresentMembersCount] = useState<number>(0);
 
   const [selectedTeams, setSelectedTeams] = useState(res.data);
 
@@ -36,6 +38,22 @@ export default function TeamAttendance() {
     "LOGISTICS",
     "OPEN_INNOVATION"
   ];
+  
+  // Calculate present teams and members count
+  useEffect(() => {
+    if (res.data) {
+      const presentTeams = res.data.filter(team => team.attended === true);
+      setPresentTeamsCount(presentTeams.length);
+      
+      // Calculate total members from present teams - fix the counting logic
+      const totalMembers = presentTeams.reduce((acc, team) => {
+        // Only count the actual members without adding extra person
+        return acc + (team.Members?.length || 0);
+      }, 0);
+      
+      setPresentMembersCount(totalMembers);
+    }
+  }, [res.data]);
 
   useEffect(() => {
     setSelectedTeams(() => {
@@ -90,6 +108,24 @@ export default function TeamAttendance() {
         </h1>
       </div>
       <div className="m-auto px-4 md:px-0 md:max-w-[1500px] mb-24">
+        <Card className="w-full mx-auto mb-4">
+          <CardHeader className="pb-3">
+            <CardTitle>Attendance Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg shadow-lg">
+                <span className="text-3xl font-bold text-green-400">{presentTeamsCount}</span>
+                <span className="text-sm text-gray-300">Teams Present</span>
+              </div>
+              <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg shadow-lg">
+                <span className="text-3xl font-bold text-blue-400">{presentMembersCount}</span>
+                <span className="text-sm text-gray-300">Members Present</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="w-full mx-auto mb-4">
           <CardHeader className="pb-3">
             <CardTitle>Search & Filter Teams</CardTitle>
@@ -154,35 +190,6 @@ export default function TeamAttendance() {
                   dataRefecth={res.refetch}
                 />
               )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Statistics Card */}
-        <Card className="w-full mx-auto mt-6">
-          <CardHeader>
-            <CardTitle>Attendance Statistics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-                <span className="text-sm font-medium text-muted-foreground">Present Teams</span>
-                <span className="text-3xl font-bold">
-                  {selectedTeams?.filter(team => team.attended === true).length ?? 0}
-                </span>
-              </div>
-              <div className="flex flex-col p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-                <span className="text-sm font-medium text-muted-foreground">Present Participants</span>
-                <span className="text-3xl font-bold">
-                  {selectedTeams?.reduce((acc, team) => {
-                    // If team is present, add the count of all team members
-                    if (team.attended === true) {
-                      return acc + (team.Members?.length || 0);
-                    }
-                    return acc;
-                  }, 0) ?? 0}
-                </span>
-              </div>
             </div>
           </CardContent>
         </Card>
