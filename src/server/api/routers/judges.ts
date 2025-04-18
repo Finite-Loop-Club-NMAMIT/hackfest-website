@@ -9,7 +9,8 @@ export const JudgeRouter = createTRPCRouter({
     const user = ctx.session.user;
     const teams = await ctx.db.team.findMany({
       where: {
-        teamProgress: "SELECTED", // Day 1 & 2 judges see teams selected for the main event
+        teamProgress: "SELECTED", 
+        attended: true// Day 1 & 2 judges see teams selected for the main event
       },
       include: {
         IdeaSubmission: true,
@@ -73,6 +74,7 @@ export const JudgeRouter = createTRPCRouter({
   getDay3Teams: judgeProcedure.query(async ({ ctx }) => {
     const teams = await ctx.db.team.findMany({
       where: {
+        attended: true, // Only include teams that attended
         // Day 3 judges see teams that are either SELECTED (Top 60) or already promoted to TOP15
         teamProgress: {
           in: [TeamProgress.SELECTED, TeamProgress.TOP15],
