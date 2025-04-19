@@ -13,9 +13,8 @@ const Checkbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      "peer h-4 w-4 shrink-0 rounded-sm border border-gray-400 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-      // Fix type error by explicitly typing className as string | undefined
-      className as string | undefined
+      "peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+      className
     )}
     {...props}
   >
@@ -26,8 +25,23 @@ const Checkbox = React.forwardRef<
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ))
-
-// Fix unsafe assignment by using type assertion
-Checkbox.displayName = CheckboxPrimitive.Root.displayName as string
+Checkbox.displayName = CheckboxPrimitive.Root.displayName
 
 export { Checkbox }
+
+export function useCheckbox() {
+  const [checked, setChecked] = React.useState(false)
+  const checkboxRef = React.useRef<HTMLButtonElement>(null)
+
+  const toggle = () => {
+    const checkbox = checkboxRef.current!
+    checkbox.click()
+    setChecked(checkbox.getAttribute("data-state") === "checked")
+  }
+
+  return {
+    checked,
+    checkboxRef,
+    toggle,
+  }
+}
