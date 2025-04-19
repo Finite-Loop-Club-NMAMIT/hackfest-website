@@ -950,7 +950,10 @@ export const organiserRouter = createTRPCRouter({
               }
             }
           }
-        }
+        },
+        orderBy: [
+          { teamNo: 'asc' }
+        ]
       });
       
       return teams;

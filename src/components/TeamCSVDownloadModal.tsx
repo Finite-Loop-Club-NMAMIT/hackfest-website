@@ -4,7 +4,9 @@ import { Fragment } from "react";
 import { Button } from "~/components/ui/button";
 import { api } from "~/utils/api";
 import { TeamProgress, type PaymentStatus, type Dormitory, type Arena, type Tracks, type TshirtSize, type States } from "@prisma/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Label } from "~/components/ui/label";
 
 // Define proper types for the team data to match what comes from the API
 interface CollegeInfo {
@@ -53,17 +55,25 @@ export const TeamCSVDownloadModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Fixed columns - updated to include team members and contact information
-  const selectedColumns = useMemo(() => [
-    "teamNo", 
-    "name", 
-    "status", 
-    "college", 
-    "state", 
-    "members", 
-    "leaderName", 
-    "leaderContact"
+  // Available fields for CSV export
+  const availableFields = useMemo(() => [
+    { id: "teamNo", label: "Team Number" },
+    { id: "name", label: "Team Name" },
+    { id: "status", label: "Status" },
+    { id: "college", label: "College" },
+    { id: "state", label: "State" },
+    { id: "members", label: "Team Members" },
+    { id: "leaderName", label: "Team Leader" },
+    { id: "leaderContact", label: "Leader Contact" },
+    { id: "track", label: "Track" },
+    { id: "dormitories", label: "Dormitories" },
+    { id: "arena", label: "Arena" },
   ], []);
+
+  // State to track selected fields
+  const [selectedFields, setSelectedFields] = useState<string[]>([
+    "teamNo", "name", "status", "college", "state", "members", "leaderName", "leaderContact"
+  ]);
 
   // Set default filters - also wrap this in useMemo
   const progressFilter = useMemo(() => [
@@ -86,6 +96,27 @@ export const TeamCSVDownloadModal = ({
     { enabled: isOpen }
   );
   
+  // Helper function to toggle field selection
+  const toggleField = (fieldId: string) => {
+    setSelectedFields(prev => {
+      if (prev.includes(fieldId)) {
+        return prev.filter(id => id !== fieldId);
+      } else {
+        return [...prev, fieldId];
+      }
+    });
+  };
+
+  // Select all fields
+  const selectAllFields = () => {
+    setSelectedFields(availableFields.map(field => field.id));
+  };
+
+  // Clear all fields
+  const clearAllFields = () => {
+    setSelectedFields([]);
+  };
+
   // Helper function to generate CSV content
   const generateCSVContent = useCallback((teams: unknown, selectedColumns: string[]): string => {
     // Cast to the correct type
@@ -100,7 +131,10 @@ export const TeamCSVDownloadModal = ({
       state: "State",
       members: "Team Members",
       leaderName: "Team Leader",
-      leaderContact: "Leader Contact"
+      leaderContact: "Leader Contact",
+      track: "Track",
+      dormitories: "Dormitories",
+      arena: "Arena"
     };
 
     // Create header row
@@ -152,6 +186,20 @@ export const TeamCSVDownloadModal = ({
             const leaderContact = team.Members.find(m => m.isLeader);
             row.push(`"${leaderContact?.phone ?? "N/A"}"`);
             break;
+          case "track":
+            // Get the team's track
+            row.push(`"${team.IdeaSubmission?.track ?? "N/A"}"`);
+            break;
+          case "dormitories":
+            // Get dormitories
+            const boys = team.boysDormitory ? `Boys: ${team.boysDormitory}` : "";
+            const girls = team.girlsDormitory ? `Girls: ${team.girlsDormitory}` : "";
+            row.push(`"${[boys, girls].filter(Boolean).join(", ") || "N/A"}"`);
+            break;
+          case "arena":
+            // Get arena
+            row.push(`"${team.arena ?? "N/A"}"`);
+            break;
           default:
             row.push(`""`);
         }
@@ -179,8 +227,13 @@ export const TeamCSVDownloadModal = ({
         throw new Error("No teams found matching the criteria");
       }
 
+      // Ensure we have at least one field selected
+      if (selectedFields.length === 0) {
+        throw new Error("Please select at least one field to export");
+      }
+
       // Generate CSV - use const instead of let as it's never reassigned
-      const csv = generateCSVContent(teams, selectedColumns);
+      const csv = generateCSVContent(teams, selectedFields);
       
       // Create and download the file
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -200,15 +253,16 @@ export const TeamCSVDownloadModal = ({
     } finally {
       setIsLoading(false);
     }
-  }, [teamsQuery, selectedColumns, generateCSVContent, closeModal]);
+  }, [teamsQuery, selectedFields, generateCSVContent, closeModal]);
 
-  // Effect hook to auto-download when modal opens
+  // Reset selections when modal opens
   useEffect(() => {
-    // Auto-download when modal opens and data is loaded
-    if (isOpen && teamsQuery.data && !isLoading) {
-      void downloadCSV();
+    if (isOpen) {
+      setSelectedFields([
+        "teamNo", "name", "status", "college", "state", "members", "leaderName", "leaderContact"
+      ]);
     }
-  }, [isOpen, teamsQuery.data, isLoading, downloadCSV]);
+  }, [isOpen]);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -241,43 +295,80 @@ export const TeamCSVDownloadModal = ({
                   as="h3"
                   className="text-lg font-medium leading-6 text-gray-100"
                 >
-                  Downloading Teams CSV
+                  Export Teams to CSV
                 </Dialog.Title>
                 
                 <div className="mt-4">
-                  <p className="text-sm text-gray-300">
-                    {isLoading 
-                      ? "Preparing your download..." 
-                      : error 
-                        ? `Error: ${error}` 
-                        : "Your file will download automatically."}
+                  <p className="text-sm text-gray-300 mb-4">
+                    Select the fields you want to include in the CSV export:
                   </p>
-                  <p className="text-sm text-gray-400 mt-2">
-                    The CSV will include team number, team name, status, college, state, all team members with leader indicated, and team leader contact information.
-                  </p>
+                  
+                  <div className="flex justify-between mb-4">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={selectAllFields}
+                      className="text-xs"
+                    >
+                      Select All
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={clearAllFields}
+                      className="text-xs"
+                    >
+                      Clear All
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-2">
+                    {availableFields.map(field => (
+                      <div key={field.id} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`field-${field.id}`}
+                          checked={selectedFields.includes(field.id)}
+                          onCheckedChange={() => toggleField(field.id)}
+                        />
+                        <Label 
+                          htmlFor={`field-${field.id}`}
+                          className="text-sm font-medium leading-none cursor-pointer text-white"
+                        >
+                          {field.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {error && (
+                    <p className="text-red-500 text-sm mt-3">{error}</p>
+                  )}
                 </div>
 
                 <div className="mt-6 flex justify-end space-x-2">
-                  {error && (
-                    <Button 
-                      onClick={downloadCSV} 
-                      disabled={isLoading}
-                      className="bg-blue-600 text-white hover:bg-blue-700 mr-2"
-                    >
-                      Try Again
-                    </Button>
-                  )}
                   <Button 
                     variant="outline" 
                     onClick={closeModal} 
                     className="bg-transparent border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-gray-100"
                   >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={downloadCSV} 
+                    disabled={isLoading || selectedFields.length === 0}
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                  >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Preparing...
+                        Downloading...
                       </>
-                    ) : "Close"}
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download CSV
+                      </>
+                    )}
                   </Button>
                 </div>
               </Dialog.Panel>
