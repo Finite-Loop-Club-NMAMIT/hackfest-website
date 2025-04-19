@@ -1,7 +1,7 @@
 import { TeamProgress, JudgeType, Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, createTRPCRouter, dashboardProcedure, publicProcedure } from "~/server/api/trpc";
+import { adminProcedure, createTRPCRouter, dashboardProcedure } from "~/server/api/trpc";
 import { addJudge } from "~/server/schema/zod-schema";
 import { Dormitory, Arena } from "@prisma/client";
 
@@ -893,74 +893,66 @@ export const organiserRouter = createTRPCRouter({
       judges
     };
   }),
-  getTeamWinners: publicProcedure.query(async ({ ctx }) => {
-    const teams = await ctx.db.team.findMany({
-      where: {
-        teamProgress: {
-          in: ['SELECTED', 'TOP15','WINNER', 'RUNNER', 'SECOND_RUNNER', 'TRACK']
-        }
-      },
-      select: {
-        id: true,
-        name: true,
-        teamNo: true,
-        teamProgress: true,
-        Members: {
-          select: {
-            id: true,
-            name: true,
-            College: {
-              select: {
-                name: true
+
+  getTeamsForReport: adminProcedure
+    .input(z.object({
+      progressFilter: z.array(z.nativeEnum(TeamProgress)).optional(),
+      attendedOnly: z.boolean().optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const progressFilter = input.progressFilter ?? [
+        TeamProgress.SELECTED, 
+        TeamProgress.TOP15,
+        TeamProgress.WINNER,
+        TeamProgress.RUNNER,
+        TeamProgress.SECOND_RUNNER,
+        TeamProgress.TRACK
+      ];
+      
+      const teams = await ctx.db.team.findMany({
+        where: {
+          teamProgress: {
+            in: progressFilter
+          },
+          ...(input.attendedOnly ? { attended: true } : {})
+        },
+        select: {
+          id: true,
+          name: true,
+          teamNo: true,
+          teamProgress: true,
+          attended: true,
+          paymentStatus: true,
+          boysDormitory: true,
+          girlsDormitory: true,
+          arena: true,
+          IdeaSubmission: {
+            select: {
+              track: true,
+              pptUrl: true
+            }
+          },
+          Members: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              tShirtSize: true,
+              isLeader: true,
+              github: true,
+              attended: true,
+              College: {
+                select: {
+                  name: true,
+                  state: true
+                }
               }
             }
           }
-        },
-        IdeaSubmission: {
-          select: {
-            track: true,
-            pptUrl: true
-          }
         }
-      },
-      orderBy: [
-        { teamNo: 'asc' }
-      ]
-    });
-
-    // Remove judge scoring ranges for normalization
-    const allCriteria = await ctx.db.criteria.findMany({
-      where: {
-        JudgeType: {
-          in: [JudgeType.DAY2_ROUND1, JudgeType.DAY2_ROUND2]
-        }
-      },
-      orderBy: [
-        { JudgeType: 'asc' },
-        { criteria: 'asc' }
-      ]
-    });
-
-    const judges = await ctx.db.judge.findMany({
-      where: {
-        type: {
-          in: [JudgeType.DAY2_ROUND1, JudgeType.DAY2_ROUND2]
-        }
-      },
-      include: {
-        User: {
-          select: {
-            name: true,
-            id: true
-          }
-        }
-      }
-    });
-
-    return {
-      teams,
-      criteria: allCriteria,
-      judges
-    };
-  }),
+      });
+      
+      return teams;
+    }),
 });

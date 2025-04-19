@@ -4,11 +4,13 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Switch } from "@headlessui/react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
+import { TeamCSVDownloadModal } from "~/components/TeamCSVDownloadModal";
 
 export const ResultsVisibilityToggle = () => {
   const utils = api.useContext();
   const { data: appSettings } = api.appSettings.getAppSettings.useQuery();
+  const [isCSVModalOpen, setIsCSVModalOpen] = useState(false);
 
   // Loading states for each toggle
   const [loadingStates, setLoadingStates] = useState({
@@ -125,281 +127,298 @@ export const ResultsVisibilityToggle = () => {
   if (!appSettings) return <div>Loading settings...</div>;
 
   return (
-    <Card className="w-full">
-      <CardContent className="p-6">
-        <h2 className="mb-6 text-2xl font-bold">Application Settings</h2>
-        
-        <div className="space-y-6">
-          {/* Results Visibility */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Results Visibility</h3>
-              <p className="text-sm text-gray-500">
-                {appSettings.isResultOpen ? "Results are visible to participants" : "Results are hidden from participants"}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={appSettings.isResultOpen || false}
-                onChange={toggleSetting.results}
-                disabled={loadingStates.results}
-                className={`${
-                  appSettings.isResultOpen ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-              >
-                <span className="sr-only">Toggle results visibility</span>
-                <span
-                  className={`${
-                    appSettings.isResultOpen ? 'translate-x-6' : 'translate-x-1'
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </Switch>
-              <span className="text-sm">
-                {loadingStates.results ? "Updating..." : appSettings.isResultOpen ? "Visible" : "Hidden"}
-              </span>
-            </div>
+    <>
+      <Card className="w-full">
+        <CardContent className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Application Settings</h2>
+            <Button 
+              onClick={() => setIsCSVModalOpen(true)} 
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Export Teams
+            </Button>
           </div>
           
-          {/* Registration */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Registration</h3>
-              <p className="text-sm text-gray-500">
-                {appSettings.isRegistrationOpen ? "Registration is open" : "Registration is closed"}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={appSettings.isRegistrationOpen || false}
-                onChange={toggleSetting.registration}
-                disabled={loadingStates.registration}
-                className={`${
-                  appSettings.isRegistrationOpen ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-              >
-                <span className="sr-only">Toggle registration status</span>
-                <span
-                  className={`${
-                    appSettings.isRegistrationOpen ? 'translate-x-6' : 'translate-x-1'
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </Switch>
-              <span className="text-sm">
-                {loadingStates.registration ? "Updating..." : appSettings.isRegistrationOpen ? "Open" : "Closed"}
-              </span>
-            </div>
-          </div>
-          
-          {/* Payment */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Payment</h3>
-              <p className="text-sm text-gray-500">
-                {appSettings.isPaymentOpen ? "Payment is open" : "Payment is closed"}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={appSettings.isPaymentOpen || false}
-                onChange={toggleSetting.payment}
-                disabled={loadingStates.payment}
-                className={`${
-                  appSettings.isPaymentOpen ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-              >
-                <span className="sr-only">Toggle payment status</span>
-                <span
-                  className={`${
-                    appSettings.isPaymentOpen ? 'translate-x-6' : 'translate-x-1'
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </Switch>
-              <span className="text-sm">
-                {loadingStates.payment ? "Updating..." : appSettings.isPaymentOpen ? "Open" : "Closed"}
-              </span>
-            </div>
-          </div>
-          
-          {/* Profile Edit */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Profile Editing</h3>
-              <p className="text-sm text-gray-500">
-                {appSettings.isProfileEditOpen ? "Profile editing is enabled" : "Profile editing is disabled"}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={appSettings.isProfileEditOpen || false}
-                onChange={toggleSetting.profileEdit}
-                disabled={loadingStates.profileEdit}
-                className={`${
-                  appSettings.isProfileEditOpen ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-              >
-                <span className="sr-only">Toggle profile edit status</span>
-                <span
-                  className={`${
-                    appSettings.isProfileEditOpen ? 'translate-x-6' : 'translate-x-1'
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </Switch>
-              <span className="text-sm">
-                {loadingStates.profileEdit ? "Updating..." : appSettings.isProfileEditOpen ? "Enabled" : "Disabled"}
-              </span>
-            </div>
-          </div>
-          
-          {/* Top 60 Validated */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Top 60 Validation</h3>
-              <p className="text-sm text-gray-500">
-                {appSettings.isTop60Validated ? "Top 60 are validated" : "Top 60 are not validated"}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={appSettings.isTop60Validated || false}
-                onChange={toggleSetting.top60}
-                disabled={loadingStates.top60Validated}
-                className={`${
-                  appSettings.isTop60Validated ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-              >
-                <span className="sr-only">Toggle top 60 validation status</span>
-                <span
-                  className={`${
-                    appSettings.isTop60Validated ? 'translate-x-6' : 'translate-x-1'
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </Switch>
-              <span className="text-sm">
-                {loadingStates.top60Validated ? "Updating..." : appSettings.isTop60Validated ? "Validated" : "Not Validated"}
-              </span>
-            </div>
-          </div>
-          
-          {/* Event Started */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Event Status</h3>
-              <p className="text-sm text-gray-500">
-                {appSettings.isEventStarted ? "Event has started" : "Event has not started"}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={appSettings.isEventStarted || false}
-                onChange={toggleSetting.event}
-                disabled={loadingStates.eventStarted}
-                className={`${
-                  appSettings.isEventStarted ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-              >
-                <span className="sr-only">Toggle event status</span>
-                <span
-                  className={`${
-                    appSettings.isEventStarted ? 'translate-x-6' : 'translate-x-1'
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </Switch>
-              <span className="text-sm">
-                {loadingStates.eventStarted ? "Updating..." : appSettings.isEventStarted ? "Started" : "Not Started"}
-              </span>
-            </div>
-          </div>
-          
-          {/* Winners Declared */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Winners Status</h3>
-              <p className="text-sm text-gray-500">
-                {appSettings.isWinnersDeclared ? "Winners have been declared" : "Winners have not been declared"}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={appSettings.isWinnersDeclared || false}
-                onChange={toggleSetting.winners}
-                disabled={loadingStates.winnersDeclared}
-                className={`${
-                  appSettings.isWinnersDeclared ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-              >
-                <span className="sr-only">Toggle winners declared status</span>
-                <span
-                  className={`${
-                    appSettings.isWinnersDeclared ? 'translate-x-6' : 'translate-x-1'
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </Switch>
-              <span className="text-sm">
-                {loadingStates.winnersDeclared ? "Updating..." : appSettings.isWinnersDeclared ? "Declared" : "Not Declared"}
-              </span>
-            </div>
-          </div>
-
-          {/* Hackfest Start Time */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Hackfest Timer</h3>
-              <p className="text-sm text-gray-500">
-                {appSettings.isHackfestStarted 
-                  ? `Hackfest timer started at ${appSettings.isHackfestStarted.toLocaleString()}` 
-                  : "Hackfest timer not started"}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={!!appSettings.isHackfestStarted}
-                onChange={toggleSetting.hackfest}
-                disabled={loadingStates.hackfestStarted}
-                className={`${
-                  appSettings.isHackfestStarted ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-              >
-                <span className="sr-only">Toggle hackfest timer</span>
-                <span
-                  className={`${
-                    appSettings.isHackfestStarted ? 'translate-x-6' : 'translate-x-1'
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </Switch>
-              <span className="text-sm">
-                {loadingStates.hackfestStarted ? "Updating..." : appSettings.isHackfestStarted ? "Started" : "Not Started"}
-              </span>
-            </div>
-          </div>
-
-          {/* Create Chat Rooms */}
-          <div className="border-t pt-6">
+          <div className="space-y-6">
+            {/* Results Visibility */}
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-medium">Team Chat Rooms</h3>
+                <h3 className="text-lg font-medium">Results Visibility</h3>
                 <p className="text-sm text-gray-500">
-                  Create chat rooms for all teams that have attended the event. Each room will include team members and all admin users.
+                  {appSettings.isResultOpen ? "Results are visible to participants" : "Results are hidden from participants"}
                 </p>
               </div>
-              <Button
-                onClick={() => createChatRoomsMutation.mutate()}
-                disabled={loadingStates.chatRooms}
-                variant="default"
-                className="min-w-[120px]"
-              >
-                {loadingStates.chatRooms ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  "Create Chat Rooms"
-                )}
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={appSettings.isResultOpen || false}
+                  onChange={toggleSetting.results}
+                  disabled={loadingStates.results}
+                  className={`${
+                    appSettings.isResultOpen ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                >
+                  <span className="sr-only">Toggle results visibility</span>
+                  <span
+                    className={`${
+                      appSettings.isResultOpen ? 'translate-x-6' : 'translate-x-1'
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                  />
+                </Switch>
+                <span className="text-sm">
+                  {loadingStates.results ? "Updating..." : appSettings.isResultOpen ? "Visible" : "Hidden"}
+                </span>
+              </div>
+            </div>
+            
+            {/* Registration */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium">Registration</h3>
+                <p className="text-sm text-gray-500">
+                  {appSettings.isRegistrationOpen ? "Registration is open" : "Registration is closed"}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={appSettings.isRegistrationOpen || false}
+                  onChange={toggleSetting.registration}
+                  disabled={loadingStates.registration}
+                  className={`${
+                    appSettings.isRegistrationOpen ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                >
+                  <span className="sr-only">Toggle registration status</span>
+                  <span
+                    className={`${
+                      appSettings.isRegistrationOpen ? 'translate-x-6' : 'translate-x-1'
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                  />
+                </Switch>
+                <span className="text-sm">
+                  {loadingStates.registration ? "Updating..." : appSettings.isRegistrationOpen ? "Open" : "Closed"}
+                </span>
+              </div>
+            </div>
+            
+            {/* Payment */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium">Payment</h3>
+                <p className="text-sm text-gray-500">
+                  {appSettings.isPaymentOpen ? "Payment is open" : "Payment is closed"}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={appSettings.isPaymentOpen || false}
+                  onChange={toggleSetting.payment}
+                  disabled={loadingStates.payment}
+                  className={`${
+                    appSettings.isPaymentOpen ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                >
+                  <span className="sr-only">Toggle payment status</span>
+                  <span
+                    className={`${
+                      appSettings.isPaymentOpen ? 'translate-x-6' : 'translate-x-1'
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                  />
+                </Switch>
+                <span className="text-sm">
+                  {loadingStates.payment ? "Updating..." : appSettings.isPaymentOpen ? "Open" : "Closed"}
+                </span>
+              </div>
+            </div>
+            
+            {/* Profile Edit */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium">Profile Editing</h3>
+                <p className="text-sm text-gray-500">
+                  {appSettings.isProfileEditOpen ? "Profile editing is enabled" : "Profile editing is disabled"}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={appSettings.isProfileEditOpen || false}
+                  onChange={toggleSetting.profileEdit}
+                  disabled={loadingStates.profileEdit}
+                  className={`${
+                    appSettings.isProfileEditOpen ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                >
+                  <span className="sr-only">Toggle profile edit status</span>
+                  <span
+                    className={`${
+                      appSettings.isProfileEditOpen ? 'translate-x-6' : 'translate-x-1'
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                  />
+                </Switch>
+                <span className="text-sm">
+                  {loadingStates.profileEdit ? "Updating..." : appSettings.isProfileEditOpen ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+            </div>
+            
+            {/* Top 60 Validated */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium">Top 60 Validation</h3>
+                <p className="text-sm text-gray-500">
+                  {appSettings.isTop60Validated ? "Top 60 are validated" : "Top 60 are not validated"}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={appSettings.isTop60Validated || false}
+                  onChange={toggleSetting.top60}
+                  disabled={loadingStates.top60Validated}
+                  className={`${
+                    appSettings.isTop60Validated ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                >
+                  <span className="sr-only">Toggle top 60 validation status</span>
+                  <span
+                    className={`${
+                      appSettings.isTop60Validated ? 'translate-x-6' : 'translate-x-1'
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                  />
+                </Switch>
+                <span className="text-sm">
+                  {loadingStates.top60Validated ? "Updating..." : appSettings.isTop60Validated ? "Validated" : "Not Validated"}
+                </span>
+              </div>
+            </div>
+            
+            {/* Event Started */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium">Event Status</h3>
+                <p className="text-sm text-gray-500">
+                  {appSettings.isEventStarted ? "Event has started" : "Event has not started"}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={appSettings.isEventStarted || false}
+                  onChange={toggleSetting.event}
+                  disabled={loadingStates.eventStarted}
+                  className={`${
+                    appSettings.isEventStarted ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                >
+                  <span className="sr-only">Toggle event status</span>
+                  <span
+                    className={`${
+                      appSettings.isEventStarted ? 'translate-x-6' : 'translate-x-1'
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                  />
+                </Switch>
+                <span className="text-sm">
+                  {loadingStates.eventStarted ? "Updating..." : appSettings.isEventStarted ? "Started" : "Not Started"}
+                </span>
+              </div>
+            </div>
+            
+            {/* Winners Declared */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium">Winners Status</h3>
+                <p className="text-sm text-gray-500">
+                  {appSettings.isWinnersDeclared ? "Winners have been declared" : "Winners have not been declared"}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={appSettings.isWinnersDeclared || false}
+                  onChange={toggleSetting.winners}
+                  disabled={loadingStates.winnersDeclared}
+                  className={`${
+                    appSettings.isWinnersDeclared ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                >
+                  <span className="sr-only">Toggle winners declared status</span>
+                  <span
+                    className={`${
+                      appSettings.isWinnersDeclared ? 'translate-x-6' : 'translate-x-1'
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                  />
+                </Switch>
+                <span className="text-sm">
+                  {loadingStates.winnersDeclared ? "Updating..." : appSettings.isWinnersDeclared ? "Declared" : "Not Declared"}
+                </span>
+              </div>
+            </div>
+
+            {/* Hackfest Start Time */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium">Hackfest Timer</h3>
+                <p className="text-sm text-gray-500">
+                  {appSettings.isHackfestStarted 
+                    ? `Hackfest timer started at ${appSettings.isHackfestStarted.toLocaleString()}` 
+                    : "Hackfest timer not started"}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={!!appSettings.isHackfestStarted}
+                  onChange={toggleSetting.hackfest}
+                  disabled={loadingStates.hackfestStarted}
+                  className={`${
+                    appSettings.isHackfestStarted ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                >
+                  <span className="sr-only">Toggle hackfest timer</span>
+                  <span
+                    className={`${
+                      appSettings.isHackfestStarted ? 'translate-x-6' : 'translate-x-1'
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                  />
+                </Switch>
+                <span className="text-sm">
+                  {loadingStates.hackfestStarted ? "Updating..." : appSettings.isHackfestStarted ? "Started" : "Not Started"}
+                </span>
+              </div>
+            </div>
+
+            {/* Create Chat Rooms */}
+            <div className="border-t pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Team Chat Rooms</h3>
+                  <p className="text-sm text-gray-500">
+                    Create chat rooms for all teams that have attended the event. Each room will include team members and all admin users.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => createChatRoomsMutation.mutate()}
+                  disabled={loadingStates.chatRooms}
+                  variant="default"
+                  className="min-w-[120px]"
+                >
+                  {loadingStates.chatRooms ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Chat Rooms"
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <TeamCSVDownloadModal
+        isOpen={isCSVModalOpen}
+        closeModal={() => setIsCSVModalOpen(false)}
+      />
+    </>
   );
 };
