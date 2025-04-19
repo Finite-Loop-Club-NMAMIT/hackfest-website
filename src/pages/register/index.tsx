@@ -4,6 +4,7 @@ import RootLayout from "~/components/layout";
 import NotLoggedIn from "~/components/notLoggedIn";
 import RegisterCards from "~/components/registrationProgress";
 import TridentSpinner from "~/components/spinner/thunderSpinner";
+import VideoSubmission from "~/components/videosubmission";
 import { api } from "~/utils/api";
 
 export default function Register() {
@@ -25,13 +26,20 @@ export default function Register() {
     return (
       <RootLayout>
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0b1328] from-[10%] via-[#153164] to-[#0b1328] px-2 py-40">
-          {data?.user && appSettings.data && (
-            <RegisterCards
-              progress={data.user.profileProgress}
-              settings={appSettings.data}
-              session={data}
-            />
-          )}
+          {data?.user &&
+            appSettings.data &&
+            (data.user.team?.teamProgress === "SELECTED" &&
+            data.user.team.attended ? (
+              <VideoSubmission
+                session={data}
+              />
+            ) : (
+              <RegisterCards
+                progress={data.user.profileProgress}
+                settings={appSettings.data}
+                session={data}
+              />
+            ))}
         </div>
       </RootLayout>
     );
