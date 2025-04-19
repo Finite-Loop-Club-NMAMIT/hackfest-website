@@ -158,7 +158,7 @@ model Scores {
   id         Int      @id @default(autoincrement())
   Criteria   Criteria @relation(fields: [criteriaId], references: [id])
   Judge      Judge    @relation(fields: [judgeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  score      Int
+  score      Float
   Team       Team     @relation(fields: [teamId], references: [id])
   criteriaId String
   judgeId    String

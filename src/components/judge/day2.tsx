@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
-import type { MouseEvent } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Carousel,
   type CarouselApi,
@@ -52,144 +51,115 @@ const REMARK_DELIMITER = ';;;';
 
 const MAX_SCORE = 10;
 
-interface StarRatingProps {
+interface NumericRatingProps {
   currentRating: number | undefined;
   onRatingChange: (rating: number) => void;
-  numberOfStars?: number;
-  size?: number; 
+  max?: number;
 }
 
-const StarIcon = ({ size, color, className }: { size: number; color: string; className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill={color}
-    width={size}
-    height={size}
-    className={`flex-shrink-0 ${className ?? ''}`}
-  >
-    <path
-      fillRule="evenodd"
-      d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354l-4.597 2.889c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.007z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
-
-const StarRating: React.FC<StarRatingProps> = ({
+const NumericRating: React.FC<NumericRatingProps> = ({
   currentRating = 0,
   onRatingChange,
-  numberOfStars = 5,
-  size = 24,
+  max = MAX_SCORE,
 }) => {
-  const [hoveredStarIndex, setHoveredStarIndex] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [inputValue, setInputValue] = useState(currentRating?.toString() || "");
+  const [isFocused, setIsFocused] = useState(false);
 
-  const getStarIndexFromX = (clientX: number): number => {
-    if (!containerRef.current) return -1;
-    const rect = containerRef.current.getBoundingClientRect();
-    const relativeX = Math.max(0, Math.min(clientX - rect.left, rect.width));
+  // Update local state when prop changes (like when data is refetched)
+  useEffect(() => {
+    if (!isFocused && currentRating !== undefined) {
+      setInputValue(currentRating.toString());
+    }
+  }, [currentRating, isFocused]);
 
-    const index = Math.min(Math.floor((relativeX / rect.width) * numberOfStars), numberOfStars - 1);
-    return index;
-  };
-
-  const getScoreFromIndex = (index: number | null): number => {
-    if (index === null || index < 0) return 0;
-    const score = Math.round((index + 1) * (MAX_SCORE / numberOfStars));
-    return Math.min(score, MAX_SCORE); 
-  };
-
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    setHoveredStarIndex(getStarIndexFromX(e.clientX));
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredStarIndex(null);
-  };
-
-  const handleClick = (e: MouseEvent<HTMLDivElement>) => {
-    const clickedStarIndex = getStarIndexFromX(e.clientX);
-    const newScore = getScoreFromIndex(clickedStarIndex);
-    const currentRoundedScore = getScoreFromIndex(getCurrentStarIndex());
-
-    if (newScore !== currentRoundedScore) {
-       onRatingChange(newScore);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Allow empty string, valid numbers, and numbers with one decimal place
+    const value = e.target.value;
+    const regex = /^$|^([1-9]|10)(\.\d{0,1})?$|^0?\.\d{0,1}$/;
+    
+    if (regex.test(value) || value === "10") {
+      setInputValue(value);
     }
   };
 
-  const getCurrentStarIndex = (): number | null => {
-      if (currentRating <= 0) return null;
+  const handleSubmit = () => {
+    let finalValue = parseFloat(inputValue);
 
-      let closestIndex = 0;
-      let minDiff = Math.abs(getScoreFromIndex(0) - currentRating);
-      for (let i = 1; i < numberOfStars; i++) {
-          const scoreAtIndex = getScoreFromIndex(i);
-          const diff = Math.abs(scoreAtIndex - currentRating);
-          if (diff < minDiff) {
-              minDiff = diff;
-              closestIndex = i;
-          }
-
-          else if (diff === minDiff && scoreAtIndex < getScoreFromIndex(closestIndex)) {
-             closestIndex = i;
-          }
-      }
-
-       const scoreThreshold = (MAX_SCORE / numberOfStars) / 2;
-       if (minDiff > scoreThreshold) {
-
-       }
-
-      return closestIndex;
+    // If empty or invalid, set to 0
+    if (isNaN(finalValue) || inputValue === "") {
+      finalValue = 0;
+      setInputValue("0");
+    }
+    // Ensure the value is within range
+    else if (finalValue < 0) {
+      finalValue = 0;
+      setInputValue("0");
+    } 
+    else if (finalValue > max) {
+      finalValue = max;
+      setInputValue(max.toString());
+    }
+    
+    // Round to one decimal place
+    finalValue = Math.round(finalValue * 10) / 10;
+    if (finalValue !== currentRating) {
+      onRatingChange(finalValue);
+    }
+    
+    // Format to always show one decimal place
+    setInputValue(finalValue.toFixed(1));
   };
 
-  const currentStarIndex = getCurrentStarIndex();
-  const displayStarIndex = hoveredStarIndex ?? currentStarIndex;
+  const handleBlur = () => {
+    setIsFocused(false);
+    handleSubmit();
+  };
 
-  const fillPercentage = displayStarIndex !== null ? ((displayStarIndex + 1) / numberOfStars) * 100 : 0;
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
 
-  const textDisplayScore = getScoreFromIndex(displayStarIndex);
-  const currentTextScore = getScoreFromIndex(currentStarIndex); 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      (e.target as HTMLInputElement).blur();
+    }
+  };
 
   return (
     <TooltipProvider delayDuration={100}>
       <Tooltip>
         <TooltipTrigger asChild>
-           <div
-             ref={containerRef}
-             className="relative inline-flex cursor-pointer"
-             onMouseMove={handleMouseMove}
-             onMouseLeave={handleMouseLeave}
-             onClick={handleClick}
-             role="slider"
-             aria-valuenow={currentTextScore} 
-             aria-valuemin={0}
-             aria-valuemax={MAX_SCORE}
-             aria-label={`Rating: ${currentTextScore} out of ${MAX_SCORE}`} 
-           >
-              <div className="flex" aria-hidden="true">
-                {[...Array<number>(numberOfStars)].map((_, index: number) => (
-                  <StarIcon key={`bg-${index}`} size={size} color="currentColor" className="text-gray-300" />
-                ))}
-              </div>
-
-              <div
-                className="absolute top-0 left-0 h-full overflow-hidden flex"
-                style={{ width: `${fillPercentage}%` }} 
-                aria-hidden="true"
+          <div className="relative inline-flex">
+            <div className="flex items-center">
+              <Input
+                type="text"
+                value={inputValue}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                onFocus={handleFocus}
+                onKeyDown={handleKeyDown}
+                className="w-16 text-center p-1 h-8 text-foreground font-medium"
+                inputMode="decimal"
+                aria-valuenow={currentRating ?? 0}
+                aria-valuemin={0}
+                aria-valuemax={MAX_SCORE}
+                aria-label={`Rating: ${currentRating ?? 0} out of ${MAX_SCORE}`}
+              />
+              <span className="ml-1 text-sm font-medium text-muted-foreground">/ {max}</span>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="ml-2 h-8 px-2 py-0" 
+                onClick={handleSubmit}
+                aria-label="Submit score"
               >
-                {[...Array<number>(numberOfStars)].map((_, index: number) => (
-                   <StarIcon key={`fg-${index}`} size={size} color="currentColor" className="text-yellow-400" />
-                ))}
-              </div>
-              <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs font-semibold text-foreground w-16 text-center md:text-sm md:w-10 md:-right-12 md:top-1/2 md:left-auto md:-translate-y-1/2 md:translate-x-0">
-                {textDisplayScore}
-              </span>
-           </div>
+                Submit
+              </Button>
+            </div>
+          </div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Click or hover to rate (Score: {textDisplayScore} / {MAX_SCORE})</p>
+          <p>Enter a score from 0 to {max} (decimals allowed)</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -439,8 +409,8 @@ export default function DAY2() {
       placement: 'bottom',
     },
     {
-      target: '.star-rating-example',
-      content: 'Click or hover over the stars to rate each team on specific criteria. Your scores save automatically.',
+      target: '.numeric-rating-example',
+      content: 'Enter a score from 0 to 10 for each criteria. You can use decimal values like 7.5. Click Submit to save your score.',
       placement: 'bottom',
     },
     {
@@ -644,8 +614,8 @@ export default function DAY2() {
                                         key={criteria.id}
                                       >
                                         <span className="col-span-3 text-sm font-medium text-foreground md:col-span-2 md:text-lg">{criteria.criteria}</span>
-                                        <div className={`col-span-2 flex justify-end pr-0 relative pb-3 md:col-span-1 md:pr-10 md:pb-0 ${criteriaIndex === 0 ? 'star-rating-example' : ''}`}>
-                                           <StarRating
+                                        <div className={`col-span-2 flex justify-end pr-0 relative pb-3 md:col-span-1 md:pr-10 md:pb-0 ${criteriaIndex === 0 ? 'numeric-rating-example' : ''}`}>
+                                           <NumericRating
                                               currentRating={currentScore}
                                               onRatingChange={(newRating) => {
                                                   updateScore.mutate({
@@ -654,8 +624,7 @@ export default function DAY2() {
                                                       score: newRating,
                                                   });
                                               }}
-                                              numberOfStars={5}
-                                              size={20}
+                                              max={MAX_SCORE}
                                            />
                                         </div>
                                       </div>
