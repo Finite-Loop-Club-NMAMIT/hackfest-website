@@ -11,6 +11,7 @@ import FAQSection from "~/components/accordion";
 import ProgressBar from "~/components/progressBar";
 import Image from "next/image";
 import AuthButton from "~/components/navbar/authButton";
+import ComingSoon from "~/components/comingSoon";
 
 export default function Home() {
   const loadedComponents = useRef(new Set());
@@ -102,35 +103,47 @@ export default function Home() {
         </div>
       )}
 
-      <div style={{ visibility: showContent ? "visible" : "hidden" }}>
-        <RootLayout>
-          <BackgroundWrapper>
-            <main className="relative mx-auto overflow-y-clip">
-              <div className="relative z-10 flex flex-col gap-y-[5rem]">
-                <Hero
-                  onLoaded={() => handleComponentLoad("hero")}
-                  onProgress={handleProgress}
-                />
-                <Sponsors />
-                <AboutUs />
-                <PrizePool
-                  onLoaded={() => handleComponentLoad("prizePool")}
-                  onProgress={handleProgress}
-                />
+      {showContent ? (
+        <ComingSoon />
+      ) : (
+        <div
+          style={{
+            visibility: "hidden",
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            zIndex: -1,
+          }}
+        >
+          <RootLayout>
+            <BackgroundWrapper>
+              <main className="relative mx-auto overflow-y-clip">
+                <div className="relative z-10 flex flex-col gap-y-[5rem]">
+                  <Hero
+                    onLoaded={() => handleComponentLoad("hero")}
+                    onProgress={handleProgress}
+                  />
+                  <Sponsors />
+                  <AboutUs />
+                  <PrizePool
+                    onLoaded={() => handleComponentLoad("prizePool")}
+                    onProgress={handleProgress}
+                  />
 
-                <Domains
-                  onLoaded={() => handleComponentLoad("domain")}
-                  onProgress={handleProgress}
-                />
+                  <Domains
+                    onLoaded={() => handleComponentLoad("domain")}
+                    onProgress={handleProgress}
+                  />
 
-                <TimelineLink />
+                  <TimelineLink />
 
-                <FAQSection />
-              </div>
-            </main>
-          </BackgroundWrapper>
-        </RootLayout>
-      </div>
+                  <FAQSection />
+                </div>
+              </main>
+            </BackgroundWrapper>
+          </RootLayout>
+        </div>
+      )}
     </div>
   );
 }
